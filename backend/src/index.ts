@@ -26,9 +26,12 @@ app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, 
   }
 });
 
-// Register CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173', 'http://localhost:5174'];
+
 await app.register(cors, {
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://taplab.in', 'https://admin.taplab.in'],
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 });

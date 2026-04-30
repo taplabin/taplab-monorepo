@@ -1,9 +1,10 @@
 import { execSync } from 'child_process';
-import { readdirSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,10 +40,41 @@ if (distFiles.length !== 1) {
 const filename = distFiles[0]; // e.g. page.abcd1234.js
 const hash = filename.replace('page.', '').replace('.js', ''); // e.g. abcd1234
 
-// ── Step 2: Local URL (skip S3 for now) ──────────────────────────────────────
-console.log(`\n[2/3] Skipping S3 upload (local mode)`);
-const localUrl = `http://localhost:5174/${filename}`;
-console.log(`  → Local URL: ${localUrl}`);
+// ── Step 2: Upload to Backblaze B2 (or fall back to local) ───────────────────
+const b2Endpoint = process.env.B2_ENDPOINT;
+const b2Bucket = process.env.B2_BUCKET;
+const b2KeyId = process.env.B2_KEY_ID;
+const b2AppKey = process.env.B2_APP_KEY;
+const cdnBase = process.env.CDN_BASE_URL;
+
+let pageUrl: string;
+
+if (b2Endpoint && b2Bucket && b2KeyId && b2AppKey && cdnBase) {
+  console.log(`\n[2/3] Uploading to Backblaze B2...`);
+
+  const b2Region = b2Endpoint.match(/s3\.(.+)\.backblazeb2\.com/)?.[1] ?? 'us-west-004';
+  const s3 = new S3Client({
+    endpoint: b2Endpoint,
+    region: b2Region,
+    credentials: { accessKeyId: b2KeyId, secretAccessKey: b2AppKey },
+  });
+
+  const fileContent = readFileSync(path.join(distDir, filename));
+  await s3.send(new PutObjectCommand({
+    Bucket: b2Bucket,
+    Key: filename,
+    Body: fileContent,
+    ContentType: 'application/javascript',
+    CacheControl: 'public, max-age=31536000, immutable',
+  }));
+
+  pageUrl = `${cdnBase}/${filename}`;
+  console.log(`  → Uploaded: ${pageUrl}`);
+} else {
+  console.log(`\n[2/3] B2 env vars not set — using local mode`);
+  pageUrl = `http://localhost:5174/${filename}`;
+  console.log(`  → Local URL: ${pageUrl}`);
+}
 
 // ── Step 3: Update Firestore ──────────────────────────────────────────────────
 console.log(`\n[3/3] Updating Firestore for ${slug}...`);
@@ -68,7 +100,7 @@ if (!doc.exists) {
 }
 
 await docRef.update({
-  pageJsUrl: localUrl,
+  pageJsUrl: pageUrl,
   componentTagName: tagName,
   pageVersion: hash,
   pageStatus: 'deployed',
@@ -76,11 +108,7 @@ await docRef.update({
 });
 
 console.log(`\n✅ Deploy complete!`);
-console.log(`   Slug:       ${slug}`);
-console.log(`   Tag:        ${tagName}`);
-console.log(`   Version:    ${hash}`);
-console.log(`   Local URL:  ${localUrl}`);
-console.log(`\n📝 Next steps:`);
-console.log(`   1. Run: cd pages/${slug.replace(/_/g, '-')} && npx vite preview --port 5174`);
-console.log(`   2. Visit: http://localhost:5173/${slug}`);
-console.log(`   3. The page should load from the local server!`);
+console.log(`   Slug:    ${slug}`);
+console.log(`   Tag:     ${tagName}`);
+console.log(`   Version: ${hash}`);
+console.log(`   URL:     ${pageUrl}`);
