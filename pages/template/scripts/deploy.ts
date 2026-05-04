@@ -40,28 +40,27 @@ if (distFiles.length !== 1) {
 const filename = distFiles[0]; // e.g. page.abcd1234.js
 const hash = filename.replace('page.', '').replace('.js', ''); // e.g. abcd1234
 
-// ── Step 2: Upload to Backblaze B2 (or fall back to local) ───────────────────
-const b2Endpoint = process.env.B2_ENDPOINT;
-const b2Bucket = process.env.B2_BUCKET;
-const b2KeyId = process.env.B2_KEY_ID;
-const b2AppKey = process.env.B2_APP_KEY;
+// ── Step 2: Upload to Cloudflare R2 (or fall back to local) ──────────────────
+const r2Endpoint = process.env.R2_ENDPOINT;
+const r2Bucket = process.env.R2_BUCKET;
+const r2KeyId = process.env.R2_KEY_ID;
+const r2SecretKey = process.env.R2_SECRET_KEY;
 const cdnBase = process.env.CDN_BASE_URL;
 
 let pageUrl: string;
 
-if (b2Endpoint && b2Bucket && b2KeyId && b2AppKey && cdnBase) {
-  console.log(`\n[2/3] Uploading to Backblaze B2...`);
+if (r2Endpoint && r2Bucket && r2KeyId && r2SecretKey && cdnBase) {
+  console.log(`\n[2/3] Uploading to Cloudflare R2...`);
 
-  const b2Region = b2Endpoint.match(/s3\.(.+)\.backblazeb2\.com/)?.[1] ?? 'us-west-004';
   const s3 = new S3Client({
-    endpoint: b2Endpoint,
-    region: b2Region,
-    credentials: { accessKeyId: b2KeyId, secretAccessKey: b2AppKey },
+    endpoint: r2Endpoint,
+    region: 'auto',
+    credentials: { accessKeyId: r2KeyId, secretAccessKey: r2SecretKey },
   });
 
   const fileContent = readFileSync(path.join(distDir, filename));
   await s3.send(new PutObjectCommand({
-    Bucket: b2Bucket,
+    Bucket: r2Bucket,
     Key: filename,
     Body: fileContent,
     ContentType: 'application/javascript',
@@ -71,7 +70,7 @@ if (b2Endpoint && b2Bucket && b2KeyId && b2AppKey && cdnBase) {
   pageUrl = `${cdnBase}/${filename}`;
   console.log(`  → Uploaded: ${pageUrl}`);
 } else {
-  console.log(`\n[2/3] B2 env vars not set — using local mode`);
+  console.log(`\n[2/3] R2 env vars not set — using local mode`);
   pageUrl = `http://localhost:5174/${filename}`;
   console.log(`  → Local URL: ${pageUrl}`);
 }

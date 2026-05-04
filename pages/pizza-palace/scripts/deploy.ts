@@ -1,9 +1,10 @@
 import { execSync } from 'child_process';
-import { readdirSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,18 +37,47 @@ const distFiles = readdirSync(distDir).filter((f) => f.endsWith('.js'));
 if (distFiles.length !== 1) {
   throw new Error(`Expected 1 JS file in dist, found: ${distFiles.join(', ')}`);
 }
-const filename = distFiles[0]; // e.g. page.abcd1234.js
-const hash = filename.replace('page.', '').replace('.js', ''); // e.g. abcd1234
+const filename = distFiles[0];
+const hash = filename.replace('page.', '').replace('.js', '');
 
-// ── Step 2: Local URL (skip S3 for now) ──────────────────────────────────────
-console.log(`\n[2/3] Skipping S3 upload (local mode)`);
-const localUrl = `http://localhost:5174/${filename}`;
-console.log(`  → Local URL: ${localUrl}`);
+// ── Step 2: Upload to Cloudflare R2 (or fall back to local) ──────────────────
+const r2Endpoint = process.env.R2_ENDPOINT;
+const r2Bucket = process.env.R2_BUCKET;
+const r2KeyId = process.env.R2_KEY_ID;
+const r2SecretKey = process.env.R2_SECRET_KEY;
+const cdnBase = process.env.CDN_BASE_URL;
+
+let pageUrl: string;
+
+if (r2Endpoint && r2Bucket && r2KeyId && r2SecretKey && cdnBase) {
+  console.log(`\n[2/3] Uploading to Cloudflare R2...`);
+
+  const s3 = new S3Client({
+    endpoint: r2Endpoint,
+    region: 'auto',
+    credentials: { accessKeyId: r2KeyId, secretAccessKey: r2SecretKey },
+  });
+
+  const fileContent = readFileSync(path.join(distDir, filename));
+  await s3.send(new PutObjectCommand({
+    Bucket: r2Bucket,
+    Key: filename,
+    Body: fileContent,
+    ContentType: 'application/javascript',
+    CacheControl: 'public, max-age=31536000, immutable',
+  }));
+
+  pageUrl = `${cdnBase}/${filename}`;
+  console.log(`  → Uploaded: ${pageUrl}`);
+} else {
+  console.log(`\n[2/3] R2 env vars not set — using local mode`);
+  pageUrl = `http://localhost:5174/${filename}`;
+  console.log(`  → Local URL: ${pageUrl}`);
+}
 
 // ── Step 3: Update Firestore ──────────────────────────────────────────────────
 console.log(`\n[3/3] Updating Firestore for ${slug}...`);
 
-// Initialize Firebase Admin if not already initialized
 if (getApps().length === 0) {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
@@ -68,7 +98,7 @@ if (!doc.exists) {
 }
 
 await docRef.update({
-  pageJsUrl: localUrl,
+  pageJsUrl: pageUrl,
   componentTagName: tagName,
   pageVersion: hash,
   pageStatus: 'deployed',
@@ -76,11 +106,7 @@ await docRef.update({
 });
 
 console.log(`\n✅ Deploy complete!`);
-console.log(`   Slug:       ${slug}`);
-console.log(`   Tag:        ${tagName}`);
-console.log(`   Version:    ${hash}`);
-console.log(`   Local URL:  ${localUrl}`);
-console.log(`\n📝 Next steps:`);
-console.log(`   1. Run: cd pages/${slug.replace(/_/g, '-')} && npx vite preview --port 5174`);
-console.log(`   2. Visit: http://localhost:5173/${slug}`);
-console.log(`   3. The page should load from the local server!`);
+console.log(`   Slug:    ${slug}`);
+console.log(`   Tag:     ${tagName}`);
+console.log(`   Version: ${hash}`);
+console.log(`   URL:     ${pageUrl}`);
