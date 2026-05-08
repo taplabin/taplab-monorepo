@@ -79,11 +79,12 @@ export async function adminBusinessRoute(app: FastifyInstance) {
         razorpaySubscriptionId,
       });
     } catch (error: any) {
-      if (error.message.includes('already taken')) {
-        return reply.status(409).send({ error: error.message });
+      const message = error?.message ?? error?.error?.description ?? JSON.stringify(error);
+      if (message?.includes('already taken')) {
+        return reply.status(409).send({ error: message });
       }
-      app.log.error(error);
-      return reply.status(500).send({ error: 'Failed to create business' });
+      app.log.error({ razorpayError: error?.error ?? error, message }, 'Failed to create business');
+      return reply.status(500).send({ error: 'Failed to create business', detail: message });
     }
   });
 
