@@ -1,10 +1,37 @@
-export default function PizzaPalaceApp() {
+import { useState, useEffect } from 'react';
+import { defaultContent } from './content';
+
+const API_BASE = 'https://api.taplab.in';
+
+export default function PizzaPalaceApp({ slug }: { slug: string }) {
+  const [content, setContent] = useState<Record<string, string>>(defaultContent);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/page/${slug}/content`)
+      .then((r) => r.json())
+      .then((data) => setContent({ ...defaultContent, ...data }))
+      .catch(() => {});
+  }, [slug]);
+
+  // Build menu items dynamically from content keys
+  const menuItems: { name: string; desc: string; price: string; emoji: string }[] = [];
+  let i = 1;
+  while (content[`item_${i}_name`]) {
+    menuItems.push({
+      name: content[`item_${i}_name`],
+      desc: content[`item_${i}_desc`] ?? '',
+      price: content[`item_${i}_price`] ?? '',
+      emoji: content[`item_${i}_emoji`] ?? '',
+    });
+    i++;
+  }
+
   return (
     <main className="min-h-screen bg-red-50 flex flex-col">
       <header className="bg-red-600 text-white p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold">🍕 Pizza Palace</h1>
-          <p className="text-red-100 mt-2">Authentic wood-fired pizzas since 1998</p>
+          <h1 className="text-4xl md:text-5xl font-bold">{content.heading}</h1>
+          <p className="text-red-100 mt-2">{content.subheading}</p>
         </div>
       </header>
 
@@ -12,7 +39,7 @@ export default function PizzaPalaceApp() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Menu</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-            {menu.map((item) => (
+            {menuItems.map((item) => (
               <div
                 key={item.name}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6"
@@ -33,50 +60,11 @@ export default function PizzaPalaceApp() {
 
       <footer className="bg-gray-800 text-white p-6 mt-8">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-gray-300">📍 123 Main Street, Mumbai</p>
-          <p className="text-gray-300 mt-1">📞 +91 98765 43210</p>
-          <p className="text-gray-400 text-sm mt-4">Open daily: 11 AM - 11 PM</p>
+          <p className="text-gray-300">📍 {content.address}</p>
+          <p className="text-gray-300 mt-1">📞 {content.phone}</p>
+          <p className="text-gray-400 text-sm mt-4">{content.hours}</p>
         </div>
       </footer>
     </main>
   );
 }
-
-const menu = [
-  {
-    name: 'Margherita',
-    desc: 'Classic tomato sauce, fresh mozzarella, and basil',
-    price: 299,
-    emoji: '🧀',
-  },
-  {
-    name: 'BBQ Chicken',
-    desc: 'Smoky BBQ sauce, grilled chicken, onions, and cilantro',
-    price: 399,
-    emoji: '🍗',
-  },
-  {
-    name: 'Pepperoni',
-    desc: 'Spicy pepperoni, mozzarella, and tomato sauce',
-    price: 349,
-    emoji: '🌶️',
-  },
-  {
-    name: 'Veggie Supreme',
-    desc: 'Bell peppers, mushrooms, olives, onions, and tomatoes',
-    price: 329,
-    emoji: '🥗',
-  },
-  {
-    name: 'Hawaiian',
-    desc: 'Ham, pineapple, and mozzarella (yes, we dare!)',
-    price: 369,
-    emoji: '🍍',
-  },
-  {
-    name: 'Paneer Tikka',
-    desc: 'Tandoori paneer, onions, capsicum, and mint chutney',
-    price: 379,
-    emoji: '🧈',
-  },
-];

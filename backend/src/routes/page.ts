@@ -3,6 +3,22 @@ import { db } from '../firestore.js';
 import { BusinessDocument } from '../types.js';
 
 export async function pageRoute(app: FastifyInstance) {
+  // Public endpoint — returns the editable content map for a page
+  app.get<{ Params: { slug: string } }>('/page/:slug/content', async (req, reply) => {
+    const { slug } = req.params;
+
+    reply.header('Cache-Control', 'public, max-age=30');
+
+    const doc = await db.collection('businesses').doc(slug).get();
+
+    if (!doc.exists) {
+      return reply.status(404).send({ error: 'Not found' });
+    }
+
+    const content = (doc.data() as BusinessDocument).content ?? {};
+    return reply.send(content);
+  });
+
   app.get<{ Params: { businessSlug: string } }>(
     '/page/:businessSlug',
     async (req, reply) => {

@@ -4,6 +4,7 @@ import App from './App';
 import tailwindStyles from './styles.css?inline';
 
 const TAG_NAME = 'taplab-page-pizza-palace';
+const SLUG = 'pizza_palace';
 
 class TaplabPagePizzaPalace extends HTMLElement {
   connectedCallback() {
@@ -17,7 +18,7 @@ class TaplabPagePizzaPalace extends HTMLElement {
     // Mount React into the shadow DOM
     const container = document.createElement('div');
     shadow.appendChild(container);
-    createRoot(container).render(<App />);
+    createRoot(container).render(<App slug={SLUG} />);
   }
 }
 

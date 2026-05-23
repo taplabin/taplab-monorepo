@@ -3,8 +3,9 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import tailwindStyles from './styles.css?inline';
 
-// UPDATE THIS when creating a new page
+// UPDATE BOTH when creating a new page
 const TAG_NAME = 'taplab-page-template';
+const SLUG = 'template';
 
 class TaplabPage extends HTMLElement {
   connectedCallback() {
@@ -18,7 +19,7 @@ class TaplabPage extends HTMLElement {
     // Mount React into the shadow DOM
     const container = document.createElement('div');
     shadow.appendChild(container);
-    createRoot(container).render(<App />);
+    createRoot(container).render(<App slug={SLUG} />);
   }
 }
 

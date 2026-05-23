@@ -26,6 +26,9 @@ export interface BusinessDocument {
   razorpaySubscriptionId: string | null;
   razorpayPaymentLink: string | null;
 
+  // Editable page content (key-value text fields)
+  content?: Record<string, string>;
+
   // Meta
   createdAt: Timestamp;
 }

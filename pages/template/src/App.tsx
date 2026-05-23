@@ -1,16 +1,28 @@
-export default function PageApp() {
+import { useState, useEffect } from 'react';
+import { defaultContent } from './content';
+
+const API_BASE = 'https://api.taplab.in';
+
+export default function PageApp({ slug }: { slug: string }) {
+  const [content, setContent] = useState<Record<string, string>>(defaultContent);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/page/${slug}/content`)
+      .then((r) => r.json())
+      .then((data) => setContent({ ...defaultContent, ...data }))
+      .catch(() => {});
+  }, [slug]);
+
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-indigo-600 text-white p-6">
-        <h1 className="text-3xl font-bold">Template Page</h1>
-        <p className="text-sm mt-1">Edit src/App.tsx to customize this page</p>
+        <h1 className="text-3xl font-bold">{content.heading}</h1>
+        <p className="text-sm mt-1">{content.subheading}</p>
       </header>
       <section className="p-6">
         <div className="bg-white rounded-xl shadow p-6 max-w-2xl mx-auto">
           <h2 className="text-xl font-semibold mb-4">Welcome to TapLab!</h2>
-          <p className="text-gray-600">
-            This is a template for creating business pages. Start building your custom UI here.
-          </p>
+          <p className="text-gray-600">{content.body}</p>
         </div>
       </section>
     </main>
