@@ -5,7 +5,6 @@ dotenv.config();
 
 // Make Razorpay optional for development
 const RAZORPAY_ENABLED = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
-console.log('[Razorpay] enabled:', RAZORPAY_ENABLED, '| key prefix:', process.env.RAZORPAY_KEY_ID?.slice(0, 12));
 
 export const razorpay = RAZORPAY_ENABLED
   ? new Razorpay({
