@@ -8,6 +8,7 @@ export default function AddBusiness() {
   const [formData, setFormData] = useState({
     businessName: '',
     businessSlug: '',
+    ownerEmail: '',
     pricingAmount: 999,
     billingCycle: 'monthly' as 'monthly' | 'yearly',
     freeTrialEnabled: false,
@@ -15,7 +16,7 @@ export default function AddBusiness() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [paymentLink, setPaymentLink] = useState('');
+  const [result, setResult] = useState<{ paymentLink: string; inviteLink: string | null } | null>(null);
 
   const handleSlugInput = (val: string) => {
     const formatted = val
@@ -42,7 +43,7 @@ export default function AddBusiness() {
       }
 
       const data = await res.json();
-      setPaymentLink(data.paymentLink);
+      setResult({ paymentLink: data.paymentLink, inviteLink: data.inviteLink ?? null });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -50,56 +51,76 @@ export default function AddBusiness() {
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(paymentLink);
-  };
-
-  if (paymentLink) {
+  if (result) {
     return (
       <Layout>
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-green-900 mb-4">
-                ✅ Business Created!
-              </h2>
-              <p className="text-sm text-green-700 mb-4">
-                Share this payment link with the business owner:
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={paymentLink}
-                  readOnly
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white"
-                />
-                <button
-                  onClick={copyToClipboard}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  Copy
-                </button>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-5">
+              <h2 className="text-xl font-semibold text-green-900">✅ Business Created!</h2>
+
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Payment Link</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={result.paymentLink}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                  />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(result.paymentLink)}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                  >
+                    Copy
+                  </button>
+                </div>
               </div>
-              <div className="mt-6 flex gap-3">
+
+              {result.inviteLink && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Portal Invite Link</p>
+                  <p className="text-xs text-gray-500 mb-1">
+                    Share this with the owner — they click it to set their password and log in.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={result.inviteLink}
+                      readOnly
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                    />
+                    <button
+                      onClick={() => navigator.clipboard.writeText(result.inviteLink!)}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => navigate('/businesses')}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm"
                 >
                   View All Businesses
                 </button>
                 <button
                   onClick={() => {
-                    setPaymentLink('');
+                    setResult(null);
                     setFormData({
                       businessName: '',
                       businessSlug: '',
+                      ownerEmail: '',
                       pricingAmount: 999,
                       billingCycle: 'monthly',
                       freeTrialEnabled: false,
                       trialDurationDays: 7,
                     });
                   }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
                 >
                   Add Another
                 </button>
@@ -147,6 +168,22 @@ export default function AddBusiness() {
               />
               <p className="mt-1 text-xs text-gray-500">
                 Example: pizza_palace, coffee_house
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Owner Email (optional)
+              </label>
+              <input
+                type="email"
+                value={formData.ownerEmail}
+                onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="owner@business.com"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                If provided, creates a portal account and generates an invite link.
               </p>
             </div>
 

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { getAuth } from 'firebase-admin/auth';
 import { db } from '../firestore.js';
 import { BusinessDocument } from '../types.js';
 
@@ -18,6 +19,41 @@ export async function pageRoute(app: FastifyInstance) {
 
     const content = (doc.data() as BusinessDocument).content ?? {};
     return reply.send(content);
+  });
+
+  // Owner-authenticated endpoint — update editable content for a page
+  app.put<{ Params: { slug: string } }>('/page/:slug/content', async (req, reply) => {
+    const { slug } = req.params;
+
+    // Verify Firebase token
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return reply.status(401).send({ error: 'Missing authorization header' });
+    }
+
+    let uid: string;
+    try {
+      const decoded = await getAuth().verifyIdToken(authHeader.slice(7));
+      uid = decoded.uid;
+    } catch {
+      return reply.status(401).send({ error: 'Invalid or expired token' });
+    }
+
+    // Verify ownership
+    const doc = await db.collection('businesses').doc(slug).get();
+    if (!doc.exists) {
+      return reply.status(404).send({ error: 'Not found' });
+    }
+
+    const biz = doc.data() as BusinessDocument;
+    if (biz.ownerUid !== uid) {
+      return reply.status(403).send({ error: 'Forbidden' });
+    }
+
+    const updates = req.body as Record<string, string>;
+    await doc.ref.update({ content: updates });
+
+    return reply.send({ ok: true });
   });
 
   app.get<{ Params: { businessSlug: string } }>(

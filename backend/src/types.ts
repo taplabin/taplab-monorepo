@@ -26,6 +26,10 @@ export interface BusinessDocument {
   razorpaySubscriptionId: string | null;
   razorpayPaymentLink: string | null;
 
+  // Customer portal owner
+  ownerEmail: string | null;
+  ownerUid: string | null;
+
   // Editable page content (key-value text fields)
   content?: Record<string, string>;
 

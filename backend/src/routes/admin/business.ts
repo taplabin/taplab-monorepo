@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { getAuth } from 'firebase-admin/auth';
 import { db } from '../../firestore.js';
 import { BusinessDocument } from '../../types.js';
 import { createSubscriptionAndLink } from '../../razorpay.js';
@@ -9,6 +10,7 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     const {
       businessName,
       businessSlug,
+      ownerEmail,
       pricingAmount,
       billingCycle,
       freeTrialEnabled,
@@ -41,6 +43,27 @@ export async function adminBusinessRoute(app: FastifyInstance) {
       const { razorpaySubscriptionId, paymentLinkUrl } =
         await createSubscriptionAndLink(businessName, pricingAmount, billingCycle);
 
+      // Create Firebase Auth user for the business owner (if email provided)
+      let ownerUid: string | null = null;
+      let inviteLink: string | null = null;
+
+      if (ownerEmail) {
+        try {
+          const userRecord = await getAuth().createUser({ email: ownerEmail });
+          ownerUid = userRecord.uid;
+          inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+        } catch (authError: any) {
+          // If user already exists, fetch their UID and generate a new invite link
+          if (authError?.code === 'auth/email-already-exists') {
+            const existing = await getAuth().getUserByEmail(ownerEmail);
+            ownerUid = existing.uid;
+            inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+          } else {
+            throw authError;
+          }
+        }
+      }
+
       // Use Firestore transaction to ensure slug uniqueness
       await db.runTransaction(async (tx) => {
         const ref = db.collection('businesses').doc(businessSlug);
@@ -50,10 +73,11 @@ export async function adminBusinessRoute(app: FastifyInstance) {
           throw new Error(`Slug '${businessSlug}' is already taken`);
         }
 
-        // Create Firestore document with Razorpay data
         const businessData: BusinessDocument = {
           businessName,
           businessSlug,
+          ownerEmail: ownerEmail ?? null,
+          ownerUid,
           subscriptionStatus: 'inactive',
           freeTrialEnabled: freeTrialEnabled ?? false,
           trialStartDate: null,
@@ -77,6 +101,7 @@ export async function adminBusinessRoute(app: FastifyInstance) {
         slug: businessSlug,
         paymentLink: paymentLinkUrl,
         razorpaySubscriptionId,
+        inviteLink,
       });
     } catch (error: any) {
       const message = error?.message ?? error?.error?.description ?? JSON.stringify(error);
