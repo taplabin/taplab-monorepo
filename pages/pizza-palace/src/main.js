@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import tailwindStyles from './styles.css?inline';
 const TAG_NAME = 'taplab-page-pizza-palace';
+const SLUG = 'pizza_palace';
 class TaplabPagePizzaPalace extends HTMLElement {
     connectedCallback() {
         const shadow = this.attachShadow({ mode: 'open' });
@@ -13,7 +14,7 @@ class TaplabPagePizzaPalace extends HTMLElement {
         // Mount React into the shadow DOM
         const container = document.createElement('div');
         shadow.appendChild(container);
-        createRoot(container).render(_jsx(App, {}));
+        createRoot(container).render(_jsx(App, { slug: SLUG }));
     }
 }
 // Guard: only register once (handles hot-reload and duplicate script injection)

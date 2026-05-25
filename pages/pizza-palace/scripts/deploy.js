@@ -6,6 +6,7 @@ import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
+import { defaultContent } from '../src/content.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../../backend/.env') });
@@ -82,12 +83,17 @@ const doc = await docRef.get();
 if (!doc.exists) {
     throw new Error(`Business document not found in Firestore for slug: ${slug}`);
 }
+// Merge defaultContent with existing content — preserves customer edits,
+// adds any new keys introduced in this deploy
+const existingContent = (doc.data()?.content ?? {});
+const mergedContent = { ...defaultContent, ...existingContent };
 await docRef.update({
     pageJsUrl: pageUrl,
     componentTagName: tagName,
     pageVersion: hash,
     pageStatus: 'deployed',
     lastDeployedAt: new Date(),
+    content: mergedContent,
 });
 console.log(`\n✅ Deploy complete!`);
 console.log(`   Slug:    ${slug}`);
