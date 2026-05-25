@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 import { pageRoute } from './routes/page.js';
 import { webhookRoute } from './routes/webhook.js';
+import { portalRoute } from './routes/portal.js';
 import { adminBusinessRoute } from './routes/admin/business.js';
 import { adminPaymentsRoute } from './routes/admin/payments.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
@@ -39,6 +40,7 @@ await app.register(cors, {
 // Public routes
 await app.register(pageRoute);
 await app.register(webhookRoute);
+await app.register(portalRoute);
 
 // Admin routes (protected)
 await app.register(async (adminApp) => {
