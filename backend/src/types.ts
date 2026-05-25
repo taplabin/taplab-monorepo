@@ -32,6 +32,7 @@ export interface BusinessDocument {
 
   // Editable page content (key-value text fields)
   content?: Record<string, string>;
+  contentKeys?: string[];
 
   // Meta
   createdAt: Timestamp;

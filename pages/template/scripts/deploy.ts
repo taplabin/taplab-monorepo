@@ -103,6 +103,7 @@ if (!doc.exists) {
 // adds any new keys introduced in this deploy
 const existingContent = (doc.data()?.content ?? {}) as Record<string, string>;
 const mergedContent = { ...defaultContent, ...existingContent };
+const contentKeys = Object.keys(defaultContent);
 
 await docRef.update({
   pageJsUrl: pageUrl,
@@ -111,6 +112,7 @@ await docRef.update({
   pageStatus: 'deployed',
   lastDeployedAt: new Date(),
   content: mergedContent,
+  contentKeys,
 });
 
 console.log(`\n✅ Deploy complete!`);

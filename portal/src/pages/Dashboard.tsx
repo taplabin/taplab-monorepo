@@ -10,6 +10,7 @@ interface BusinessData {
   subscriptionStatus: 'active' | 'inactive';
   razorpayPaymentLink: string | null;
   content: Record<string, string>;
+  contentKeys: string[];
 }
 
 function toLabel(key: string): string {
@@ -168,7 +169,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <p className="text-sm font-medium text-gray-700 mb-4">Edit Page Content</p>
           <div className="space-y-4">
-            {Object.keys(content).map((key) => (
+            {(business?.contentKeys ?? Object.keys(content)).map((key) => (
               <div key={key}>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
                   {toLabel(key)}

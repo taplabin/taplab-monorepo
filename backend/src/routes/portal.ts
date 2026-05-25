@@ -36,6 +36,7 @@ export async function portalRoute(app: FastifyInstance) {
       subscriptionStatus: biz.subscriptionStatus,
       razorpayPaymentLink: biz.razorpayPaymentLink,
       content: biz.content ?? {},
+      contentKeys: biz.contentKeys ?? Object.keys(biz.content ?? {}),
     });
   });
 }
