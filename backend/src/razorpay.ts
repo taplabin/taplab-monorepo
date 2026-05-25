@@ -61,25 +61,16 @@ export async function createSubscriptionAndLink(
 
   const planId = await getOrCreatePlan(amount, billingCycle);
 
-  const subscription = await razorpay.subscriptions.create({
+  const subscription: any = await razorpay.subscriptions.create({
     plan_id: planId,
     total_count: billingCycle === 'monthly' ? 120 : 10, // max 10 years
     quantity: 1,
     notes: { businessName },
   });
 
-  const paymentLink: any = await razorpay.paymentLink.create({
-    currency: 'INR',
-    description: `TapLab page subscription — ${businessName}`,
-    subscription_id: subscription.id,
-    callback_url: 'https://taplab.in/payment-success',
-    callback_method: 'get',
-    reminder_enable: true,
-    notify: { sms: false, email: false }, // admin shares manually
-  } as any);
-
+  // Subscriptions have their own hosted payment page — no separate payment link needed
   return {
     razorpaySubscriptionId: subscription.id,
-    paymentLinkUrl: paymentLink.short_url,
+    paymentLinkUrl: subscription.short_url,
   };
 }
