@@ -7,6 +7,7 @@ export async function pageRoute(app: FastifyInstance) {
   app.get<{ Params: { slug: string } }>('/page/:slug/content', async (req, reply) => {
     const { slug } = req.params;
 
+    reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Cache-Control', 'public, max-age=30');
 
     const doc = await db.collection('businesses').doc(slug).get();
@@ -24,7 +25,7 @@ export async function pageRoute(app: FastifyInstance) {
     async (req, reply) => {
       const { businessSlug } = req.params;
 
-      // Short-lived cache for this response (60s)
+      reply.header('Access-Control-Allow-Origin', '*');
       reply.header('Cache-Control', 'public, max-age=60');
 
       const doc = await db.collection('businesses').doc(businessSlug).get();
