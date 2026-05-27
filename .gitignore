@@ -70,3 +70,10 @@ vite.config.ts.timestamp-*
 
 # Claude Code
 .claude/
+
+# Individual page projects (ephemeral workspaces — template is the only tracked page)
+pages/*/
+!pages/template/
+!pages/template/**
+pages/template/node_modules/
+pages/template/dist/
