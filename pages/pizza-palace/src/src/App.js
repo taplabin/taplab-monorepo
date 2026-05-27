@@ -1,4 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-export default function PageApp() {
-    return (_jsxs("main", { className: "min-h-screen bg-gray-50 flex flex-col", children: [_jsxs("header", { className: "bg-indigo-600 text-white p-6", children: [_jsx("h1", { className: "text-3xl font-bold", children: "Template Page" }), _jsx("p", { className: "text-sm mt-1", children: "Edit src/App.tsx to customize this page" })] }), _jsx("section", { className: "p-6", children: _jsxs("div", { className: "bg-white rounded-xl shadow p-6 max-w-2xl mx-auto", children: [_jsx("h2", { className: "text-xl font-semibold mb-4", children: "Welcome to TapLab!" }), _jsx("p", { className: "text-gray-600", children: "This is a template for creating business pages. Start building your custom UI here." })] }) })] }));
-}
