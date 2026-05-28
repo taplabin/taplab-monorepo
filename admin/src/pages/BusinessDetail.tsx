@@ -1,3 +1,4 @@
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
@@ -26,6 +27,68 @@ interface Business {
 interface PaymentsData {
   payments: any[];
   message?: string;
+}
+
+function RefreshLinkButton({
+  label,
+  onFetch,
+}: {
+  label: string;
+  onFetch: () => Promise<string>;
+}) {
+  const [link, setLink] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [copied, setCopied] = React.useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    setError(null);
+    setLink(null);
+    try {
+      setLink(await onFetch());
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!link) return;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50"
+      >
+        {loading ? 'Fetching...' : label}
+      </button>
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {link && (
+        <div className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={link}
+            readOnly
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-mono"
+          />
+          <button
+            onClick={handleCopy}
+            className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function BusinessDetail() {
@@ -95,6 +158,23 @@ export default function BusinessDetail() {
             </div>
           </div>
 
+          {/* Owner Invite */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Owner Invite Link</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Get a fresh Firebase password-set link to send to the business owner. Valid for 1 hour.
+            </p>
+            <RefreshLinkButton
+              label="Get Invite Link"
+              onFetch={async () => {
+                const res = await adminFetch(`/api/admin/business/${slug}/refresh-invite`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || data.message || data.error || 'Failed');
+                return data.inviteLink;
+              }}
+            />
+          </div>
+
           {/* Subscription Info */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -120,7 +200,7 @@ export default function BusinessDetail() {
                   <dt className="text-sm font-medium text-gray-500 mb-2">
                     Payment Link
                   </dt>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mb-3">
                     <input
                       type="text"
                       value={business.razorpayPaymentLink}
@@ -134,6 +214,15 @@ export default function BusinessDetail() {
                       Copy
                     </button>
                   </div>
+                  <RefreshLinkButton
+                    label="Refresh Payment Link"
+                    onFetch={async () => {
+                      const res = await adminFetch(`/api/admin/business/${slug}/refresh-payment-link`, { method: 'POST' });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.detail || data.message || data.error || 'Failed');
+                      return data.paymentLink;
+                    }}
+                  />
                 </div>
               )}
             </dl>

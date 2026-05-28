@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { getAuth } from 'firebase-admin/auth';
 import { db } from '../../firestore.js';
 import { BusinessDocument } from '../../types.js';
-import { createSubscriptionAndLink } from '../../razorpay.js';
+import { createSubscriptionAndLink, razorpay } from '../../razorpay.js';
 
 export async function adminBusinessRoute(app: FastifyInstance) {
   // Create new business
@@ -166,6 +166,49 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     } catch (error) {
       app.log.error(error);
       return reply.status(500).send({ error: 'Failed to fetch businesses' });
+    }
+  });
+
+  // Refresh Firebase password reset link
+  app.post<{ Params: { slug: string } }>('/business/:slug/refresh-invite', async (req, reply) => {
+    const { slug } = req.params;
+    try {
+      const doc = await db.collection('businesses').doc(slug).get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+
+      const ownerEmail = (doc.data() as any)?.ownerEmail;
+      if (!ownerEmail) return reply.status(400).send({ error: 'No owner email on this business' });
+
+      const inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+      return reply.send({ inviteLink });
+    } catch (error: any) {
+      app.log.error(error);
+      return reply.status(500).send({ error: 'Failed to generate invite link', detail: error?.message });
+    }
+  });
+
+  // Refresh Razorpay payment link
+  app.post<{ Params: { slug: string } }>('/business/:slug/refresh-payment-link', async (req, reply) => {
+    const { slug } = req.params;
+    try {
+      const ref = db.collection('businesses').doc(slug);
+      const doc = await ref.get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+
+      const data = doc.data() as any;
+      const subscriptionId = data?.razorpaySubscriptionId;
+      if (!subscriptionId) return reply.status(400).send({ error: 'No Razorpay subscription on this business' });
+
+      if (!razorpay) return reply.status(400).send({ error: 'Razorpay not configured' });
+
+      const subscription = await razorpay.subscriptions.fetch(subscriptionId) as any;
+      const paymentLink = subscription.short_url;
+
+      await ref.update({ razorpayPaymentLink: paymentLink });
+      return reply.send({ paymentLink });
+    } catch (error: any) {
+      app.log.error(error);
+      return reply.status(500).send({ error: 'Failed to refresh payment link', detail: error?.message });
     }
   });
 
