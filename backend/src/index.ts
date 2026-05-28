@@ -17,6 +17,8 @@ app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, 
   // For webhook routes, keep raw Buffer; for others, parse JSON
   if (req.url?.startsWith('/webhooks/')) {
     done(null, body);
+  } else if (!body || body.length === 0) {
+    done(null, {});
   } else {
     try {
       const json = JSON.parse(body.toString());
