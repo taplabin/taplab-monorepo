@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import Login from './pages/Login';
 import Overview from './pages/Overview';
@@ -20,8 +22,21 @@ function LoadingSpinner() {
 
 export default function App() {
   const [user, loading] = useAuthState(auth);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  if (loading) return <LoadingSpinner />;
+  useEffect(() => {
+    if (!user) { setIsAdmin(null); return; }
+    user.getIdTokenResult().then((result) => {
+      if (result.claims.admin) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+        signOut(auth);
+      }
+    });
+  }, [user]);
+
+  if (loading || (user && isAdmin === null)) return <LoadingSpinner />;
   if (!user) return <Login />;
 
   return (
