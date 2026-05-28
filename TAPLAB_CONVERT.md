@@ -35,14 +35,19 @@ import { defaultContent } from './content';
 const API_BASE = 'https://api.taplab.in';
 
 export default function App({ slug }: { slug: string }) {
-  const [content, setContent] = useState<Record<string, string>>(defaultContent);
+  const [content, setContent] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/page/${slug}/content`)
       .then((r) => r.json())
       .then((data) => setContent({ ...defaultContent, ...data }))
-      .catch(() => {});
+      .catch(() => setContent(defaultContent));
   }, [slug]);
+
+  // Do NOT initialize state with defaultContent — that causes a flash of stale
+  // bundle content before the fetch resolves. Start null, render nothing until
+  // fresh data arrives. defaultContent is only used as a fallback on fetch error.
+  if (!content) return null;
 
   // render using content.some_key — never hardcode visible text
   return ( ... );
@@ -54,11 +59,11 @@ If the page has structured list data (e.g. menu items), add `useMemo` to parse i
 ```tsx
 import { useState, useEffect, useMemo } from 'react';
 
-// inside the component:
+// inside the component (use optional chaining — content is null before fetch resolves):
 const menuData = useMemo(() => {
-  try { return JSON.parse(content.menu_data); }
+  try { return JSON.parse(content?.menu_data ?? '{}'); }
   catch { return {}; }
-}, [content.menu_data]);
+}, [content?.menu_data]);
 ```
 
 ---
@@ -169,3 +174,4 @@ Paste this guide, then add:
 - [ ] No imports from `next/*`, `next/navigation`, etc.
 - [ ] Tailwind classes only — no CSS modules, no styled-components
 - [ ] `useEffect` fetches from `https://api.taplab.in/page/${slug}/content`
+- [ ] `useState` initializes to `null`, not `defaultContent` — `if (!content) return null` guards the render
