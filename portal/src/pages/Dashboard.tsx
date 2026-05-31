@@ -1,127 +1,103 @@
-import { useEffect, useState } from 'react';
-import { signOut } from 'firebase/auth';
+import { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { auth } from '../lib/firebase';
-import { portalFetch } from '../lib/api';
+import { useBusiness } from '../context/BusinessContext';
+import Layout from '../components/Layout';
 
-interface BusinessData {
-  slug: string;
-  businessName: string;
-  subscriptionStatus: 'active' | 'inactive';
-  razorpayPaymentLink: string | null;
-  content: Record<string, string>;
-  contentKeys: string[];
+function getDisplayStatus(business: NonNullable<ReturnType<typeof useBusiness>['business']>) {
+  if (business.subscriptionStatus === 'active') return 'active';
+  if (business.subscriptionStatus === 'cancelled') return 'cancelled';
+  if (business.freeTrialEnabled && business.trialStartDate) {
+    const trialEnd = business.trialStartDate.seconds * 1000 + business.trialDurationDays * 24 * 60 * 60 * 1000;
+    if (Date.now() < trialEnd) return 'trial';
+  }
+  return 'inactive';
 }
 
-function toLabel(key: string): string {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+function daysRemaining(seconds: number, durationDays: number): number {
+  const end = seconds * 1000 + durationDays * 24 * 60 * 60 * 1000;
+  return Math.max(0, Math.ceil((end - Date.now()) / (1000 * 60 * 60 * 24)));
+}
+
+function formatDate(seconds: number): string {
+  return new Date(seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function Dashboard() {
-  const [business, setBusiness] = useState<BusinessData | null>(null);
-  const [content, setContent] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const pageUrl = business ? `https://taplab.in/${business.slug}` : '';
-
-  useEffect(() => {
-    portalFetch('/api/portal/me')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setBusiness(data);
-        setContent(data.content);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSave = async () => {
-    if (!business) return;
-    setSaving(true);
-    setSaveMsg('');
-    try {
-      const res = await portalFetch(`/api/page/${business.slug}/content`, {
-        method: 'PUT',
-        body: JSON.stringify(content),
-      });
-      if (!res.ok) throw new Error('Failed to save');
-      setSaveMsg('Saved! Your page will update within 30 seconds.');
-    } catch {
-      setSaveMsg('Save failed. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { business, loading, error } = useBusiness();
+  const qrRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-400 text-sm">Loading your page...</p>
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-400 text-sm">Loading...</p>
+        </div>
+      </Layout>
     );
   }
 
-  if (error) {
+  if (error || !business) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center">
-          <p className="text-red-600 text-sm">{error}</p>
-          <button onClick={() => signOut(auth)} className="mt-4 text-indigo-600 text-sm underline">
-            Sign out
-          </button>
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-red-500 text-sm">{error || 'Failed to load business data.'}</p>
         </div>
-      </div>
+      </Layout>
     );
   }
+
+  const status = getDisplayStatus(business);
+  const pageUrl = `https://taplab.in/${business.slug}`;
+
+  const statusConfig = {
+    active: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', label: 'Active', sub: 'Your page is live.' },
+    trial: {
+      bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', label: 'Free Trial',
+      sub: business.trialStartDate
+        ? `${daysRemaining(business.trialStartDate.seconds, business.trialDurationDays)} days remaining`
+        : '',
+    },
+    cancelled: {
+      bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', label: 'Cancelled',
+      sub: business.subscriptionEndsAt
+        ? `Page live until ${formatDate(business.subscriptionEndsAt.seconds)}`
+        : 'Your page will go offline soon.',
+    },
+    inactive: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Inactive', sub: 'Your page is not visible until payment is complete.' },
+  }[status];
+
+  const handleDownloadQR = () => {
+    const svg = qrRef.current?.querySelector('svg');
+    if (!svg) return;
+    const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${business.slug}-qr.svg`;
+    a.click();
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">{business?.businessName}</h1>
-            <p className="text-xs text-gray-500">TapLab Portal</p>
-          </div>
-          <button
-            onClick={() => signOut(auth)}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Sign out
-          </button>
+    <Layout>
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Overview of your TapLab page</p>
         </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
         {/* Subscription status */}
-        <div className={`rounded-xl p-5 border ${
-          business?.subscriptionStatus === 'active'
-            ? 'bg-green-50 border-green-200'
-            : 'bg-yellow-50 border-yellow-200'
-        }`}>
-          <div className="flex items-center justify-between">
+        <div className={`rounded-xl p-5 border ${statusConfig.bg} ${statusConfig.border}`}>
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-gray-700">Subscription</p>
-              <p className={`text-lg font-semibold mt-0.5 ${
-                business?.subscriptionStatus === 'active' ? 'text-green-700' : 'text-yellow-700'
-              }`}>
-                {business?.subscriptionStatus === 'active' ? 'Active' : 'Inactive'}
-              </p>
-              {business?.subscriptionStatus === 'inactive' && (
-                <p className="text-xs text-yellow-600 mt-1">Your page is not visible until payment is complete.</p>
-              )}
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Subscription</p>
+              <p className={`text-lg font-semibold ${statusConfig.text}`}>{statusConfig.label}</p>
+              <p className={`text-sm mt-0.5 ${statusConfig.text} opacity-80`}>{statusConfig.sub}</p>
             </div>
-            {business?.subscriptionStatus === 'inactive' && business.razorpayPaymentLink && (
+            {status === 'inactive' && business.razorpayPaymentLink && (
               <a
                 href={business.razorpayPaymentLink}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700"
+                className="flex-shrink-0 bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 Subscribe Now
               </a>
@@ -129,77 +105,47 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Page link + QR code */}
+        {/* Page URL */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm font-medium text-gray-700 mb-3">Your Page</p>
-          <div className="flex gap-2 mb-5">
+          <p className="text-sm font-medium text-gray-700 mb-3">Your Page URL</p>
+          <div className="flex gap-2">
             <input
               type="text"
               value={pageUrl}
               readOnly
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-700"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 focus:outline-none"
             />
             <button
               onClick={() => navigator.clipboard.writeText(pageUrl)}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700"
+              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Copy
             </button>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <QRCodeSVG value={pageUrl} size={160} />
-            <button
-              onClick={() => {
-                const svg = document.querySelector('svg');
-                if (!svg) return;
-                const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `${business?.slug}-qr.svg`;
-                a.click();
-              }}
-              className="text-sm text-indigo-600 hover:underline"
-            >
-              Download QR Code
-            </button>
-          </div>
+          <a
+            href={pageUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-indigo-500 hover:underline mt-2 inline-block"
+          >
+            Open page →
+          </a>
         </div>
 
-        {/* Content editor */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm font-medium text-gray-700 mb-4">Edit Page Content</p>
-          <div className="space-y-4">
-            {(business?.contentKeys ?? Object.keys(content)).map((key) => (
-              <div key={key}>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
-                  {toLabel(key)}
-                </label>
-                <input
-                  type="text"
-                  value={content[key]}
-                  onChange={(e) => setContent({ ...content, [key]: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            ))}
+        {/* QR Code */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col items-center gap-4">
+          <p className="self-start text-sm font-medium text-gray-700">QR Code</p>
+          <div ref={qrRef}>
+            <QRCodeSVG value={pageUrl} size={180} />
           </div>
-
-          {saveMsg && (
-            <p className={`text-sm mt-4 ${saveMsg.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
-              {saveMsg}
-            </p>
-          )}
-
           <button
-            onClick={handleSave}
-            disabled={saving}
-            className="mt-5 w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleDownloadQR}
+            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            Download QR Code
           </button>
         </div>
-
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }

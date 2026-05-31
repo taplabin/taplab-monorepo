@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
+import { BusinessProvider } from './context/BusinessContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Editor from './pages/Editor';
+import Billing from './pages/Billing';
+import Settings from './pages/Settings';
 
 export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -22,16 +26,23 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" replace /> : <Login />}
-        />
-        <Route
-          path="/"
-          element={user ? <Dashboard /> : <Navigate to="/login" replace />}
-        />
-      </Routes>
+      {user ? (
+        <BusinessProvider>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/editor" element={<Editor />} />
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BusinessProvider>
+      ) : (
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      )}
     </BrowserRouter>
   );
 }
