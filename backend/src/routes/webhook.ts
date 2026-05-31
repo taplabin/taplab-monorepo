@@ -31,6 +31,7 @@ export async function webhookRoute(app: FastifyInstance) {
 
     // Extract subscription ID from different event types
     const subscriptionId =
+      event.payload?.subscription?.entity?.id ||
       event.payload?.payment?.entity?.subscription_id ||
       event.payload?.invoice?.entity?.subscription_id ||
       event.payload?.payment_link?.entity?.subscription_id ||
@@ -111,6 +112,32 @@ async function handleWebhookEvent(
 
     case 'payment_link.cancelled':
       app.log.info({ subscriptionId }, 'Payment link cancelled');
+      break;
+
+    // Subscription cancelled — keep page live until current_end
+    case 'subscription.cancelled': {
+      const currentEnd = event.payload?.subscription?.entity?.current_end;
+      const subscriptionEndsAt = currentEnd
+        ? new Date(currentEnd * 1000)
+        : null;
+      await docRef.update({
+        subscriptionStatus: 'cancelled',
+        subscriptionEndsAt,
+      });
+      app.log.info({ subscriptionId, subscriptionEndsAt }, 'Subscription cancelled - page live until end date');
+      break;
+    }
+
+    // Subscription paused
+    case 'subscription.paused':
+      await docRef.update({ subscriptionStatus: 'inactive' });
+      app.log.info({ subscriptionId }, 'Subscription paused - inactive');
+      break;
+
+    // Subscription resumed
+    case 'subscription.resumed':
+      await docRef.update({ subscriptionStatus: 'active', subscriptionEndsAt: null });
+      app.log.info({ subscriptionId }, 'Subscription resumed - active');
       break;
 
     default:

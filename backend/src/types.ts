@@ -6,7 +6,8 @@ export interface BusinessDocument {
   businessSlug: string;
 
   // Subscription
-  subscriptionStatus: 'active' | 'inactive';
+  subscriptionStatus: 'active' | 'inactive' | 'cancelled';
+  subscriptionEndsAt: Timestamp | null;
   freeTrialEnabled: boolean;
   trialStartDate: Timestamp | null;
   trialDurationDays: number;
@@ -36,6 +37,7 @@ export interface BusinessDocument {
 
   // Meta
   createdAt: Timestamp;
+  contentUpdatedAt?: Timestamp;
 }
 
 export interface WebhookEvent {

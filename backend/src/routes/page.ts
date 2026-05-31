@@ -51,7 +51,7 @@ export async function pageRoute(app: FastifyInstance) {
     }
 
     const updates = req.body as Record<string, string>;
-    await doc.ref.update({ content: updates });
+    await doc.ref.update({ content: updates, contentUpdatedAt: new Date() });
 
     return reply.send({ ok: true });
   });
@@ -88,22 +88,22 @@ export async function pageRoute(app: FastifyInstance) {
 }
 
 function checkIsActive(biz: BusinessDocument): boolean {
-  // Check if subscription is active
-  if (biz.subscriptionStatus === 'active') {
-    return true;
+  if (biz.subscriptionStatus === 'active') return true;
+
+  // Cancelled but still within paid period — keep page live
+  if (biz.subscriptionStatus === 'cancelled' && biz.subscriptionEndsAt) {
+    const endsAt = biz.subscriptionEndsAt instanceof Date
+      ? biz.subscriptionEndsAt
+      : (biz.subscriptionEndsAt as any).toDate();
+    if (Date.now() < endsAt.getTime()) return true;
   }
 
-  // Check if in free trial period
-  if (
-    biz.freeTrialEnabled === true &&
-    biz.trialStartDate !== null
-  ) {
-    const trialEndTime = biz.trialStartDate.toDate().getTime() +
+  // Free trial
+  if (biz.freeTrialEnabled === true && biz.trialStartDate !== null) {
+    const trialEndTime =
+      biz.trialStartDate.toDate().getTime() +
       biz.trialDurationDays * 24 * 60 * 60 * 1000;
-
-    if (Date.now() < trialEndTime) {
-      return true;
-    }
+    if (Date.now() < trialEndTime) return true;
   }
 
   return false;
