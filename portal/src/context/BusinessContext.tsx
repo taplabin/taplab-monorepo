@@ -15,6 +15,7 @@ export interface BusinessData {
   razorpayPaymentLink: string | null;
   content: Record<string, string>;
   contentKeys: string[];
+  pageViews: number;
 }
 
 interface BusinessContextType {

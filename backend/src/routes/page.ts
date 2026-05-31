@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { getAuth } from 'firebase-admin/auth';
+import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firestore.js';
 import { BusinessDocument } from '../types.js';
 
@@ -18,6 +19,10 @@ export async function pageRoute(app: FastifyInstance) {
     }
 
     const content = (doc.data() as BusinessDocument).content ?? {};
+
+    // Fire-and-forget — don't delay the response
+    doc.ref.update({ pageViews: FieldValue.increment(1) }).catch(() => {});
+
     return reply.send(content);
   });
 
