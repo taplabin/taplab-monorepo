@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useBusiness } from '../context/BusinessContext';
 import { portalFetch } from '../lib/api';
 import Layout from '../components/Layout';
+import { PageSkeleton } from '../components/Skeleton';
 
 interface BillingData {
   plan: { amount: number; cycle: 'monthly' | 'yearly' };
@@ -36,13 +37,7 @@ export default function Billing() {
   }, [business]);
 
   if (bizLoading || loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-400 text-sm">Loading...</p>
-        </div>
-      </Layout>
-    );
+    return <Layout><PageSkeleton /></Layout>;
   }
 
   if (error) {

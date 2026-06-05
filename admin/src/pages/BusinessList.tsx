@@ -18,6 +18,7 @@ interface Business {
   pricingAmount: number;
   billingCycle: 'monthly' | 'yearly';
   createdAt: { seconds: number };
+  pageViews?: number;
 }
 
 type FilterTab = DisplayStatus | 'all';
@@ -72,7 +73,16 @@ export default function BusinessList() {
     return base;
   }, [enriched]);
 
-  if (isLoading) return <Layout><div className="text-center py-12">Loading...</div></Layout>;
+  if (isLoading) return (
+    <Layout>
+      <div className="px-4 sm:px-6 lg:px-8 animate-pulse space-y-4">
+        <div className="h-8 bg-gray-200 rounded w-40" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-12 bg-gray-100 rounded-lg" />
+        ))}
+      </div>
+    </Layout>
+  );
   if (error) return <Layout><div className="text-center py-12 text-red-600">Error loading businesses: {error.message}</div></Layout>;
 
   return (
@@ -133,13 +143,14 @@ export default function BusinessList() {
                       <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Subscription</th>
                       <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Page</th>
                       <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Billing</th>
+                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Views</th>
                       <th className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
                     {filtered.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
+                        <td colSpan={7} className="py-10 text-center text-sm text-gray-400">
                           No businesses in this category.
                         </td>
                       </tr>
@@ -174,6 +185,9 @@ export default function BusinessList() {
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                             ₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {(business.pageViews ?? 0).toLocaleString('en-IN')}
                           </td>
                           <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                             <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 hover:text-indigo-900">

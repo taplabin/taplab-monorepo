@@ -3,6 +3,7 @@ import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, signOu
 import { auth } from '../lib/firebase';
 import { useBusiness } from '../context/BusinessContext';
 import Layout from '../components/Layout';
+import { PageSkeleton } from '../components/Skeleton';
 
 export default function Settings() {
   const { business, loading, error } = useBusiness();
@@ -51,13 +52,7 @@ export default function Settings() {
   };
 
   if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-400 text-sm">Loading...</p>
-        </div>
-      </Layout>
-    );
+    return <Layout><PageSkeleton /></Layout>;
   }
 
   if (error || !business) {

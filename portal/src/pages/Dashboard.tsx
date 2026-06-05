@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useBusiness } from '../context/BusinessContext';
 import Layout from '../components/Layout';
+import { PageSkeleton } from '../components/Skeleton';
 
 function getDisplayStatus(business: NonNullable<ReturnType<typeof useBusiness>['business']>) {
   if (business.subscriptionStatus === 'active') return 'active';
@@ -27,13 +28,7 @@ export default function Dashboard() {
   const qrRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-400 text-sm">Loading...</p>
-        </div>
-      </Layout>
-    );
+    return <Layout><PageSkeleton /></Layout>;
   }
 
   if (error || !business) {

@@ -29,13 +29,7 @@ export async function webhookRoute(app: FastifyInstance) {
     const event = JSON.parse(rawBody.toString());
     const eventType = event.event as string;
 
-    // Extract subscription ID from different event types
-    const subscriptionId =
-      event.payload?.subscription?.entity?.id ||
-      event.payload?.payment?.entity?.subscription_id ||
-      event.payload?.invoice?.entity?.subscription_id ||
-      event.payload?.payment_link?.entity?.subscription_id ||
-      undefined;
+    const subscriptionId = event.payload?.subscription?.entity?.id as string | undefined;
 
     app.log.info({ eventType, subscriptionId }, 'Razorpay webhook received');
 
@@ -80,68 +74,30 @@ async function handleWebhookEvent(
 
   const docRef = query.docs[0].ref;
 
-  // Idempotent updates (Firestore update is safe to repeat)
   switch (eventType) {
-    // Payment Events - When payment is successful
-    case 'payment.captured':
-      await docRef.update({ subscriptionStatus: 'active' });
-      app.log.info({ subscriptionId }, 'Payment captured - subscription active');
+    case 'subscription.activated':
+    case 'subscription.charged':
+      await docRef.update({ subscriptionStatus: 'active', subscriptionEndsAt: null });
       break;
 
-    case 'payment.failed':
-      // Don't immediately deactivate - Razorpay retries
-      app.log.warn({ subscriptionId }, 'Payment failed - waiting for retries');
-      break;
-
-    // Invoice Events - Subscription billing
-    case 'invoice.paid':
-      await docRef.update({ subscriptionStatus: 'active' });
-      app.log.info({ subscriptionId }, 'Invoice paid - subscription active');
-      break;
-
-    case 'invoice.expired':
-      await docRef.update({ subscriptionStatus: 'inactive' });
-      app.log.info({ subscriptionId }, 'Invoice expired - subscription inactive');
-      break;
-
-    // Payment Link Events
-    case 'payment_link.paid':
-      await docRef.update({ subscriptionStatus: 'active' });
-      app.log.info({ subscriptionId }, 'Payment link paid - subscription active');
-      break;
-
-    case 'payment_link.cancelled':
-      app.log.info({ subscriptionId }, 'Payment link cancelled');
-      break;
-
-    // Subscription cancelled — keep page live until current_end
     case 'subscription.cancelled': {
       const currentEnd = event.payload?.subscription?.entity?.current_end;
-      const subscriptionEndsAt = currentEnd
-        ? new Date(currentEnd * 1000)
-        : null;
-      await docRef.update({
-        subscriptionStatus: 'cancelled',
-        subscriptionEndsAt,
-      });
-      app.log.info({ subscriptionId, subscriptionEndsAt }, 'Subscription cancelled - page live until end date');
+      const subscriptionEndsAt = currentEnd ? new Date(currentEnd * 1000) : null;
+      await docRef.update({ subscriptionStatus: 'cancelled', subscriptionEndsAt });
       break;
     }
 
-    // Subscription paused
+    case 'subscription.halted':
     case 'subscription.paused':
+    case 'subscription.completed':
       await docRef.update({ subscriptionStatus: 'inactive' });
-      app.log.info({ subscriptionId }, 'Subscription paused - inactive');
       break;
 
-    // Subscription resumed
     case 'subscription.resumed':
       await docRef.update({ subscriptionStatus: 'active', subscriptionEndsAt: null });
-      app.log.info({ subscriptionId }, 'Subscription resumed - active');
       break;
 
     default:
-      // Unhandled event type — ignore safely
       app.log.info({ eventType }, 'Unhandled webhook event type');
       break;
   }
