@@ -34,18 +34,18 @@ function getDisplayStatus(b: Business): DisplayStatus {
 }
 
 const TABS: { label: string; value: FilterTab }[] = [
-  { label: 'All',       value: 'all' },
-  { label: 'Active',    value: 'active' },
-  { label: 'Free Trial',value: 'trial' },
-  { label: 'Cancelled', value: 'cancelled' },
-  { label: 'Inactive',  value: 'inactive' },
+  { label: 'All',        value: 'all' },
+  { label: 'Active',     value: 'active' },
+  { label: 'Free Trial', value: 'trial' },
+  { label: 'Cancelled',  value: 'cancelled' },
+  { label: 'Inactive',   value: 'inactive' },
 ];
 
 const ROW_BG: Record<DisplayStatus, string> = {
   active:    '',
-  trial:     'bg-blue-50',
-  cancelled: 'bg-yellow-50',
-  inactive:  'bg-red-50',
+  trial:     'bg-blue-50 dark:bg-blue-900/10',
+  cancelled: 'bg-yellow-50 dark:bg-yellow-900/10',
+  inactive:  'bg-red-50 dark:bg-red-900/10',
 };
 
 export default function BusinessList() {
@@ -73,56 +73,65 @@ export default function BusinessList() {
     return base;
   }, [enriched]);
 
-  if (isLoading) return (
-    <Layout>
-      <div className="px-4 sm:px-6 lg:px-8 animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-40" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-12 bg-gray-100 rounded-lg" />
-        ))}
-      </div>
-    </Layout>
-  );
-  if (error) return <Layout><div className="text-center py-12 text-red-600">Error loading businesses: {error.message}</div></Layout>;
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="animate-pulse space-y-4">
+          <div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-40" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+          ))}
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="text-center py-12 text-red-600 dark:text-red-400">
+          Error loading businesses: {error.message}
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="sm:flex sm:items-center">
-          <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-gray-900">Businesses</h1>
-            <p className="mt-2 text-sm text-gray-700">
+      <div className="space-y-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Businesses</h1>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
               All businesses with their subscription and deployment status.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <Link
-              to="/businesses/new"
-              className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
-            >
-              Add business
-            </Link>
-          </div>
+          <Link
+            to="/businesses/new"
+            className="flex-shrink-0 inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
+          >
+            Add business
+          </Link>
         </div>
 
         {/* Filter tabs */}
-        <div className="mt-6 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-6">
+        <div className="border-b border-gray-200 dark:border-gray-800">
+          <nav className="-mb-px flex gap-1 overflow-x-auto">
             {TABS.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className={`whitespace-nowrap pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
+                className={`whitespace-nowrap pb-3 px-1 border-b-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   activeTab === tab.value
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 {tab.label}
-                <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   activeTab === tab.value
-                    ? 'bg-indigo-100 text-indigo-600'
-                    : 'bg-gray-100 text-gray-500'
+                    ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                 }`}>
                   {counts[tab.value]}
                 </span>
@@ -131,75 +140,74 @@ export default function BusinessList() {
           </nav>
         </div>
 
-        <div className="mt-4 flex flex-col">
-          <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
+        {/* Table */}
+        <div className="-mx-4 sm:-mx-6 lg:-mx-8 overflow-x-auto">
+          <div className="inline-block min-w-full align-middle px-4 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <thead className="bg-gray-50 dark:bg-gray-800/60">
+                  <tr>
+                    <th className="py-3 pl-4 pr-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Business</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Slug</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Subscription</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Page</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Billing</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Views</th>
+                    <th className="relative py-3 pl-3 pr-4"><span className="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                  {filtered.length === 0 ? (
                     <tr>
-                      <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Business</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Slug</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Subscription</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Page</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Billing</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Views</th>
-                      <th className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
+                      <td colSpan={7} className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                        No businesses in this category.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {filtered.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-10 text-center text-sm text-gray-400">
-                          No businesses in this category.
+                  ) : (
+                    filtered.map((business) => (
+                      <tr key={business.businessSlug} className={ROW_BG[business.displayStatus]}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
+                          {business.businessName}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                          {business.businessSlug}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm">
+                          <div className="flex flex-col gap-1">
+                            <StatusBadge status={business.displayStatus} />
+                            {business.displayStatus === 'trial' && business.trialStartDate && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                                Ends {new Date(business.trialStartDate.seconds * 1000 + business.trialDurationDays * 86400000).toLocaleDateString('en-IN')}
+                              </span>
+                            )}
+                            {business.displayStatus === 'cancelled' && business.subscriptionEndsAt && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                                Live until {new Date(business.subscriptionEndsAt.seconds * 1000).toLocaleDateString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {business.pageStatus === 'deployed'
+                            ? `Deployed (${business.pageVersion?.slice(0, 8)})`
+                            : 'Awaiting deployment'}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          ₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {(business.pageViews ?? 0).toLocaleString('en-IN')}
+                        </td>
+                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
+                          <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                            View
+                          </Link>
                         </td>
                       </tr>
-                    ) : (
-                      filtered.map((business) => (
-                        <tr key={business.businessSlug} className={ROW_BG[business.displayStatus]}>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
-                            {business.businessName}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {business.businessSlug}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm">
-                            <div className="flex flex-col gap-1">
-                              <StatusBadge status={business.displayStatus} />
-                              {business.displayStatus === 'trial' && business.trialStartDate && (
-                                <span className="text-xs text-gray-400">
-                                  Ends {new Date(business.trialStartDate.seconds * 1000 + business.trialDurationDays * 86400000).toLocaleDateString()}
-                                </span>
-                              )}
-                              {business.displayStatus === 'cancelled' && business.subscriptionEndsAt && (
-                                <span className="text-xs text-gray-400">
-                                  Live until {new Date(business.subscriptionEndsAt.seconds * 1000).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {business.pageStatus === 'deployed'
-                              ? `Deployed (${business.pageVersion?.slice(0, 8)})`
-                              : 'Awaiting deployment'}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            ₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'mo' : 'yr'}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {(business.pageViews ?? 0).toLocaleString('en-IN')}
-                          </td>
-                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 hover:text-indigo-900">
-                              View
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

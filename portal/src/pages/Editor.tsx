@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useBusiness } from '../context/BusinessContext';
+import { useToast } from '../components/Toast';
 import { portalFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import MenuEditor from '../components/MenuEditor';
@@ -20,23 +21,21 @@ function isJsonObject(val: string): boolean {
 
 export default function Editor() {
   const { business, loading, error, refetch } = useBusiness();
+  const toast = useToast();
   const [content, setContent] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
 
   useEffect(() => {
     if (business) setContent(business.content);
   }, [business]);
 
-  if (loading) {
-    return <Layout><PageSkeleton /></Layout>;
-  }
+  if (loading) return <Layout><PageSkeleton /></Layout>;
 
   if (error || !business) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-red-500 text-sm">{error || 'Failed to load business data.'}</p>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-red-500 dark:text-red-400 text-sm">{error || 'Failed to load business data.'}</p>
         </div>
       </Layout>
     );
@@ -44,7 +43,6 @@ export default function Editor() {
 
   const handleSave = async () => {
     setSaving(true);
-    setSaveMsg('');
     try {
       const res = await portalFetch(`/api/page/${business.slug}/content`, {
         method: 'PUT',
@@ -54,10 +52,10 @@ export default function Editor() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || 'Failed to save');
       }
-      setSaveMsg('Saved! Your page will update within 30 seconds.');
+      toast('Changes saved — page updates within 30 seconds');
       refetch();
     } catch (err: any) {
-      setSaveMsg(err.message || 'Save failed. Please try again.');
+      toast(err.message || 'Save failed. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -68,15 +66,16 @@ export default function Editor() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Editor</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Edit your page content</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Editor</h1>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Edit your page content</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-6">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-6">
           {keys.map((key) => (
             <div key={key}>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 {toLabel(key)}
               </label>
 
@@ -90,33 +89,28 @@ export default function Editor() {
                   value={content[key] ?? ''}
                   onChange={(e) => setContent((prev) => ({ ...prev, [key]: e.target.value }))}
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               ) : (
                 <input
                   type="text"
                   value={content[key] ?? ''}
                   onChange={(e) => setContent((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               )}
             </div>
           ))}
 
-          {saveMsg && (
-            <p className={`text-sm ${saveMsg.includes('failed') || saveMsg.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
-              {saveMsg}
-            </p>
-          )}
-
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
+
       </div>
     </Layout>
   );

@@ -40,112 +40,115 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
+
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">TapLab Portal</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <span className="text-2xl font-bold text-indigo-600 tracking-tight">TapLab</span>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             {view === 'login' ? 'Sign in to manage your page' : 'Reset your password'}
           </p>
         </div>
 
-        {view === 'login' ? (
-          <form onSubmit={handleLogin} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <button
-                  type="button"
-                  onClick={() => { setView('forgot'); setError(''); }}
-                  className="text-xs text-indigo-600 hover:text-indigo-800"
-                >
-                  Forgot password?
-                </button>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm space-y-4">
+          {view === 'login' ? (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                />
               </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
 
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-            {resetSent ? (
-              <div className="space-y-3">
-                <p className="text-sm text-green-600 font-medium">Reset link sent!</p>
-                <p className="text-sm text-gray-500">
-                  Check your inbox at <span className="font-medium text-gray-700">{email}</span>.
-                  If you don't see it, <span className="font-medium text-gray-700">check your spam folder</span>.
-                </p>
-                <button
-                  onClick={() => { setView('login'); setResetSent(false); }}
-                  className="text-sm text-indigo-600 hover:text-indigo-800"
-                >
-                  Back to sign in
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleForgot} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => { setView('forgot'); setError(''); }}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                />
+              </div>
 
-                <p className="text-xs text-gray-400">
-                  The reset link may arrive in your spam folder — check there if you don't see it.
-                </p>
+              {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-                {error && <p className="text-red-600 text-sm">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </button>
+            </form>
+          ) : resetSent ? (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Reset link sent!</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Check your inbox at <span className="font-medium text-gray-700 dark:text-gray-300">{email}</span>.
+                If you don't see it, check your spam folder.
+              </p>
+              <button
+                onClick={() => { setView('login'); setResetSent(false); }}
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+              >
+                Back to sign in
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgot} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                />
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Sending...' : 'Send Reset Link'}
-                </button>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                The reset link may arrive in your spam folder — check there if you don't see it.
+              </p>
 
-                <button
-                  type="button"
-                  onClick={() => { setView('login'); setError(''); }}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700"
-                >
-                  Back to sign in
-                </button>
-              </form>
-            )}
-          </div>
-        )}
+              {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Sending…' : 'Send Reset Link'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setView('login'); setError(''); }}
+                className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                Back to sign in
+              </button>
+            </form>
+          )}
+        </div>
+
       </div>
     </div>
   );

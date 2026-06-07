@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useBusiness } from '../context/BusinessContext';
+import { useToast } from '../components/Toast';
 import Layout from '../components/Layout';
 import { PageSkeleton } from '../components/Skeleton';
 
@@ -25,17 +26,16 @@ function formatDate(seconds: number): string {
 
 export default function Dashboard() {
   const { business, loading, error } = useBusiness();
+  const toast = useToast();
   const qrRef = useRef<HTMLDivElement>(null);
 
-  if (loading) {
-    return <Layout><PageSkeleton /></Layout>;
-  }
+  if (loading) return <Layout><PageSkeleton /></Layout>;
 
   if (error || !business) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-red-500 text-sm">{error || 'Failed to load business data.'}</p>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-red-500 dark:text-red-400 text-sm">{error || 'Failed to load business data.'}</p>
         </div>
       </Layout>
     );
@@ -45,21 +45,44 @@ export default function Dashboard() {
   const pageUrl = `https://taplab.in/${business.slug}`;
 
   const statusConfig = {
-    active: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', label: 'Active', sub: 'Your page is live.' },
+    active: {
+      bg: 'bg-green-50 dark:bg-green-900/20',
+      border: 'border-green-200 dark:border-green-800',
+      text: 'text-green-700 dark:text-green-400',
+      label: 'Active',
+      sub: 'Your page is live.',
+    },
     trial: {
-      bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', label: 'Free Trial',
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      text: 'text-blue-700 dark:text-blue-400',
+      label: 'Free Trial',
       sub: business.trialStartDate
         ? `${daysRemaining(business.trialStartDate.seconds, business.trialDurationDays)} days remaining`
         : '',
     },
     cancelled: {
-      bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', label: 'Cancelled',
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      border: 'border-amber-200 dark:border-amber-800',
+      text: 'text-amber-700 dark:text-amber-400',
+      label: 'Cancelled',
       sub: business.subscriptionEndsAt
         ? `Page live until ${formatDate(business.subscriptionEndsAt.seconds)}`
         : 'Your page will go offline soon.',
     },
-    inactive: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Inactive', sub: 'Your page is not visible until payment is complete.' },
+    inactive: {
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      border: 'border-red-200 dark:border-red-800',
+      text: 'text-red-700 dark:text-red-400',
+      label: 'Inactive',
+      sub: 'Your page is offline.',
+    },
   }[status];
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(pageUrl);
+    toast('Link copied to clipboard');
+  };
 
   const handleDownloadQR = () => {
     const svg = qrRef.current?.querySelector('svg');
@@ -69,50 +92,58 @@ export default function Dashboard() {
     a.href = URL.createObjectURL(blob);
     a.download = `${business.slug}-qr.svg`;
     a.click();
+    toast('QR code downloaded');
   };
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
+
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Overview of your TapLab page</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Overview of your TapLab page</p>
         </div>
+
+        {/* Payment failure banner */}
+        {status === 'inactive' && business.razorpayPaymentLink && (
+          <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                Your page is offline — complete your payment to restore access.
+              </p>
+            </div>
+            <a
+              href={business.razorpayPaymentLink}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-shrink-0 bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Pay Now
+            </a>
+          </div>
+        )}
 
         {/* Subscription status */}
         <div className={`rounded-xl p-5 border ${statusConfig.bg} ${statusConfig.border}`}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Subscription</p>
-              <p className={`text-lg font-semibold ${statusConfig.text}`}>{statusConfig.label}</p>
-              <p className={`text-sm mt-0.5 ${statusConfig.text} opacity-80`}>{statusConfig.sub}</p>
-            </div>
-            {status === 'inactive' && business.razorpayPaymentLink && (
-              <a
-                href={business.razorpayPaymentLink}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-shrink-0 bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Subscribe Now
-              </a>
-            )}
-          </div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Subscription</p>
+          <p className={`text-lg font-semibold ${statusConfig.text}`}>{statusConfig.label}</p>
+          <p className={`text-sm mt-0.5 ${statusConfig.text} opacity-80`}>{statusConfig.sub}</p>
         </div>
 
         {/* Page URL */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm font-medium text-gray-700 mb-3">Your Page URL</p>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Your Page URL</p>
           <div className="flex gap-2">
             <input
               type="text"
               value={pageUrl}
               readOnly
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 focus:outline-none"
+              className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none"
             />
             <button
-              onClick={() => navigator.clipboard.writeText(pageUrl)}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
+              onClick={handleCopy}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition-colors"
             >
               Copy
             </button>
@@ -121,37 +152,38 @@ export default function Dashboard() {
             href={pageUrl}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-indigo-500 hover:underline mt-2 inline-block"
+            className="text-xs text-indigo-500 dark:text-indigo-400 hover:underline mt-2 inline-block"
           >
             Open page →
           </a>
         </div>
 
         {/* Page views */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Page Views</p>
-            <p className="text-3xl font-bold text-gray-900">{business.pageViews.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-gray-400 mt-1">Rough estimate of taps on your NFC tag</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Total Page Views</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{business.pageViews.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Rough estimate — CDN caching applies</p>
           </div>
-          <svg className="w-10 h-10 text-indigo-100" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-10 h-10 text-indigo-200 dark:text-indigo-900" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
           </svg>
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col items-center gap-4">
-          <p className="self-start text-sm font-medium text-gray-700">QR Code</p>
-          <div ref={qrRef}>
-            <QRCodeSVG value={pageUrl} size={180} />
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 flex flex-col items-center gap-4">
+          <p className="self-start text-sm font-medium text-gray-700 dark:text-gray-300">QR Code</p>
+          <div ref={qrRef} className="p-3 bg-white rounded-xl">
+            <QRCodeSVG value={pageUrl} size={160} />
           </div>
           <button
             onClick={handleDownloadQR}
-            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
           >
             Download QR Code
           </button>
         </div>
+
       </div>
     </Layout>
   );

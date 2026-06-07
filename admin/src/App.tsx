@@ -3,19 +3,19 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
+import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './components/Toast';
 import Login from './pages/Login';
 import Overview from './pages/Overview';
 import BusinessList from './pages/BusinessList';
 import AddBusiness from './pages/AddBusiness';
 import BusinessDetail from './pages/BusinessDetail';
+import Alerts from './pages/Alerts';
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-        <p className="mt-2 text-gray-600">Loading...</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="w-5 h-5 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
     </div>
   );
 }
@@ -36,18 +36,34 @@ export default function App() {
     });
   }, [user]);
 
-  if (loading || (user && isAdmin === null)) return <LoadingSpinner />;
-  if (!user) return <Login />;
+  if (loading || (user && isAdmin === null)) return (
+    <ThemeProvider>
+      <LoadingSpinner />
+    </ThemeProvider>
+  );
+
+  if (!user) return (
+    <ThemeProvider>
+      <ToastProvider>
+        <Login />
+      </ToastProvider>
+    </ThemeProvider>
+  );
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/businesses" element={<BusinessList />} />
-        <Route path="/businesses/new" element={<AddBusiness />} />
-        <Route path="/business/:slug" element={<BusinessDetail />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/"                  element={<Overview />} />
+            <Route path="/businesses"        element={<BusinessList />} />
+            <Route path="/businesses/new"    element={<AddBusiness />} />
+            <Route path="/business/:slug"    element={<BusinessDetail />} />
+            <Route path="/alerts"            element={<Alerts />} />
+            <Route path="*"                  element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

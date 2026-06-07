@@ -170,6 +170,40 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     }
   });
 
+  // Set owner email (when business was created without one)
+  app.post<{ Params: { slug: string } }>('/business/:slug/set-owner-email', async (req, reply) => {
+    const { slug } = req.params;
+    const { ownerEmail } = req.body as { ownerEmail: string };
+
+    if (!ownerEmail) return reply.status(400).send({ error: 'ownerEmail is required' });
+
+    try {
+      const ref = db.collection('businesses').doc(slug);
+      const doc = await ref.get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+
+      let ownerUid: string;
+      try {
+        const userRecord = await getAuth().createUser({ email: ownerEmail });
+        ownerUid = userRecord.uid;
+      } catch (authError: any) {
+        if (authError?.code === 'auth/email-already-exists') {
+          const existing = await getAuth().getUserByEmail(ownerEmail);
+          ownerUid = existing.uid;
+        } else {
+          throw authError;
+        }
+      }
+
+      await ref.update({ ownerEmail, ownerUid });
+      const inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+      return reply.send({ inviteLink });
+    } catch (error: any) {
+      app.log.error(error);
+      return reply.status(500).send({ error: 'Failed to set owner email', detail: error?.message });
+    }
+  });
+
   // Refresh Firebase password reset link
   app.post<{ Params: { slug: string } }>('/business/:slug/refresh-invite', async (req, reply) => {
     const { slug } = req.params;

@@ -16,7 +16,53 @@ async function getBusinessByUid(uid: string): Promise<BusinessDocument | null> {
   return snapshot.docs[0].data() as BusinessDocument;
 }
 
+async function getBusinessBySlug(slug: string, uid: string): Promise<BusinessDocument | null> {
+  const doc = await db.collection('businesses').doc(slug).get();
+  if (!doc.exists) return null;
+  const data = doc.data() as BusinessDocument;
+  if (data.ownerUid !== uid) return null;
+  return data;
+}
+
+async function getBusinessForUser(uid: string, slug?: string): Promise<BusinessDocument | null> {
+  if (slug) return getBusinessBySlug(slug, uid);
+  return getBusinessByUid(uid);
+}
+
 export async function portalRoute(app: FastifyInstance) {
+  // List all businesses for the authenticated user
+  app.get('/portal/businesses', async (req, reply) => {
+    let uid: string;
+    try {
+      uid = await verifyPortalToken(req.headers.authorization);
+    } catch {
+      return reply.status(401).send({ error: 'Invalid or expired token' });
+    }
+
+    try {
+      const snapshot = await db.collection('businesses').where('ownerUid', '==', uid).get();
+      const businesses = snapshot.docs.map((doc) => {
+        const d = doc.data() as BusinessDocument;
+        return {
+          slug: d.businessSlug,
+          businessName: d.businessName,
+          pageStatus: d.pageStatus,
+          subscriptionStatus: d.subscriptionStatus,
+          freeTrialEnabled: d.freeTrialEnabled,
+          trialStartDate: d.trialStartDate ?? null,
+          trialDurationDays: d.trialDurationDays,
+          pricingAmount: d.pricingAmount,
+          billingCycle: d.billingCycle,
+        };
+      });
+      return reply.send({ businesses });
+    } catch (error) {
+      app.log.error(error);
+      return reply.status(500).send({ error: 'Failed to fetch businesses' });
+    }
+  });
+
+  // Get full business data for the portal — accepts ?slug= to select a specific business
   app.get('/portal/me', async (req, reply) => {
     let uid: string;
     try {
@@ -25,7 +71,8 @@ export async function portalRoute(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid or expired token' });
     }
 
-    const biz = await getBusinessByUid(uid);
+    const { slug } = req.query as { slug?: string };
+    const biz = await getBusinessForUser(uid, slug);
     if (!biz) return reply.status(404).send({ error: 'No business found for this account' });
 
     return reply.send({
@@ -46,6 +93,7 @@ export async function portalRoute(app: FastifyInstance) {
     });
   });
 
+  // Billing data — accepts ?slug= to select a specific business
   app.get('/portal/billing', async (req, reply) => {
     let uid: string;
     try {
@@ -54,7 +102,8 @@ export async function portalRoute(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid or expired token' });
     }
 
-    const biz = await getBusinessByUid(uid);
+    const { slug } = req.query as { slug?: string };
+    const biz = await getBusinessForUser(uid, slug);
     if (!biz) return reply.status(404).send({ error: 'No business found for this account' });
 
     const plan = { amount: biz.pricingAmount, cycle: biz.billingCycle };
