@@ -1,0 +1,7 @@
+name = "taplab-analytics"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[[analytics_engine_datasets]]
+binding = "TAPLAB_PAGEVIEWS"
+dataset = "taplab_pageviews"

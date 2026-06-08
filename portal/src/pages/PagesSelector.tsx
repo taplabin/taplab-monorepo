@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -47,10 +46,7 @@ function PageCard({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const [iframeError, setIframeError] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
   const status = getDisplayStatus(business);
-  const pageUrl = `https://taplab.in/${business.slug}`;
 
   return (
     <button
@@ -61,46 +57,18 @@ function PageCard({
           : 'border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg'
       } bg-white dark:bg-gray-900`}
     >
-      {/* Preview */}
+      {/* Preview placeholder */}
       <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
-        {business.pageStatus === 'deployed' && !iframeError ? (
-          <>
-            {!iframeLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-4 h-4 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
-              </div>
-            )}
-            <div
-              className="absolute top-0 left-0 pointer-events-none"
-              style={{
-                width: 1440,
-                height: 900,
-                transform: 'scale(0.22)',
-                transformOrigin: 'top left',
-              }}
-            >
-              <iframe
-                src={pageUrl}
-                title={business.businessName}
-                className="w-full h-full border-none"
-                loading="lazy"
-                onLoad={() => setIframeLoaded(true)}
-                onError={() => setIframeError(true)}
-              />
-            </div>
-          </>
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-              <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                {business.businessName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              {business.pageStatus === 'no_page' ? 'No page deployed yet' : 'Preview unavailable'}
-            </p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+              {business.businessName.charAt(0).toUpperCase()}
+            </span>
           </div>
-        )}
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            {business.pageStatus === 'no_page' ? 'No page deployed yet' : `taplab.in/${business.slug}`}
+          </p>
+        </div>
 
         {isSelected && (
           <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">

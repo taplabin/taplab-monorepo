@@ -2,16 +2,66 @@ import { useState, useEffect } from 'react';
 import { defaultContent } from './content';
 
 const API_BASE = 'https://api.taplab.in';
+const ANALYTICS_URL = 'https://analytics.taplab.in';
 
 export default function PageApp({ slug }: { slug: string }) {
   const [content, setContent] = useState<Record<string, string> | null>(null);
 
+  // Content fetch + pageview event
   useEffect(() => {
+    const isReturning = !!localStorage.getItem('taplab_v');
+    if (!isReturning) localStorage.setItem('taplab_v', '1');
+
+    const params = new URLSearchParams(window.location.search);
+
     fetch(`${API_BASE}/page/${slug}/content`)
       .then((r) => r.json())
-      .then((data) => setContent({ ...defaultContent, ...data }))
+      .then((data) => {
+        setContent({ ...defaultContent, ...data });
+        fetch(`${ANALYTICS_URL}/pageview`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: slug,
+            referrer: document.referrer,
+            screenWidth: window.screen.width,
+            language: navigator.language,
+            returning: isReturning,
+            utmSource:   params.get('utm_source')   ?? 'none',
+            utmMedium:   params.get('utm_medium')   ?? 'none',
+            utmCampaign: params.get('utm_campaign') ?? 'none',
+          }),
+        }).catch(() => {});
+      })
       .catch(() => setContent(defaultContent));
   }, [slug]);
+
+  // Session duration tracking — fires on tab hide/close via sendBeacon
+  useEffect(() => {
+    const startTime = Date.now();
+    let sent = false;
+
+    function sendSession() {
+      if (sent) return;
+      sent = true;
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      navigator.sendBeacon(
+        `${ANALYTICS_URL}/session`,
+        new Blob([JSON.stringify({ businessId: slug, duration })], { type: 'application/json' })
+      );
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') sendSession();
+    }
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('beforeunload', sendSession);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('beforeunload', sendSession);
+    };
+  }, []);
 
   if (!content) return null;
 
