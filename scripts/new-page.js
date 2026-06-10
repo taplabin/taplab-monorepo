@@ -75,7 +75,7 @@ console.log(`
    Business : ${businessName}
 
 Next steps:
-  1. Use Claude web with TAPLAB_CONVERT.md + menu images to generate App.tsx & content.ts
+  1. Use Claude web with TAPLAB_PROMPT.md + menu images to generate App.tsx & content.ts
      → Tell Claude: slug="${slug}", business name="${businessName}"
   2. Drop the two files into pages/${slug}/src/
   3. cd pages/${slug} && npm install
