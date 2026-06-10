@@ -111,42 +111,55 @@ export default function Billing() {
               <p className="text-sm text-gray-400 dark:text-gray-500">No payments yet.</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-                <tr>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-400 dark:text-gray-500 w-1/3">Date</th>
-                  <th className="px-5 py-2.5 text-right text-xs font-medium text-gray-400 dark:text-gray-500">Paid</th>
-                  <th className="px-5 py-2.5 text-right text-xs font-medium text-gray-400 dark:text-gray-500">Due</th>
-                  <th className="px-5 py-2.5 text-right text-xs font-medium text-gray-400 dark:text-gray-500">Status</th>
-                  <th className="px-5 py-2.5 text-right text-xs font-medium text-gray-400 dark:text-gray-500">Invoice</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {billing.invoices.map((inv) => (
-                  <tr key={inv.id}>
-                    <td className="px-5 py-3.5 text-xs text-gray-500 dark:text-gray-400">{formatDate(inv.date)}</td>
-                    <td className="px-5 py-3.5 text-right font-medium text-gray-800 dark:text-gray-200">{formatAmount(inv.amount_paid)}</td>
-                    <td className="px-5 py-3.5 text-right text-gray-400 dark:text-gray-500">{formatAmount(inv.amount_due)}</td>
-                    <td className="px-5 py-3.5 text-right">
-                      <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${
-                        inv.status === 'paid'
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      {inv.short_url && (
-                        <a href={inv.short_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
-                          View
-                        </a>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+  {billing.invoices.map((inv) => (
+    <div
+      key={inv.id}
+      className="px-5 py-3.5 flex items-center justify-between gap-4"
+    >
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {formatDate(inv.date)}
+        </p>
+
+        {inv.amount_due > 0 && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            Due: {formatAmount(inv.amount_due)}
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+            inv.status === 'paid'
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+          }`}
+        >
+          {inv.status}
+        </span>
+
+        <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
+          {formatAmount(inv.amount_paid)}
+        </span>
+
+        {inv.short_url ? (
+          <a
+            href={inv.short_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            View
+          </a>
+        ) : (
+          <span className="text-xs text-transparent select-none">View</span>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
           )}
         </div>
 
