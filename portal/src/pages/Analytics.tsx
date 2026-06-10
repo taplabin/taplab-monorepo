@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useBusiness } from '../context/BusinessContext';
 import { portalFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -66,6 +66,10 @@ function formatHourLabel(h: number): string {
   return h < 12 ? `${h}am` : `${h - 12}pm`;
 }
 
+function formatDateShort(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -78,60 +82,132 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-// ─── 30-day bar chart ─────────────────────────────────────────────────────────
+// ─── Area / line chart ────────────────────────────────────────────────────────
 
-function BarChart30({ data }: { data: { date: string; views: number }[] }) {
-  const maxViews = Math.max(...data.map((d) => d.views), 1);
-  const labelIdx = new Set([0, 9, 19, 29]);
+interface AreaPoint { label: string; raw: number; }
+
+function AreaLineChart({
+  points,
+  color,
+  gradientId,
+  xLabels,
+  emptyMsg = 'No data yet.',
+}: {
+  points: AreaPoint[];
+  color: string;
+  gradientId: string;
+  xLabels: { i: number; text: string }[];
+  emptyMsg?: string;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  const W = 400, H = 80, padTop = 4, padBottom = 2;
+  const chartH = H - padTop - padBottom;
+  const n = points.length;
+  const maxY = Math.max(...points.map((p) => p.raw), 1);
+
+  const svgPts = points.map((p, i) => ({
+    ...p,
+    svgX: n > 1 ? (i / (n - 1)) * W : W / 2,
+    svgY: padTop + (1 - p.raw / maxY) * chartH,
+  }));
+
+  let linePath = `M ${svgPts[0].svgX},${svgPts[0].svgY}`;
+  for (let i = 1; i < svgPts.length; i++) {
+    const prev = svgPts[i - 1];
+    const curr = svgPts[i];
+    const cpX = (prev.svgX + curr.svgX) / 2;
+    linePath += ` C ${cpX},${prev.svgY} ${cpX},${curr.svgY} ${curr.svgX},${curr.svgY}`;
+  }
+  const areaPath = `${linePath} L ${svgPts[n - 1].svgX},${H} L ${svgPts[0].svgX},${H} Z`;
+
+  const handleMouseMove = (e: React.MouseEvent<SVGRectElement>) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const xFrac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setHovered(Math.round(xFrac * (n - 1)));
+  };
+
+  const hovPt = hovered !== null ? svgPts[hovered] : null;
+  const tooltipPct = hovered !== null ? Math.max(6, Math.min(94, (hovered / (n - 1)) * 100)) : 0;
+
+  if (points.every((p) => p.raw === 0)) {
+    return <p className="text-sm text-gray-400 dark:text-gray-500 py-8 text-center">{emptyMsg}</p>;
+  }
+
   return (
     <div>
-      <div className="relative h-36">
-        {[25, 50, 75].map((pct) => (
+      <div className="relative pt-8">
+        {hovPt && (
           <div
-            key={pct}
-            className="absolute left-0 right-0 border-t border-gray-100 dark:border-gray-800 pointer-events-none"
-            style={{ bottom: `${pct}%` }}
-          />
-        ))}
-        <div className="flex gap-0.5 h-full">
-          {data.map((day) => {
-            const h = Math.max((day.views / maxViews) * 100, day.views > 0 ? 2 : 0);
-            return (
-              <div key={day.date} className="flex-1 relative group">
-                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
-                  <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] font-semibold px-2 py-1 rounded-lg shadow-lg whitespace-nowrap">
-                    {Number(day.views).toLocaleString('en-IN')} views
-                  </div>
-                  <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-100 rotate-45 -mt-1" />
-                </div>
-                <div
-                  style={{
-                    height: `${h}%`,
-                    background: day.views > 0 ? 'linear-gradient(to top, #4338ca, #818cf8)' : undefined,
-                  }}
-                  className="absolute bottom-0 left-0 right-0 rounded-t group-hover:opacity-75 transition-opacity"
-                />
+            className="absolute top-0.5 pointer-events-none z-10 -translate-x-1/2"
+            style={{ left: `${tooltipPct}%` }}
+          >
+            <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap leading-snug">
+              <div>{hovPt.label}</div>
+              <div className="text-gray-400 dark:text-gray-500 font-normal">
+                {hovPt.raw.toLocaleString('en-IN')} views
               </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="flex mt-2">
-        {data.map((day, i) => (
-          <div key={day.date} className="flex-1 text-center">
-            {labelIdx.has(i) && (
-              <span className="text-[9px] text-gray-400 dark:text-gray-600">
-                {new Date(day.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-              </span>
-            )}
+            </div>
           </div>
+        )}
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full h-28"
+          onMouseLeave={() => setHovered(null)}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+              <stop offset="100%" stopColor={color} stopOpacity="0.01" />
+            </linearGradient>
+          </defs>
+          {[33, 66].map((pct) => (
+            <line
+              key={pct}
+              x1={0} y1={padTop + (pct / 100) * chartH}
+              x2={W} y2={padTop + (pct / 100) * chartH}
+              stroke="currentColor" strokeWidth="0.5"
+              className="text-gray-100 dark:text-gray-800"
+            />
+          ))}
+          <path d={areaPath} fill={`url(#${gradientId})`} />
+          <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+          {hovPt && (
+            <>
+              <line
+                x1={hovPt.svgX} y1={padTop} x2={hovPt.svgX} y2={H}
+                stroke={color} strokeWidth="1" strokeDasharray="3 2" opacity="0.45"
+              />
+              <circle cx={hovPt.svgX} cy={hovPt.svgY} r="3" fill={color} stroke="white" strokeWidth="1.5" />
+            </>
+          )}
+          <rect
+            x={0} y={0} width={W} height={H}
+            fill="transparent"
+            onMouseMove={handleMouseMove}
+          />
+        </svg>
+      </div>
+      <div className="relative h-4 mt-1">
+        {xLabels.map(({ i, text }) => (
+          <span
+            key={i}
+            className="absolute -translate-x-1/2 text-[9px] text-gray-400 dark:text-gray-600 whitespace-nowrap"
+            style={{ left: `${(i / (n - 1)) * 100}%` }}
+          >
+            {text}
+          </span>
         ))}
       </div>
     </div>
   );
 }
 
-// ─── Small vertical bar chart ─────────────────────────────────────────────────
+// ─── Small vertical bar chart (DoW only) ─────────────────────────────────────
 
 function SmallBarChart({ items, gradient }: { items: { label: string; views: number }[]; gradient: string }) {
   const maxV = Math.max(...items.map((i) => i.views), 1);
@@ -284,10 +360,6 @@ function Insights({ data, total30, mobileViews, desktopViews, newVisitors, retur
     insights.push(`${returnPct}% of visitors are returning.`);
   }
 
-  if (total30 > 0 && (data.viewsThisMonth ?? 0) > total30) {
-    insights.push(`This month is trending above your 30-day average.`);
-  }
-
   if (insights.length === 0) return null;
 
   return (
@@ -312,6 +384,7 @@ export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const [devicePie, setDevicePie]   = useState(true);
   const [visitorPie, setVisitorPie] = useState(true);
   const [langPie, setLangPie]       = useState(false);
@@ -327,6 +400,26 @@ export default function Analytics() {
       .finally(() => setLoading(false));
   }, [business]);
 
+  async function downloadCSV() {
+    if (!business) return;
+    setDownloading(true);
+    try {
+      const res = await portalFetch(`/api/portal/analytics/export?slug=${business.slug}`);
+      if (!res.ok) throw new Error('export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `taplab-${business.slug}-analytics.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silent — user will notice the download didn't start
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   const chart30d = useMemo(() => buildChartData(data?.views30d ?? []), [data?.views30d]);
   const dowData  = useMemo(() => buildDowData(data?.dowPattern ?? []),  [data?.dowPattern]);
   const hourData = useMemo(() => buildHourData(data?.hourPattern ?? []), [data?.hourPattern]);
@@ -341,6 +434,24 @@ export default function Analytics() {
   const desktopViews = Number(data?.devices?.find((d) => d.device === 'desktop')?.views ?? 0);
 
   const maxReferrerViews = Math.max(...(data?.referrers ?? []).map((r) => Number(r.views)), 1);
+
+  const area30dPoints: AreaPoint[] = chart30d.map((d) => ({
+    label: formatDateShort(d.date),
+    raw: d.views,
+  }));
+  const area30dXLabels = [0, 9, 19, 29].map((i) => ({
+    i,
+    text: formatDateShort(chart30d[i]?.date ?? ''),
+  }));
+
+  const areaHourPoints: AreaPoint[] = hourData.map((h) => ({
+    label: `${formatHourLabel(h.hour)} IST`,
+    raw: h.views,
+  }));
+  const areaHourXLabels = [0, 6, 12, 18, 23].map((i) => ({
+    i,
+    text: formatHourLabel(i),
+  }));
 
   if (bizLoading || loading) return <Layout><PageSkeleton /></Layout>;
 
@@ -412,6 +523,28 @@ export default function Analytics() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">How your page is performing</p>
         </div>
 
+        {/* ── Retention warning ────────────────────────────────────────────── */}
+        {hasAnyData && (
+          <div className="flex items-start justify-between gap-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <span className="text-amber-500 text-base leading-none mt-0.5 flex-shrink-0">⚠</span>
+              <div>
+                <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">90-day data retention</p>
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
+                  Cloudflare only keeps analytics for 90 days. Download a CSV to archive before data expires.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={downloadCSV}
+              disabled={downloading}
+              className="flex-shrink-0 text-[11px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 border border-amber-300 dark:border-amber-500/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {downloading ? 'Downloading…' : 'Download CSV'}
+            </button>
+          </div>
+        )}
+
         {/* ── Summary stats ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <StatCard
@@ -450,16 +583,18 @@ export default function Analytics() {
           />
         )}
 
-        {/* ── 30-day bar chart ─────────────────────────────────────────────── */}
+        {/* ── 30-day area chart ────────────────────────────────────────────── */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">Daily views — last 30 days</p>
-          {total30 === 0 ? (
-            <div className="h-36 flex items-center justify-center">
-              <p className="text-sm text-gray-400 dark:text-gray-500">No views in this period yet.</p>
-            </div>
-          ) : (
-            <BarChart30 data={chart30d} />
-          )}
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+            Daily views — last 30 days
+          </p>
+          <AreaLineChart
+            points={area30dPoints}
+            color="#6366f1"
+            gradientId="area-grad-30d"
+            xLabels={area30dXLabels}
+            emptyMsg="No views in this period yet."
+          />
         </div>
 
         {/* ── Day of week + Peak hours ─────────────────────────────────────── */}
@@ -495,36 +630,16 @@ export default function Analytics() {
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
                 Peak hours <span className="font-normal normal-case">(IST)</span>
               </p>
-              {hourData.every((d) => d.views === 0) ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500">No data yet.</p>
-              ) : (
-                <div>
-                  <SmallBarChart
-                    items={hourData.map((h) => ({ label: formatHourLabel(h.hour), views: h.views }))}
-                    gradient="linear-gradient(to top, #7c3aed, #c084fc)"
-                  />
-                  <div className="flex mt-1.5">
-                    {hourData.map((h) => (
-                      <div key={h.hour} className="flex-1 text-center">
-                        {[0, 6, 12, 18].includes(h.hour) && (
-                          <span className="text-[8px] text-gray-400 dark:text-gray-600">{formatHourLabel(h.hour)}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {(() => {
-                    const peak = hourData.reduce((a, b) => (b.views > a.views ? b : a), hourData[0]);
-                    return peak.views > 0 ? (
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
-                        Peak at <span className="font-semibold text-gray-700 dark:text-gray-300">{formatHourLabel(peak.hour)}</span>
-                      </p>
-                    ) : null;
-                  })()}
-                </div>
-              )}
+              <AreaLineChart
+                points={areaHourPoints}
+                color="#7c3aed"
+                gradientId="area-grad-24h"
+                xLabels={areaHourXLabels}
+                emptyMsg="No data yet."
+              />
             </div>
           </div>
         )}
@@ -568,7 +683,6 @@ export default function Analytics() {
         {/* ── Devices + Visitors ───────────────────────────────────────────── */}
         {hasAnyData && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Device split */}
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Device</p>
@@ -587,7 +701,6 @@ export default function Analytics() {
               )}
             </div>
 
-            {/* New vs returning */}
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Visitors</p>

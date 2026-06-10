@@ -171,4 +171,47 @@ export async function analyticsRoute(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to fetch analytics' });
     }
   });
+
+  // CSV export — 90-day daily views download
+  app.get<{ Querystring: { slug?: string } }>('/portal/analytics/export', async (req, reply) => {
+    let uid: string;
+    try {
+      uid = await verifyPortalToken(req.headers.authorization);
+    } catch {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const { slug } = req.query;
+    if (!slug) return reply.status(400).send({ error: 'slug is required' });
+    if (!/^[a-z0-9-]+$/.test(slug)) return reply.status(400).send({ error: 'Invalid slug' });
+
+    const doc = await db.collection('businesses').doc(slug).get();
+    if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+    const biz = doc.data() as BusinessDocument;
+    if (biz.ownerUid !== uid) return reply.status(403).send({ error: 'Forbidden' });
+
+    if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
+      return reply.status(503).send({ error: 'Analytics not configured' });
+    }
+
+    try {
+      const result = await queryCAE(`
+        SELECT toDate(timestamp) as date, count() as views
+        FROM taplab_pageviews
+        WHERE blob1 = '${slug}' AND blob5 != '__session__'
+          AND timestamp >= NOW() - INTERVAL '90' DAY
+        GROUP BY date ORDER BY date ASC
+      `);
+
+      const rows = result.data ?? [];
+      const csv = ['date,views', ...rows.map((r) => `${r.date},${r.views}`)].join('\n');
+
+      reply.header('Content-Type', 'text/csv; charset=utf-8');
+      reply.header('Content-Disposition', `attachment; filename="taplab-${slug}-analytics.csv"`);
+      return reply.send(csv);
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Export failed' });
+    }
+  });
 }
