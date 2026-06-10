@@ -38,25 +38,35 @@ const STATUS_TEXT: Record<DisplayStatus, string> = {
   inactive:  'text-red-600 dark:text-red-400',
 };
 
+const MAX_PREVIEW_SCALE = 0.55;
+
 function PagePreview({ slug, name }: { slug: string; name: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
+  const [preview, setPreview] = useState({ scale: MAX_PREVIEW_SCALE, leftOffset: 0 });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    setScale(containerRef.current.offsetWidth / 390);
+    const containerW = containerRef.current.offsetWidth;
+    const scale = Math.min(containerW / 390, MAX_PREVIEW_SCALE);
+    const leftOffset = (containerW - 390 * scale) / 2;
+    setPreview({ scale, leftOffset });
   }, []);
 
-  const iframeH = Math.ceil(192 / scale);
+  const iframeH = Math.ceil(192 / preview.scale);
 
   return (
     <div ref={containerRef} className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
-      {/* Shimmer until iframe loads */}
       {!loaded && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-750" />
       )}
-      <div style={{ transformOrigin: 'top left', transform: `scale(${scale})`, width: 390, pointerEvents: 'none' }}>
+      <div style={{
+        transformOrigin: 'top left',
+        transform: `scale(${preview.scale})`,
+        marginLeft: preview.leftOffset,
+        width: 390,
+        pointerEvents: 'none',
+      }}>
         <iframe
           src={`https://taplab.in/${slug}`}
           width={390}
