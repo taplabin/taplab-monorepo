@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -59,92 +60,121 @@ const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:ho
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { business, businesses } = useBusiness();
   const { theme, toggleTheme } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const multiPage = businesses.length > 1;
+
+  function SidebarContent() {
+    return (
+      <div className="flex flex-col flex-1 overflow-y-auto">
+        <div className="px-5 pt-6 pb-5 border-b border-gray-100 dark:border-gray-800">
+          <span className="text-lg font-bold text-indigo-600 tracking-tight">TapLab</span>
+          {business && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{business.businessName}</p>
+          )}
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          {NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
+              }
+            >
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="px-3 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-0.5">
+          {multiPage && (
+            <NavLink
+              to="/pages"
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
+              }
+            >
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              All pages
+            </NavLink>
+          )}
+          <button
+            onClick={toggleTheme}
+            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+            {theme === 'light' ? 'Dark mode' : 'Light mode'}
+          </button>
+          <button
+            onClick={() => signOut(auth)}
+            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
+          >
+            <SignOutIcon />
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
 
       {/* Sidebar — desktop */}
       <aside className="hidden md:flex md:flex-col md:w-56 md:fixed md:inset-y-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="px-5 pt-6 pb-5 border-b border-gray-100 dark:border-gray-800">
-            <span className="text-lg font-bold text-indigo-600 tracking-tight">TapLab</span>
-            {business && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{business.businessName}</p>
-            )}
-          </div>
-
-          <nav className="flex-1 px-3 py-4 space-y-0.5">
-            {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/'}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
-                }
-              >
-                {item.icon}
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="px-3 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-0.5">
-            {multiPage && (
-              <NavLink
-                to="/pages"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
-                }
-              >
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                </svg>
-                All pages
-              </NavLink>
-            )}
-            <button
-              onClick={toggleTheme}
-              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
-            >
-              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-              {theme === 'light' ? 'Dark mode' : 'Light mode'}
-            </button>
-            <button
-              onClick={() => signOut(auth)}
-              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
-            >
-              <SignOutIcon />
-              Sign out
-            </button>
-          </div>
-        </div>
+        <SidebarContent />
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 md:ml-56 pb-20 md:pb-0">
-        {children}
+      {/* Top bar — mobile */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Open menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span className="text-base font-bold text-indigo-600 tracking-tight">TapLab</span>
+        {business && (
+          <span className="text-sm text-gray-400 dark:text-gray-500 truncate">{business.businessName}</span>
+        )}
       </div>
 
-      {/* Bottom tab bar — mobile */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-50">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2.5 transition-colors ${
-                isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
-              }`
-            }
-          >
-            {item.icon}
-            <span className="mt-0.5 text-[10px] font-medium">{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
+      {/* Drawer overlay — mobile */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="relative flex flex-col w-64 bg-white dark:bg-gray-900 h-full shadow-2xl">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 md:ml-56 pt-14 md:pt-0">
+        {children}
+      </div>
 
     </div>
   );

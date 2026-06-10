@@ -45,7 +45,7 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={8}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
     );
   }
@@ -87,15 +87,15 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
   return (
     <div className="space-y-6">
       {Object.entries(menu).map(([catKey, category]) => (
-        <div key={catKey} className="border border-gray-200 rounded-xl overflow-hidden">
+        <div key={catKey} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           {/* Category header */}
-          <div className="bg-gray-50 px-4 py-3 flex items-center gap-3 border-b border-gray-200">
+          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex items-center gap-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1">
               <input
                 type="text"
                 value={category.label}
                 onChange={(e) => updateCategoryLabel(catKey, e.target.value)}
-                className="w-full text-sm font-semibold text-gray-800 bg-transparent border-0 focus:outline-none focus:ring-0 p-0"
+                className="w-full text-sm font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-0 focus:outline-none focus:ring-0 p-0"
                 placeholder="Category name"
               />
             </div>
@@ -104,12 +104,12 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
               value={category.priceNote ?? ''}
               onChange={(e) => updatePriceNote(catKey, e.target.value)}
               placeholder="Price note (e.g. 4PC / 6PC)"
-              className="text-xs text-gray-400 bg-transparent border-0 focus:outline-none focus:ring-0 text-right w-36"
+              className="text-xs text-gray-400 dark:text-gray-500 bg-transparent border-0 focus:outline-none focus:ring-0 text-right w-36 placeholder:text-gray-300 dark:placeholder:text-gray-600"
             />
           </div>
 
           {/* Items */}
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
             {category.items.map((item, idx) => (
               <div key={idx} className="px-4 py-3 flex items-start gap-3">
                 {/* Veg toggle */}
@@ -131,14 +131,14 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
                     value={item.name}
                     onChange={(e) => updateItem(catKey, idx, 'name', e.target.value)}
                     placeholder="Item name"
-                    className="text-sm font-medium text-gray-800 border-0 border-b border-gray-200 focus:outline-none focus:border-indigo-400 py-0.5 bg-transparent"
+                    className="text-sm font-medium text-gray-800 dark:text-gray-200 border-0 border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 py-0.5 bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
                   />
                   <input
                     type="text"
                     value={item.description}
                     onChange={(e) => updateItem(catKey, idx, 'description', e.target.value)}
                     placeholder="Description"
-                    className="text-xs text-gray-500 border-0 border-b border-gray-100 focus:outline-none focus:border-indigo-400 py-0.5 bg-transparent"
+                    className="text-xs text-gray-500 dark:text-gray-400 border-0 border-b border-gray-100 dark:border-gray-700/50 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 py-0.5 bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
                   />
                 </div>
 
@@ -149,7 +149,7 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
                     value={item.price}
                     onChange={(e) => updateItem(catKey, idx, 'price', e.target.value)}
                     placeholder="Price"
-                    className="w-full text-sm text-right font-medium text-gray-700 border-0 border-b border-gray-200 focus:outline-none focus:border-indigo-400 py-0.5 bg-transparent"
+                    className="w-full text-sm text-right font-medium text-gray-700 dark:text-gray-300 border-0 border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 py-0.5 bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
                   />
                 </div>
 
@@ -157,7 +157,7 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
                 <button
                   type="button"
                   onClick={() => removeItem(catKey, idx)}
-                  className="mt-0.5 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                  className="mt-0.5 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
                   title="Remove item"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -169,11 +169,11 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
           </div>
 
           {/* Add item */}
-          <div className="px-4 py-2 bg-gray-50 border-t border-gray-100">
+          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/60">
             <button
               type="button"
               onClick={() => addItem(catKey)}
-              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

@@ -38,7 +38,7 @@ const STATUS_TEXT: Record<DisplayStatus, string> = {
   inactive:  'text-red-600 dark:text-red-400',
 };
 
-const MAX_PREVIEW_SCALE = 0.55;
+const MAX_PREVIEW_SCALE = 0.8;
 
 function PagePreview({ slug, name }: { slug: string; name: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
