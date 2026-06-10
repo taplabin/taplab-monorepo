@@ -531,7 +531,7 @@ export default function Analytics() {
               <div>
                 <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">90-day data retention</p>
                 <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
-                  Cloudflare only keeps analytics for 90 days. Download a CSV to archive before data expires.
+                  Your analytics wil be only kept for 90 days. Download a CSV to archive before data expires.
                 </p>
               </div>
             </div>

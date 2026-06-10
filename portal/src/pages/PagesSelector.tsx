@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -37,6 +38,40 @@ const STATUS_TEXT: Record<DisplayStatus, string> = {
   inactive:  'text-red-600 dark:text-red-400',
 };
 
+function PagePreview({ slug, name }: { slug: string; name: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.5);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    setScale(containerRef.current.offsetWidth / 390);
+  }, []);
+
+  const iframeH = Math.ceil(192 / scale);
+
+  return (
+    <div ref={containerRef} className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
+      {/* Shimmer until iframe loads */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-750" />
+      )}
+      <div style={{ transformOrigin: 'top left', transform: `scale(${scale})`, width: 390, pointerEvents: 'none' }}>
+        <iframe
+          src={`https://taplab.in/${slug}`}
+          width={390}
+          height={iframeH}
+          scrolling="no"
+          loading="lazy"
+          title={name}
+          onLoad={() => setLoaded(true)}
+          style={{ display: 'block', border: 'none' }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function PageCard({
   business,
   isSelected,
@@ -57,21 +92,24 @@ function PageCard({
           : 'border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg'
       } bg-white dark:bg-gray-900`}
     >
-      {/* Preview placeholder */}
-      <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-              {business.businessName.charAt(0).toUpperCase()}
-            </span>
+      {/* Preview */}
+      <div className="relative">
+        {business.pageStatus === 'deployed' ? (
+          <PagePreview slug={business.slug} name={business.businessName} />
+        ) : (
+          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {business.businessName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500">No page deployed yet</p>
+            </div>
           </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            {business.pageStatus === 'no_page' ? 'No page deployed yet' : `taplab.in/${business.slug}`}
-          </p>
-        </div>
-
+        )}
         {isSelected && (
-          <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+          <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full z-10">
             Selected
           </div>
         )}
