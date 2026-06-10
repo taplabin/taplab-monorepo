@@ -1,91 +1,126 @@
-(Always follow this sequence or else you're fucked)
-List and sequence of commands :-
+# TapLab — New Client Onboarding Sequence
 
-1) Data Aquisition :- 
+> Follow this sequence exactly. Do not skip or reorder steps.
 
-- Clients should Agree on a recurring price for subscription. Note down the recurring price.
+---
 
-- Client should agree on the billing cycle i.e. Per month or Per year.  (Needed for cloud/maintainence)
+## Step 1 — Data Acquisition
 
-- Collect data from your client. Take pictures of their menu or whatever else. Or take illustrations from Pinterest that they like. Keep ready 2-3 PNGs or JPGs. (Needed for development)
+Before touching any code, collect the following from the client:
 
-- Take their email as well. (Needed for their CMS login)
+- **Recurring price** — Agree on a subscription price and note it down.
+- **Billing cycle** — Confirm whether they want monthly or yearly billing. *(Required for cloud/maintenance setup.)*
+- **Visual assets** — Photograph their menu or collect 2–3 reference images/illustrations (PNGs or JPGs) from Pinterest or similar. *(Required for development.)*
+- **Email address** — Their primary email. *(Required for CMS login.)*
 
-2) For a new business we have to scaffold a project (Go to the root of the monorepo)
+---
 
-General Formula :- 
+## Step 2 — Scaffold the Project
+
+From the **root of the monorepo**, run:
+
+```bash
+# General formula
 node scripts/new-page.js slug_name "Business Name"
 
-Example :-
+# Example
 node scripts/new-page.js thegluck "THE GLÜCK"
+```
 
-This creates the new project. For every new business webpage, we create a new project... You cannot push this on the monorepo because it is gitignored. That keeps the monorepo light. It stays on your PC.
+This creates a new project for the business. Every client gets their own project.
 
-3) This is a must. Install dependencies -
+> **Note:** These projects are gitignored and will not be pushed to the monorepo — that's intentional, to keep the repo lightweight. The project lives on your local machine only.
 
+---
+
+## Step 3 — Install Dependencies
+
+```bash
 cd pages/slug_name
 
 npm install
+```
 
-4) To position your development :-
+This step is mandatory. Do not skip it.
 
-- Go to claude on your browser.
+---
 
-- Give all sample images that you collected in step 1. Also attach TAPLAB_PROMPT.md file from project root. And write in the input box "slug name=whatever, Business name=whatever" 
-This is your prompt to Claude. Hit send.
+## Step 4 — Generate the Initial Design with Claude
 
-- Claude will give you App.tsx and content.ts
+1. Open Claude in your browser.
+2. Upload the images collected in Step 1 and attach the `TAPLAB_PROMPT.md` file from the project root.
+3. In the message box, type: `slug name=whatever, Business name=whatever` and send.
+4. Claude will return `App.tsx` and `content.ts`.
+5. Paste both files into the `src` folder of the scaffolded project.
 
-- Paste those in the newly scaffolded project in src folder.
+---
 
-5) Development :-
+## Step 5 — Development & Client Review
 
-- Ask customers for their requirements.
+- Gather any specific requirements from the client.
+- Make style adjustments inside the `<style>` tag of `App.tsx` until the design matches expectations.
 
-- Make changes in the style tag of App.tsx to get the desired output.
+To preview locally:
 
-To check locally -
- 
+```bash
 cd pages/slug_name
 
 npm run dev
+```
 
-- Important Step :- Show customers the local output and get their approval before moving to the next steps. Keeps things clean.
+> **Important:** Show the client the local preview and get their explicit approval before proceeding. This avoids rework down the line.
 
-6) To build the project - 
+---
 
+## Step 6 — Build the Project
+
+Once the client has approved the design:
+
+```bash
 cd pages/slug_name
 
 npm run build
-(Side note :- Don't run this in the template project)
+```
 
-- This creates the JS bundle in dist which goes to the bucket on the cloud.
+> **Warning:** Do not run this inside the template project. The build generates `App.js` and `content.js` in `src`, and `deploy.js` in `scripts` — running it in the template will pollute every future project scaffolded from it.
 
-- Also creates App.js and content.js in src. And deploy.js in script. That's why don't run this in template. Or else those files will be in every subsequent new project for a new client
+After building, do a final local check:
 
-- Again check locally. npm run dev. Same output. All good.
+```bash
+npm run dev
+```
 
-7) Post Development (Agreed design)
+Confirm the output matches the approved design. If it does, you're good to go.
 
-- Go to admin.taplab.in
-- Add new business 
-- respective slug name and business.
-- email that you took in step 1
-- Price and billing cycle that you agreed in step 1
-- Hit create. This creates their firestore doc which is needed for deployment.
+---
 
-- You'll get 2 links :-
-1) Customer Razorpay subscription
-2) Their CMS portal login where they can edit the contents of the page and more
+## Step 7 — Register the Business in Admin
 
-- Send both these to them on WhatsApp or Email
+1. Go to [admin.taplab.in](https://admin.taplab.in).
+2. Click **Add New Business** and fill in:
+   - Slug name and business name
+   - Client email (from Step 1)
+   - Agreed price and billing cycle (from Step 1)
+3. Hit **Create**. This provisions their Firestore document, which is required before deployment.
 
-8) Deployment (final step) -
+You'll receive two links:
+1. **Razorpay subscription link** — send this to the client for payment setup.
+2. **CMS portal login** — where the client can edit their page content.
 
+Send both links to the client via WhatsApp or email.
+
+---
+
+## Step 8 — Deploy
+
+```bash
 cd pages/slug_name
 
-General formula :-
+# General formula
 npm run deploy --slug=slug_name
 
-Example :-
+# Example
 npm run deploy --slug=thegluck
+```
+
+> **Critical:** Do Steps 7 and 8 back-to-back without delay. The Firestore document created in Step 7 must exist before deployment runs.

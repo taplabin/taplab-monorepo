@@ -16,6 +16,7 @@ export default function AddBusiness() {
     billingCycle: 'monthly' as 'monthly' | 'yearly',
     freeTrialEnabled: false,
     trialDurationDays: 7,
+    firstBillingDate: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,9 +36,15 @@ export default function AddBusiness() {
     setLoading(true);
 
     try {
+      const payload: any = { ...formData };
+      if (formData.firstBillingDate) {
+        payload.startAt = Math.floor(new Date(formData.firstBillingDate).getTime() / 1000);
+      }
+      delete payload.firstBillingDate;
+
       const res = await adminFetch('/api/admin/business', {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -120,6 +127,7 @@ export default function AddBusiness() {
                     billingCycle: 'monthly',
                     freeTrialEnabled: false,
                     trialDurationDays: 7,
+                    firstBillingDate: '',
                   });
                 }}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
@@ -208,6 +216,20 @@ export default function AddBusiness() {
                   <option value="yearly">Yearly</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                First billing date{' '}
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">(optional — defaults to today)</span>
+              </label>
+              <input
+                type="date"
+                value={formData.firstBillingDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setFormData({ ...formData, firstBillingDate: e.target.value })}
+                className={inputClass}
+              />
             </div>
 
             <div className="flex items-center gap-3 py-1">

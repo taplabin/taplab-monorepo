@@ -48,7 +48,8 @@ export async function getOrCreatePlan(
 export async function createSubscriptionAndLink(
   businessName: string,
   amount: number,
-  billingCycle: 'monthly' | 'yearly'
+  billingCycle: 'monthly' | 'yearly',
+  startAt?: number
 ) {
   if (!razorpay) {
     // Return mock data for development
@@ -61,12 +62,16 @@ export async function createSubscriptionAndLink(
 
   const planId = await getOrCreatePlan(amount, billingCycle);
 
-  const subscription: any = await razorpay.subscriptions.create({
+  const subscriptionParams: any = {
     plan_id: planId,
     total_count: billingCycle === 'monthly' ? 120 : 10, // max 10 years
     quantity: 1,
     notes: { businessName },
-  });
+  };
+
+  if (startAt) subscriptionParams.start_at = startAt;
+
+  const subscription: any = await razorpay.subscriptions.create(subscriptionParams);
 
   // Subscriptions have their own hosted payment page — no separate payment link needed
   return {

@@ -42,7 +42,7 @@ export async function analyticsRoute(app: FastifyInstance) {
     if (!slug) return reply.status(400).send({ error: 'slug is required' });
 
     // Reject malformed slugs before using in SQL
-    if (!/^[a-z0-9-]+$/.test(slug)) return reply.status(400).send({ error: 'Invalid slug' });
+    if (!/^[a-z0-9_-]+$/.test(slug)) return reply.status(400).send({ error: 'Invalid slug' });
 
     // Verify ownership
     const doc = await db.collection('businesses').doc(slug).get();
@@ -183,7 +183,7 @@ export async function analyticsRoute(app: FastifyInstance) {
 
     const { slug } = req.query;
     if (!slug) return reply.status(400).send({ error: 'slug is required' });
-    if (!/^[a-z0-9-]+$/.test(slug)) return reply.status(400).send({ error: 'Invalid slug' });
+    if (!/^[a-z0-9_-]+$/.test(slug)) return reply.status(400).send({ error: 'Invalid slug' });
 
     const doc = await db.collection('businesses').doc(slug).get();
     if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
