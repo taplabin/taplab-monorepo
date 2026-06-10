@@ -15,7 +15,6 @@ interface Business {
   pricingAmount: number;
   billingCycle: 'monthly' | 'yearly';
   pageStatus: 'no_page' | 'deployed';
-  pageViews?: number;
 }
 
 type DisplayStatus = 'active' | 'trial' | 'cancelled' | 'inactive';
@@ -136,8 +135,7 @@ export default function Overview() {
     .filter((b) => b.subscriptionStatus === 'active' && b.billingCycle === 'yearly')
     .reduce((sum, b) => sum + b.pricingAmount, 0);
 
-  const totalPageViews = businesses.reduce((sum, b) => sum + (b.pageViews ?? 0), 0);
-  const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
+const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
 
   const colorClasses: Record<string, string> = {
     green:  'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
@@ -158,7 +156,6 @@ export default function Overview() {
     { label: 'Monthly Rev.',     value: inr(rawMRR),                            color: 'indigo' },
     { label: 'Annual Rev.',      value: inr(rawARR),                            color: 'purple' },
     { label: 'Awaiting Page',    value: counts.noPage,                          color: 'gray' },
-    { label: 'Total Page Views', value: totalPageViews.toLocaleString('en-IN'), color: 'teal' },
   ];
 
   const inputClass = 'w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow';

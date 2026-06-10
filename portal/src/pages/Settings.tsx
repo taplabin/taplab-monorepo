@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useBusiness } from '../context/BusinessContext';
@@ -8,7 +9,7 @@ import Layout from '../components/Layout';
 import { PageSkeleton } from '../components/Skeleton';
 
 export default function Settings() {
-  const { business, loading, error } = useBusiness();
+  const { business, businesses, loading, error } = useBusiness();
   const { theme, toggleTheme } = useTheme();
   const toast = useToast();
   const [currentPw, setCurrentPw] = useState('');
@@ -142,6 +143,22 @@ export default function Settings() {
             </button>
           </form>
         </div>
+
+        {/* Switch page — mobile only, multi-page users */}
+        {businesses.length > 1 && (
+          <div className="md:hidden bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Pages</p>
+            <Link
+              to="/pages"
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              Switch page
+            </Link>
+          </div>
+        )}
 
         {/* Sign out — mobile only */}
         <div className="md:hidden bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">

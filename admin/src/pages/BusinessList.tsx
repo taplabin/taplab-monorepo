@@ -18,7 +18,6 @@ interface Business {
   pricingAmount: number;
   billingCycle: 'monthly' | 'yearly';
   createdAt: { seconds: number };
-  pageViews?: number;
 }
 
 type FilterTab = DisplayStatus | 'all';
@@ -152,14 +151,13 @@ export default function BusinessList() {
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Subscription</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Page</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Billing</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Views</th>
                     <th className="relative py-3 pl-3 pr-4"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                      <td colSpan={6} className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
                         No businesses in this category.
                       </td>
                     </tr>
@@ -194,9 +192,6 @@ export default function BusinessList() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                           ₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'mo' : 'yr'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {(business.pageViews ?? 0).toLocaleString('en-IN')}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
                           <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">

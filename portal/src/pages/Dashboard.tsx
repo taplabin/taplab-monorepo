@@ -158,17 +158,6 @@ export default function Dashboard() {
           </a>
         </div>
 
-        {/* Page views */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Total Page Views</p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{business.pageViews.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Rough estimate — CDN caching applies</p>
-          </div>
-          <svg className="w-10 h-10 text-indigo-200 dark:text-indigo-900" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-          </svg>
-        </div>
 
         {/* QR Code */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 flex flex-col items-center gap-4">
