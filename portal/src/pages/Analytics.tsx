@@ -514,6 +514,25 @@ export default function Analytics() {
   }));
   const maxLangViews = Math.max(...langSegments.map((s) => s.value), 1);
 
+  if (business.pageStatus === 'no_page') {
+      return (
+        <Layout>
+          <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Analytics</h1>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">How your page is performing</p>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-10 text-center">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">No page deployed yet</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-xs mx-auto">
+                Your analytics will be visible here once page has been deployed.
+              </p>
+            </div>
+          </div>
+        </Layout>
+      );
+    }
+
   return (
     <Layout>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
