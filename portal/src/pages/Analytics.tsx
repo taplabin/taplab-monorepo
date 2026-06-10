@@ -84,9 +84,9 @@ function BarChart30({ data }: { data: { date: string; views: number }[] }) {
   const labelIdx = new Set([0, 9, 19, 29]);
   return (
     <div>
-      <div className="flex items-end gap-px h-24">
+      <div className="flex gap-px h-24">
         {data.map((day) => (
-          <div key={day.date} className="flex-1 flex flex-col items-center justify-end group relative">
+          <div key={day.date} className="flex-1 relative group">
             <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
               <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap">
                 {Number(day.views).toLocaleString('en-IN')}
@@ -95,7 +95,7 @@ function BarChart30({ data }: { data: { date: string; views: number }[] }) {
             </div>
             <div
               style={{ height: `${Math.max((day.views / maxViews) * 100, day.views > 0 ? 3 : 0)}%` }}
-              className="w-full bg-indigo-500 dark:bg-indigo-400 rounded-t-sm group-hover:bg-indigo-400 dark:group-hover:bg-indigo-300 transition-colors"
+              className="absolute bottom-0 left-0 right-0 bg-indigo-500 dark:bg-indigo-400 rounded-t-sm group-hover:bg-indigo-400 dark:group-hover:bg-indigo-300 transition-colors"
             />
           </div>
         ))}
@@ -124,9 +124,9 @@ function SmallBarChart({ data, labelKey, viewsKey, labelFn }: {
   const items = data.map((r) => ({ label: r[labelKey], views: Number(r[viewsKey]) }));
   const maxV = Math.max(...items.map((i) => i.views), 1);
   return (
-    <div className="flex items-end gap-0.5 h-16">
+    <div className="flex gap-0.5 h-16">
       {items.map((item, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center justify-end group relative">
+        <div key={i} className="flex-1 relative group">
           <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
             <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap">
               {labelFn ? labelFn(item.label) : String(item.label)}: {item.views.toLocaleString('en-IN')}
@@ -134,7 +134,7 @@ function SmallBarChart({ data, labelKey, viewsKey, labelFn }: {
           </div>
           <div
             style={{ height: `${Math.max((item.views / maxV) * 100, item.views > 0 ? 4 : 0)}%` }}
-            className="w-full bg-indigo-500 dark:bg-indigo-400 rounded-t-sm"
+            className="absolute bottom-0 left-0 right-0 bg-indigo-500 dark:bg-indigo-400 rounded-t-sm"
           />
         </div>
       ))}
@@ -363,11 +363,11 @@ export default function Analytics() {
                 <p className="text-xs text-gray-400 dark:text-gray-500">No data yet.</p>
               ) : (
                 <div>
-                  <div className="flex items-end gap-px h-16">
+                  <div className="flex gap-px h-16">
                     {hourData.map((h) => {
                       const maxH = Math.max(...hourData.map((x) => x.views), 1);
                       return (
-                        <div key={h.hour} className="flex-1 flex flex-col items-center justify-end group relative">
+                        <div key={h.hour} className="flex-1 relative group">
                           <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
                             <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[9px] px-1 py-0.5 rounded whitespace-nowrap">
                               {formatHourLabel(h.hour)}: {h.views}
@@ -375,7 +375,7 @@ export default function Analytics() {
                           </div>
                           <div
                             style={{ height: `${Math.max((h.views / maxH) * 100, h.views > 0 ? 4 : 0)}%` }}
-                            className="w-full bg-purple-400 dark:bg-purple-500 rounded-t-sm"
+                            className="absolute bottom-0 left-0 right-0 bg-purple-400 dark:bg-purple-500 rounded-t-sm"
                           />
                         </div>
                       );

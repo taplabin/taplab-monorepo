@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { defaultContent } from './content';
 
 const API_BASE = 'https://api.taplab.in';
-const ANALYTICS_URL = 'https://analytics.taplab.in';
+const ANALYTICS_URL = 'https://poop.taplab.in';
 
 export default function PageApp({ slug }: { slug: string }) {
   const [content, setContent] = useState<Record<string, string> | null>(null);
@@ -45,10 +45,12 @@ export default function PageApp({ slug }: { slug: string }) {
       if (sent) return;
       sent = true;
       const duration = Math.round((Date.now() - startTime) / 1000);
-      navigator.sendBeacon(
-        `${ANALYTICS_URL}/session`,
-        new Blob([JSON.stringify({ businessId: slug, duration })], { type: 'application/json' })
-      );
+      fetch(`${ANALYTICS_URL}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId: slug, duration }),
+        keepalive: true,
+      }).catch(() => {});
     }
 
     function onVisibility() {

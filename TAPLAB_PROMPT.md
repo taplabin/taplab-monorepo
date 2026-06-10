@@ -52,7 +52,7 @@ import { useState, useEffect } from 'react';
 import { defaultContent } from './content';
 
 const API_BASE = 'https://api.taplab.in';
-const ANALYTICS_URL = 'https://analytics.taplab.in';
+const ANALYTICS_URL = 'https://poop.taplab.in';
 
 export default function App({ slug }: { slug: string }) {
   const [content, setContent] = useState<Record<string, string> | null>(null);
@@ -139,10 +139,12 @@ useEffect(() => {
     if (sent) return;
     sent = true;
     const duration = Math.round((Date.now() - startTime) / 1000);
-    navigator.sendBeacon(
-      `${ANALYTICS_URL}/session`,
-      new Blob([JSON.stringify({ businessId: slug, duration })], { type: 'application/json' })
-    );
+    fetch(`${ANALYTICS_URL}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId: slug, duration }),
+        keepalive: true,
+      }).catch(() => {});
   }
 
   function onVisibility() {
@@ -161,7 +163,7 @@ useEffect(() => {
 ### Rules:
 - Always nest the pageview `fetch` inside the content `.then()` — guarantees it only fires after a real render, not on fetch error fallbacks
 - Always `.catch(() => {})` the pageview fetch — a failed analytics call must never affect the user
-- Use `navigator.sendBeacon` with a `Blob` for the session event — it is the only API that reliably fires when the page closes on mobile (NFC tap users)
+- Use `fetch` with `keepalive: true` for the session event — it fires reliably during page unload and is not blocked by ad blockers the way `sendBeacon` is
 - Never `await` either analytics call or block rendering on them
 - Do not add any of these fields to `content.ts` — they are structural, not editable
 
@@ -253,7 +255,7 @@ In `App.tsx`, parse it back with `useMemo` and use the typed result to render.
 - [ ] `useEffect` fetches from `https://api.taplab.in/page/${slug}/content`
 - [ ] `useState` initializes to `null`, not `defaultContent` — `if (!content) return null` guards the render
 - [ ] Content `useEffect` fires `${ANALYTICS_URL}/pageview` inside the `.then()` with returning + UTM fields
-- [ ] Separate session `useEffect` with `[]` deps sets up `visibilitychange` + `beforeunload` using `sendBeacon`
+- [ ] Separate session `useEffect` with `[]` deps sets up `visibilitychange` + `beforeunload` using `fetch` with `keepalive: true`
 
 ## Page type conventions
 
