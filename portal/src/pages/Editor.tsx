@@ -4,6 +4,8 @@ import { useToast } from '../components/Toast';
 import { portalFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import MenuEditor from '../components/MenuEditor';
+import PortfolioEditor from '../components/PortfolioEditor';
+import BrochureEditor from '../components/BrochureEditor';
 import { PageSkeleton } from '../components/Skeleton';
 
 function toLabel(key: string): string {
@@ -101,6 +103,16 @@ export default function Editor() {
               {key === 'menu_data' ? (
                 <MenuEditor
                   value={content[key] ?? '{}'}
+                  onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
+                />
+              ) : key === 'portfolio_data' ? (
+                <PortfolioEditor
+                  value={content[key] ?? '[]'}
+                  onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
+                />
+              ) : key === 'brochure_data' ? (
+                <BrochureEditor
+                  value={content[key] ?? '[]'}
                   onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
                 />
               ) : isJsonObject(content[key] ?? '') ? (

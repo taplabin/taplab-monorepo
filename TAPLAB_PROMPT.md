@@ -74,16 +74,16 @@ export default function App({ slug }: { slug: string }) {
 }
 ```
 
-If the page has structured list data (e.g. menu items), add `useMemo` to parse it:
+If the page has structured list data (e.g. menu items), add `useMemo` to parse it. Use the type-specific key name — `menu_data` for menus, `portfolio_data` for portfolios, `brochure_data` for brochures:
 
 ```tsx
 import { useState, useEffect, useMemo } from 'react';
 
 // inside the component (use optional chaining — content is null before fetch resolves):
-const pageData = useMemo(() => {
-  try { return JSON.parse(content?.page_data ?? '{}'); }
+const menuData = useMemo(() => {
+  try { return JSON.parse(content?.menu_data ?? '{}'); }
   catch { return {}; }
-}, [content?.page_data]);
+}, [content?.menu_data]);
 ```
 
 ---
@@ -192,37 +192,76 @@ All values must be strings. Numbers become `'299'`, booleans become `'true'` / `
 - Section headers or labels that are business-specific
 - Prices that appear as standalone text
 
-### Store as a single JSON string key (`page_data`):
-Use this when the page has a list of structured items — menu items, portfolio projects, services, team members, etc. — where each item has multiple fields.
+### Store as a type-specific JSON string key:
+Use this when the page has structured list data. The key name is fixed by page type — do not use `page_data` or any other invented name. The portal editor uses the key name to decide which visual editor to render, so the name must be exact.
 
-The shape inside the JSON depends on the page type:
+**Menu pages → key must be `menu_data`**
 
-**Menu:**
+Use the exact structure below. This is the canonical production format used across all TapLab menu pages.
+
 ```ts
-const items = {
-  starters: { label: 'STARTERS', items: [{ name: '', price: '', description: '', veg: true }] },
-  mains:    { label: 'MAINS',    items: [...] },
+const menuData = {
+  category_key: {                          // lowercase snake_case key, e.g. starters, main_course
+    label: 'CATEGORY NAME',               // display label shown on the page
+    priceNote: '4PC / 6PC',              // optional — omit if not needed
+    items: [
+      {
+        name: 'Item Name',
+        price: '299',                     // always a string; use '289 / 369' for range prices
+        description: 'Description of the item.',
+        veg: true,                        // boolean: true = veg, false = non-veg
+      },
+    ],
+  },
+  // add more categories as needed
 };
-page_data: JSON.stringify(items)
+
+export const defaultContent: Record<string, string> = {
+  // ... flat keys ...
+  menu_data: JSON.stringify(menuData),
+};
 ```
 
-**Portfolio:**
+Rules:
+- Category keys: lowercase `snake_case` only (e.g. `cold_drinks`, `main_course`)
+- Every item must have exactly these four fields: `name`, `price`, `description`, `veg` — no extras
+- `veg: true` for vegetarian/vegan; `veg: false` for non-veg; use `true` for ambiguous items (desserts, drinks) unless clearly meat-based
+- `priceNote` is optional — only add it if the category genuinely has a pricing note
+
+**Portfolio pages → key must be `portfolio_data`**
+
 ```ts
-const items = [
-  { title: '', category: '', description: '', year: '' },
+const portfolioData = [
+  {
+    title: 'Project Name',
+    category: 'Category',          // e.g. Branding, Web Design, Photography
+    description: 'Short description of the project.',
+    year: '2024',
+  },
 ];
-page_data: JSON.stringify(items)
+
+portfolio_data: JSON.stringify(portfolioData)
 ```
 
-**Brochure:**
+Every item must have exactly: `title`, `category`, `description`, `year` — no extra fields.
+
+**Brochure pages → key must be `brochure_data`**
+
 ```ts
-const items = [
-  { heading: '', body: '', icon: '' },
+const brochureData = [
+  {
+    heading: 'Feature or Service Name',
+    body: 'One or two sentence description.',
+    icon: '✦',                     // a single emoji or symbol
+  },
 ];
-page_data: JSON.stringify(items)
+
+brochure_data: JSON.stringify(brochureData)
 ```
 
-In `App.tsx`, parse it back with `useMemo` and use the typed result to render.
+Every item must have exactly: `heading`, `body`, `icon` — no extra fields.
+
+In `App.tsx`, parse it back with `useMemo` using the correct key name for the page type.
 
 ### Leave hardcoded (do NOT put in content.ts):
 - Structural UI labels that are not business-specific: filter button labels (`'All'`, `'Veg'`, `'Non-Veg'`), item count display (`'{n} items'`)
@@ -236,7 +275,7 @@ In `App.tsx`, parse it back with `useMemo` and use the typed result to render.
 
 | Thing | Format | Example |
 |---|---|---|
-| Content key | `snake_case` | `brand_name`, `page_data` |
+| Content key | `snake_case` | `brand_name`, `menu_data`, `portfolio_data` |
 | Slug (hyphenated) | `kebab-case` | `the-gluck` |
 | SLUG constant | `snake_case` | `the_gluck` |
 | TAG_NAME | `taplab-page-{slug}` | `taplab-page-the-gluck` |
@@ -247,7 +286,8 @@ In `App.tsx`, parse it back with `useMemo` and use the typed result to render.
 
 - [ ] Every visible string on the page comes from `content.someKey`
 - [ ] `defaultContent` has all keys that `App.tsx` references
-- [ ] Structured list data is stored as `JSON.stringify(...)` in one key
+- [ ] Structured list data uses the correct type-specific key: `menu_data` / `portfolio_data` / `brochure_data` — never `page_data`
+- [ ] The JSON shape inside that key matches exactly the structure defined in this guide — no extra or missing fields
 - [ ] `App.tsx` exports `default function App({ slug }: { slug: string })`
 - [ ] No `"use client"` directive (this is not Next.js)
 - [ ] No imports from `next/*`, `next/navigation`, etc.
@@ -259,13 +299,14 @@ In `App.tsx`, parse it back with `useMemo` and use the typed result to render.
 
 ## Page type conventions
 
-The visual structure and `page_data` shape vary by page type. Always match the layout to the type confirmed in the intake.
+The visual structure and structured data key vary by page type. Always match the layout to the type confirmed in the intake.
 
 **Menu pages:**
 - Header with brand name, cuisine type, tagline
 - Category tabs or filter buttons (Veg / Non-Veg / All)
 - Item cards with name, price, description, veg indicator
 - Footer with notice (e.g. no service charge) and Powered by TapLab
+- **Never hardcode a `CATEGORY_ORDER` array.** Always derive the category list dynamically: `const categories = Object.keys(menuData)`. This ensures sections added later through the portal editor appear on the live page without a redeploy.
 
 **Portfolio pages:**
 - Hero with name, role, one-line bio
@@ -275,8 +316,8 @@ The visual structure and `page_data` shape vary by page type. Always match the l
 
 **Brochure pages:**
 - Hero with business name, tagline, CTA
-- Service or feature cards from `page_data`
+- Service or feature cards from `brochure_data`
 - Optional testimonial or stat section (flat keys in content.ts)
 - Contact or location section at bottom
 
-For **Other** page types: use judgment based on the description given in intake. Follow all the same rules — flat keys for standalone strings, `page_data` for structured lists.
+For **Other** page types: use judgment based on the description given in intake. Follow all the same rules — flat keys for standalone strings, a descriptive `_data` key (e.g. `schedule_data`, `links_data`) for structured lists.
