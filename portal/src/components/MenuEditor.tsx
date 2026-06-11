@@ -204,7 +204,6 @@ export default function MenuEditor({ value, onChange }: MenuEditorProps) {
           </div>
         </div>
       ))}
-    </div>
 
       <button
         type="button"
