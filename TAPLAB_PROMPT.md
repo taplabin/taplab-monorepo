@@ -186,11 +186,26 @@ All values must be strings. Numbers become `'299'`, booleans become `'true'` / `
 ## Rules for deciding what goes in content.ts
 
 ### Always include as individual flat keys:
-- Business name, tagline, cuisine type line
-- Any notice, label, or short string the business might want to change (e.g. `'Extra Sauces — ₹39'`, `'We do not levy service charge'`)
-- Footer copyright line
-- Section headers or labels that are business-specific
-- Prices that appear as standalone text
+Every piece of info that is NOT a structured list must be a flat string key — never a nested object. The portal editor renders each flat key as a clean, labelled text input. If you put contact info, hours, or addresses inside a JSON object instead of as flat keys, the customer will see raw JSON in the editor.
+
+Use these standard key names whenever the field applies — do not invent variations:
+
+| Field | Key name |
+|---|---|
+| Business / brand name | `brand_name` |
+| Tagline or slogan | `tagline` |
+| Cuisine or category type | `cuisine_type` |
+| Phone number | `phone` |
+| WhatsApp number | `whatsapp` |
+| Email address | `email` |
+| Physical address | `address` |
+| Opening hours (as a single string) | `hours` |
+| Instagram URL | `instagram_url` |
+| Website URL | `website_url` |
+| Footer copyright line | `footer_copy` |
+| Any notice or disclaimer | `notice` |
+
+Add extra flat keys as needed for page-specific strings. Keep names lowercase and snake_case. Every flat key must be a plain string value — never a number, boolean, array, or object.
 
 ### Store as a type-specific JSON string key:
 Use this when the page has structured list data. The key name is fixed by page type — do not use `page_data` or any other invented name. The portal editor uses the key name to decide which visual editor to render, so the name must be exact.

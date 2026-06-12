@@ -8,18 +8,35 @@ import PortfolioEditor from '../components/PortfolioEditor';
 import BrochureEditor from '../components/BrochureEditor';
 import { PageSkeleton } from '../components/Skeleton';
 
+// Keys that get a dedicated visual editor — everything else is a flat info field
+const STRUCTURED_KEYS = ['menu_data', 'portfolio_data', 'brochure_data'];
+
+const STRUCTURED_LABEL: Record<string, string> = {
+  menu_data: 'Menu',
+  portfolio_data: 'Portfolio Projects',
+  brochure_data: 'Services & Features',
+};
+
 function toLabel(key: string): string {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return key
+    .replace(/_data$/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function isJsonObject(val: string): boolean {
-  try {
-    const p = JSON.parse(val);
-    return typeof p === 'object' && p !== null && !Array.isArray(p);
-  } catch {
-    return false;
-  }
+function inputTypeFor(key: string): 'text' | 'tel' | 'email' | 'url' {
+  if (/phone|tel|mobile|whatsapp/.test(key)) return 'tel';
+  if (/email/.test(key)) return 'email';
+  if (/url|website|instagram|facebook|twitter|linkedin/.test(key)) return 'url';
+  return 'text';
 }
+
+function isMultilineKey(key: string): boolean {
+  return /address|bio|description|about|notice|note|caption|hours/.test(key);
+}
+
+const inputClass =
+  'w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
 export default function Editor() {
   const { business, loading, error, refetch } = useBusiness();
@@ -83,64 +100,97 @@ export default function Editor() {
   };
 
   const keys = business.contentKeys.length > 0 ? business.contentKeys : Object.keys(content);
+  const infoKeys = keys.filter((k) => !STRUCTURED_KEYS.includes(k));
+  const structuredKey = keys.find((k) => STRUCTURED_KEYS.includes(k));
+
+  const setField = (key: string, val: string) =>
+    setContent((prev) => ({ ...prev, [key]: val }));
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Editor</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Edit your page content</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-6">
-          {keys.map((key) => (
-            <div key={key}>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                {toLabel(key)}
-              </label>
+        {/* ── Business Information ── */}
+        {infoKeys.length > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Business Information</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Text and details shown on your page</p>
+            </div>
+            <div className="p-5 space-y-4">
+              {infoKeys.map((key) => (
+                <div key={key}>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
+                    {toLabel(key)}
+                  </label>
+                  {isMultilineKey(key) ? (
+                    <textarea
+                      value={content[key] ?? ''}
+                      onChange={(e) => setField(key, e.target.value)}
+                      rows={3}
+                      className={inputClass}
+                    />
+                  ) : (
+                    <input
+                      type={inputTypeFor(key)}
+                      value={content[key] ?? ''}
+                      onChange={(e) => setField(key, e.target.value)}
+                      className={inputClass}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-              {key === 'menu_data' ? (
+        {/* ── Structured data editor ── */}
+        {structuredKey && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {STRUCTURED_LABEL[structuredKey] ?? toLabel(structuredKey)}
+              </h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Add, edit or remove items — changes save when you click Save below
+              </p>
+            </div>
+            <div className="p-5">
+              {structuredKey === 'menu_data' && (
                 <MenuEditor
-                  value={content[key] ?? '{}'}
-                  onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
+                  value={content[structuredKey] ?? '{}'}
+                  onChange={(val) => setField(structuredKey, val)}
                 />
-              ) : key === 'portfolio_data' ? (
+              )}
+              {structuredKey === 'portfolio_data' && (
                 <PortfolioEditor
-                  value={content[key] ?? '[]'}
-                  onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
+                  value={content[structuredKey] ?? '[]'}
+                  onChange={(val) => setField(structuredKey, val)}
                 />
-              ) : key === 'brochure_data' ? (
+              )}
+              {structuredKey === 'brochure_data' && (
                 <BrochureEditor
-                  value={content[key] ?? '[]'}
-                  onChange={(val) => setContent((prev) => ({ ...prev, [key]: val }))}
-                />
-              ) : isJsonObject(content[key] ?? '') ? (
-                <textarea
-                  value={content[key] ?? ''}
-                  onChange={(e) => setContent((prev) => ({ ...prev, [key]: e.target.value }))}
-                  rows={6}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={content[key] ?? ''}
-                  onChange={(e) => setContent((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={content[structuredKey] ?? '[]'}
+                  onChange={(val) => setField(structuredKey, val)}
                 />
               )}
             </div>
-          ))}
+          </div>
+        )}
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
-        </div>
+        {/* ── Save ── */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {saving ? 'Saving…' : 'Save Changes'}
+        </button>
 
       </div>
     </Layout>
