@@ -14,13 +14,14 @@ export default function AddBusiness() {
     ownerEmail: '',
     pricingAmount: 999,
     billingCycle: 'monthly' as 'monthly' | 'yearly',
+    setupFee: 0,
     freeTrialEnabled: false,
     trialDurationDays: 7,
     firstBillingDate: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<{ paymentLink: string; inviteLink: string | null } | null>(null);
+  const [result, setResult] = useState<{ paymentLink: string; inviteLink: string | null; setupFee: number } | null>(null);
 
   const handleSlugInput = (val: string) => {
     const formatted = val
@@ -53,7 +54,7 @@ export default function AddBusiness() {
       }
 
       const data = await res.json();
-      setResult({ paymentLink: data.paymentLink, inviteLink: data.inviteLink ?? null });
+      setResult({ paymentLink: data.paymentLink, inviteLink: data.inviteLink ?? null, setupFee: formData.setupFee });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -67,6 +68,11 @@ export default function AddBusiness() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 space-y-5">
             <h2 className="text-xl font-semibold text-green-900 dark:text-green-300">Business Created</h2>
+            {result.setupFee > 0 && (
+              <p className="text-sm text-green-800 dark:text-green-400">
+                First payment includes ₹{result.setupFee.toLocaleString('en-IN')} setup fee.
+              </p>
+            )}
 
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Link</p>
@@ -125,6 +131,7 @@ export default function AddBusiness() {
                     ownerEmail: '',
                     pricingAmount: 999,
                     billingCycle: 'monthly',
+                    setupFee: 0,
                     freeTrialEnabled: false,
                     trialDurationDays: 7,
                     firstBillingDate: '',
@@ -216,6 +223,26 @@ export default function AddBusiness() {
                   <option value="yearly">Yearly</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                Setup / Development Fee (₹){' '}
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">(optional — one-time, charged with first payment)</span>
+              </label>
+              <input
+                type="number"
+                value={formData.setupFee}
+                onChange={(e) => setFormData({ ...formData, setupFee: parseInt(e.target.value) || 0 })}
+                className={inputClass}
+                min="0"
+                placeholder="0"
+              />
+              {formData.setupFee > 0 && (
+                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                  First payment: ₹{(formData.setupFee + formData.pricingAmount).toLocaleString('en-IN')} (₹{formData.setupFee.toLocaleString('en-IN')} setup + ₹{formData.pricingAmount.toLocaleString('en-IN')} subscription). Subsequent payments: ₹{formData.pricingAmount.toLocaleString('en-IN')}.
+                </p>
+              )}
             </div>
 
             <div>

@@ -69,6 +69,16 @@ export default function Billing() {
             </span>
           </div>
 
+          {business?.setupFee ? (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Setup fee</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                ₹{business.setupFee.toLocaleString('en-IN')}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">one-time</span>
+            </div>
+          ) : null}
+
           {billing?.subscription && (
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
               <div className="flex justify-between text-sm">

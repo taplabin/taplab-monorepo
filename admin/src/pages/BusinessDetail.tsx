@@ -22,6 +22,7 @@ interface Business {
   lastDeployedAt: any;
   razorpaySubscriptionId: string | null;
   razorpayPaymentLink: string | null;
+  setupFee: number | null;
   createdAt: any;
   ownerEmail: string | null;
   ownerUid: string | null;
@@ -301,8 +302,14 @@ export default function BusinessDetail() {
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Subscription Details</h2>
           <dl className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
             <div>
-              <dt className={dtClass}>Pricing</dt>
-              <dd className={ddClass}>₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'month' : 'year'}</dd>
+              <dt className={dtClass}>Recurring Price</dt>
+              <dd className={ddClass}>₹{business.pricingAmount.toLocaleString('en-IN')}/{business.billingCycle === 'monthly' ? 'month' : 'year'}</dd>
+            </div>
+            <div>
+              <dt className={dtClass}>Setup / Dev Fee</dt>
+              <dd className={ddClass}>
+                {business.setupFee ? `₹${business.setupFee.toLocaleString('en-IN')} (one-time)` : '—'}
+              </dd>
             </div>
             <div>
               <dt className={dtClass}>Free Trial</dt>

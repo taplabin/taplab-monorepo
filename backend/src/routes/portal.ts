@@ -87,6 +87,7 @@ export async function portalRoute(app: FastifyInstance) {
       billingCycle: biz.billingCycle,
       pageStatus: biz.pageStatus,
       razorpayPaymentLink: biz.razorpayPaymentLink,
+      setupFee: biz.setupFee ?? null,
       content: biz.content ?? {},
       contentKeys: biz.contentKeys ?? Object.keys(biz.content ?? {}),
     });

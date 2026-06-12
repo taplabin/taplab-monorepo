@@ -49,7 +49,8 @@ export async function createSubscriptionAndLink(
   businessName: string,
   amount: number,
   billingCycle: 'monthly' | 'yearly',
-  startAt?: number
+  startAt?: number,
+  setupFee?: number
 ) {
   if (!razorpay) {
     // Return mock data for development
@@ -70,6 +71,18 @@ export async function createSubscriptionAndLink(
   };
 
   if (startAt) subscriptionParams.start_at = startAt;
+
+  if (setupFee && setupFee > 0) {
+    subscriptionParams.addons = [
+      {
+        item: {
+          name: 'Page Development',
+          amount: setupFee * 100, // paise
+          currency: 'INR',
+        },
+      },
+    ];
+  }
 
   const subscription: any = await razorpay.subscriptions.create(subscriptionParams);
 

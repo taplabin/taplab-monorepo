@@ -26,6 +26,7 @@ export interface BusinessDocument {
   // Razorpay
   razorpaySubscriptionId: string | null;
   razorpayPaymentLink: string | null;
+  setupFee: number | null;
 
   // Customer portal owner
   ownerEmail: string | null;

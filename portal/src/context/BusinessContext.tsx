@@ -25,6 +25,7 @@ export interface BusinessData {
   billingCycle: 'monthly' | 'yearly';
   pageStatus: 'no_page' | 'deployed';
   razorpayPaymentLink: string | null;
+  setupFee: number | null;
   content: Record<string, string>;
   contentKeys: string[];
 }

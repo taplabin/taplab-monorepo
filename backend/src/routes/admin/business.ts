@@ -16,6 +16,7 @@ export async function adminBusinessRoute(app: FastifyInstance) {
       freeTrialEnabled,
       trialDurationDays,
       startAt,
+      setupFee,
     } = req.body as any;
 
     // Validate slug format
@@ -42,7 +43,7 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     try {
       // Create Razorpay subscription and payment link
       const { razorpaySubscriptionId, paymentLinkUrl } =
-        await createSubscriptionAndLink(businessName, pricingAmount, billingCycle, startAt ?? undefined);
+        await createSubscriptionAndLink(businessName, pricingAmount, billingCycle, startAt ?? undefined, setupFee > 0 ? setupFee : undefined);
 
       // Create Firebase Auth user for the business owner (if email provided)
       let ownerUid: string | null = null;
@@ -93,6 +94,7 @@ export async function adminBusinessRoute(app: FastifyInstance) {
           lastDeployedAt: null,
           razorpaySubscriptionId,
           razorpayPaymentLink: paymentLinkUrl,
+          setupFee: setupFee > 0 ? setupFee : null,
           createdAt: new Date() as any,
         };
 
