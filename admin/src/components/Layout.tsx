@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
+import { useAlertCount } from '../hooks/useAlertCount';
 
 const NAV = [
   {
@@ -62,6 +63,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const alertCount = useAlertCount();
 
   function SidebarContent() {
     return (
@@ -83,7 +85,12 @@ export default function Layout({ children }: LayoutProps) {
               }
             >
               {item.icon}
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.to === '/alerts' && alertCount > 0 && (
+                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {alertCount > 99 ? '99+' : alertCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
