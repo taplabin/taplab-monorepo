@@ -108,21 +108,23 @@ useEffect(() => {
     .then((data) => {
       setContent({ ...defaultContent, ...data });
 
-      // Fire pageview event after content loads — nested so it only fires on real renders
-      fetch(`${ANALYTICS_URL}/pageview`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId:  slug,
-          referrer:    document.referrer,
-          screenWidth: window.screen.width,
-          language:    navigator.language,
-          returning:   isReturning,
-          utmSource:   params.get('utm_source')   ?? 'none',
-          utmMedium:   params.get('utm_medium')   ?? 'none',
-          utmCampaign: params.get('utm_campaign') ?? 'none',
-        }),
-      }).catch(() => {}); // fail silently — never break the page over analytics
+      // Fire pageview event after content loads — skip in dev so localhost visits don't pollute analytics
+      if (!import.meta.env.DEV) {
+        fetch(`${ANALYTICS_URL}/pageview`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId:  slug,
+            referrer:    document.referrer,
+            screenWidth: window.screen.width,
+            language:    navigator.language,
+            returning:   isReturning,
+            utmSource:   params.get('utm_source')   ?? 'none',
+            utmMedium:   params.get('utm_medium')   ?? 'none',
+            utmCampaign: params.get('utm_campaign') ?? 'none',
+          }),
+        }).catch(() => {}); // fail silently — never break the page over analytics
+      }
     })
     .catch(() => setContent(defaultContent));
 }, [slug]);
@@ -132,6 +134,8 @@ useEffect(() => {
 
 ```tsx
 useEffect(() => {
+  if (import.meta.env.DEV) return; // skip in development
+
   const startTime = Date.now();
   let sent = false;
 
@@ -309,8 +313,8 @@ In `App.tsx`, parse it back with `useMemo` using the correct key name for the pa
 - [ ] Tailwind classes only — no CSS modules, no styled-components
 - [ ] `useEffect` fetches from `https://api.taplab.in/page/${slug}/content`
 - [ ] `useState` initializes to `null`, not `defaultContent` — `if (!content) return null` guards the render
-- [ ] Content `useEffect` fires `${ANALYTICS_URL}/pageview` inside the `.then()` with returning + UTM fields
-- [ ] Separate session `useEffect` with `[]` deps sets up `visibilitychange` + `beforeunload` using `fetch` with `keepalive: true`
+- [ ] Content `useEffect` fires `${ANALYTICS_URL}/pageview` inside the `.then()`, wrapped in `if (!import.meta.env.DEV)`, with returning + UTM fields
+- [ ] Separate session `useEffect` with `[]` deps starts with `if (import.meta.env.DEV) return;`, then sets up `visibilitychange` + `beforeunload` using `fetch` with `keepalive: true`
 
 ## Page type conventions
 

@@ -39,6 +39,10 @@ export default {
     const body = await parseBody(request);
     if (!body) return err(400, 'Bad request');
 
+    // Drop events from local development — silently accept so the page doesn't error
+    const origin = request.headers.get('Origin') ?? '';
+    if (/localhost|127\.0\.0\.1/.test(origin)) return ok();
+
     const slug = sanitizeSlug(body.businessId);
     if (!slug) return err(400, 'Invalid businessId');
 
