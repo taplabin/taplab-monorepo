@@ -7,6 +7,7 @@ import { portalRoute } from './routes/portal.js';
 import { analyticsRoute } from './routes/analytics.js';
 import { adminBusinessRoute } from './routes/admin/business.js';
 import { adminPaymentsRoute } from './routes/admin/payments.js';
+import { adminStorageRoute } from './routes/admin/storage.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
 
 dotenv.config();
@@ -51,6 +52,7 @@ await app.register(async (adminApp) => {
   adminApp.addHook('preHandler', verifyAdmin);
   await adminApp.register(adminBusinessRoute);
   await adminApp.register(adminPaymentsRoute);
+  await adminApp.register(adminStorageRoute);
 }, { prefix: '/admin' });
 
 const port = Number(process.env.PORT) || 3000;
