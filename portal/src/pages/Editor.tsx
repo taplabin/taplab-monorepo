@@ -8,7 +8,7 @@ import PortfolioEditor from '../components/PortfolioEditor';
 import BrochureEditor from '../components/BrochureEditor';
 import { PageSkeleton } from '../components/Skeleton';
 
-// Keys that get a dedicated visual editor — everything else is a flat info field
+// Keys that get a dedicated visual editor
 const STRUCTURED_KEYS = ['menu_data', 'portfolio_data', 'brochure_data'];
 
 const STRUCTURED_LABEL: Record<string, string> = {
@@ -23,20 +23,6 @@ function toLabel(key: string): string {
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
-
-function inputTypeFor(key: string): 'text' | 'tel' | 'email' | 'url' {
-  if (/phone|tel|mobile|whatsapp/.test(key)) return 'tel';
-  if (/email/.test(key)) return 'email';
-  if (/url|website|instagram|facebook|twitter|linkedin/.test(key)) return 'url';
-  return 'text';
-}
-
-function isMultilineKey(key: string): boolean {
-  return /address|bio|description|about|notice|note|caption|hours/.test(key);
-}
-
-const inputClass =
-  'w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
 export default function Editor() {
   const { business, loading, error, refetch } = useBusiness();
@@ -100,7 +86,6 @@ export default function Editor() {
   };
 
   const keys = business.contentKeys.length > 0 ? business.contentKeys : Object.keys(content);
-  const infoKeys = keys.filter((k) => !STRUCTURED_KEYS.includes(k));
   const structuredKey = keys.find((k) => STRUCTURED_KEYS.includes(k));
 
   const setField = (key: string, val: string) =>
@@ -114,40 +99,6 @@ export default function Editor() {
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Editor</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Edit your page content</p>
         </div>
-
-        {/* ── Business Information ── */}
-        {infoKeys.length > 0 && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Business Information</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Text and details shown on your page</p>
-            </div>
-            <div className="p-5 space-y-4">
-              {infoKeys.map((key) => (
-                <div key={key}>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
-                    {toLabel(key)}
-                  </label>
-                  {isMultilineKey(key) ? (
-                    <textarea
-                      value={content[key] ?? ''}
-                      onChange={(e) => setField(key, e.target.value)}
-                      rows={3}
-                      className={inputClass}
-                    />
-                  ) : (
-                    <input
-                      type={inputTypeFor(key)}
-                      value={content[key] ?? ''}
-                      onChange={(e) => setField(key, e.target.value)}
-                      className={inputClass}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ── Structured data editor ── */}
         {structuredKey && (

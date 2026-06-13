@@ -5,7 +5,7 @@ import { db } from '../firestore.js';
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
 export async function webhookRoute(app: FastifyInstance) {
-  app.post('/webhooks/razorpay', async (req, reply) => {
+  app.post('/webhooks/razorpay', { config: { rateLimit: false } }, async (req, reply) => {
     // 1. Verify signature
     const signature = req.headers['x-razorpay-signature'] as string;
     const rawBody = req.body as Buffer;

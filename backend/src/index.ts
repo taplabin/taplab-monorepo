@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import dotenv from 'dotenv';
 import { pageRoute } from './routes/page.js';
 import { webhookRoute } from './routes/webhook.js';
@@ -31,6 +32,20 @@ app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, 
   }
 });
 
+// Rate limiting — uses CF-Connecting-IP so each real visitor is tracked
+// individually even though all traffic arrives via Cloudflare's IP range.
+// Webhook route is exempt (Razorpay must never be blocked).
+await app.register(rateLimit, {
+  global: true,
+  max: 100,
+  timeWindow: '1 minute',
+  keyGenerator: (req) =>
+    (req.headers['cf-connecting-ip'] as string) ?? req.ip,
+  errorResponseBuilder: (_req, context) => ({
+    error: `Too many requests — try again in ${Math.ceil(context.ttl / 1000)}s`,
+  }),
+});
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:5173', 'http://localhost:5174'];
@@ -40,6 +55,9 @@ await app.register(cors, {
   methods: ['GET', 'POST', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 });
+
+// Health check — used by UptimeRobot
+app.get('/health', async (_req, reply) => reply.send({ ok: true }));
 
 // Public routes
 await app.register(pageRoute);

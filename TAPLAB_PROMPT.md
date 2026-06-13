@@ -198,8 +198,18 @@ All values must be strings. Numbers become `'299'`, booleans become `'true'` / `
 
 ## Rules for deciding what goes in content.ts
 
+### What is and isn't customer-editable
+
+The portal editor only surfaces **structured data keys** (`menu_data`, `portfolio_data`, `brochure_data`). Everything else in `content.ts` is **set at deploy time and is not editable by the customer** — changing it requires updating `content.ts` and running a redeploy.
+
+| Key type | Editable by customer? | How to change |
+|---|---|---|
+| `menu_data` / `portfolio_data` / `brochure_data` | ✅ Yes — visual editor in portal | Customer edits in portal and saves |
+| Flat keys (`brand_name`, `phone`, `address`, etc.) | ❌ No | Update `content.ts` → redeploy |
+| Image / video keys (`hero_image`, etc.) | ❌ No | Upload new file to R2 → update URL in `content.ts` → redeploy |
+
 ### Always include as individual flat keys:
-Every piece of info that is NOT a structured list must be a flat string key — never a nested object. The portal editor renders each flat key as a clean, labelled text input. If you put contact info, hours, or addresses inside a JSON object instead of as flat keys, the customer will see raw JSON in the editor.
+Every piece of info that is NOT a structured list must be a flat string key — never a nested object. Even though these aren't customer-editable, keeping them as individual flat keys makes them easy to reference in `App.tsx` and easy to update during a redeploy.
 
 Use these standard key names whenever the field applies — do not invent variations:
 
