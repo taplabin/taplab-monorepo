@@ -50,6 +50,10 @@ function extractHash(key: string): string | null {
 export async function adminStorageRoute(app: FastifyInstance) {
   // Scan — returns orphaned files without deleting anything
   app.get('/storage/orphans', async (req, reply) => {
+    const missing = ['R2_ENDPOINT', 'R2_KEY_ID', 'R2_SECRET_KEY', 'R2_BUCKET'].filter((k) => !process.env[k]);
+    if (missing.length > 0) {
+      return reply.status(503).send({ error: `R2 not configured — missing: ${missing.join(', ')}` });
+    }
     const s3 = getS3();
     if (!s3 || !BUCKET()) return reply.status(503).send({ error: 'R2 not configured on this server' });
 
