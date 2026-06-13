@@ -14,12 +14,21 @@ When this guide is pasted without a slug, business name, or page type already pr
 
 3. **What is the slug?** (hyphenated lowercase, e.g. `blue-tokai`, `the-gluck`)
 
-4. **Do you have images or a written description of the content to work from?**
-   Upload images or paste the description after answering.
+4. **Do you have reference material for the design?**
+   Upload photos of the physical menu, interior, or any inspiration images. These are for design reference only — to inform the colour palette, layout style, and overall feel. They do not appear on the page.
 
-Once all four are answered and content is provided, generate `App.tsx` and `content.ts` only. Do not output any other files.
+5. **Will this page display any images** (hero photo, logo, food photography, team photo, etc.)?
+   - If **no** — skip this question.
+   - If **yes** — these must be uploaded to the R2 bucket at `media.taplab.in` before you provide them here. Once uploaded, list each one in this format:
+     ```
+     hero_image: https://media.taplab.in/slug/hero.jpg
+     logo_image: https://media.taplab.in/slug/logo.png
+     ```
+   Use descriptive key names ending in `_image` (or `_video` for video). These will become content keys in `content.ts` and `<img>` tags in `App.tsx`.
 
-This document tells you everything you need to output a TapLab-ready page from any business (images or description). Read it fully before generating any code.
+Once all questions are answered and content is provided, generate `App.tsx` and `content.ts` only. Do not output any other files.
+
+This document tells you everything you need to output a TapLab-ready page from any business. Read it fully before generating any code.
 
 **These pages are accessed by tapping an NFC card with a phone, but also viewed on desktop.** Design responsively for both. Do NOT set a `max-width` on the root page wrapper — let it fill the full viewport width. You may use `max-width` on inner content columns (e.g. a centered `max-w-2xl` card) to keep desktop layouts readable, but the page background and header must always span full width.
 
@@ -208,6 +217,10 @@ Use these standard key names whenever the field applies — do not invent variat
 | Website URL | `website_url` |
 | Footer copyright line | `footer_copy` |
 | Any notice or disclaimer | `notice` |
+| Hero / banner image | `hero_image` |
+| Logo image | `logo_image` |
+| Any other image | `{descriptor}_image` (e.g. `banner_image`, `team_image`) |
+| Any video | `{descriptor}_video` (e.g. `promo_video`) |
 
 Add extra flat keys as needed for page-specific strings. Keep names lowercase and snake_case. Every flat key must be a plain string value — never a number, boolean, array, or object.
 
@@ -282,6 +295,34 @@ Every item must have exactly: `heading`, `body`, `icon` — no extra fields.
 
 In `App.tsx`, parse it back with `useMemo` using the correct key name for the page type.
 
+### Image and video keys
+
+Any key ending in `_image` or `_video` holds a full public URL pointing to Cloudflare R2 (`media.taplab.in`). Images are uploaded manually to R2 per client — they do not live inside the JS bundle.
+
+**Naming:** always `{descriptor}_image` or `{descriptor}_video`, lowercase snake_case.
+
+**Value in `content.ts`:** always a full `https://` URL — never a relative path.
+```ts
+hero_image: 'https://media.taplab.in/the-gluck/hero.jpg',
+logo_image: 'https://media.taplab.in/the-gluck/logo.png',
+```
+
+**Rendering in `App.tsx`:**
+```tsx
+{content.hero_image && (
+  <img src={content.hero_image} alt={content.brand_name} className="w-full object-cover" />
+)}
+{content.promo_video && (
+  <video src={content.promo_video} autoPlay muted loop playsInline className="w-full" />
+)}
+```
+
+Rules:
+- Always guard with `{content.hero_image && ...}` — the field may be empty if the client hasn't uploaded yet
+- Never use `<img src="/some-local-path" />` — all images must be full R2 URLs
+- `alt` text should reference a content key (e.g. `alt={content.brand_name}`) — never hardcode
+- Images work identically in `npm run dev` and production because R2 is a public URL in both cases
+
 ### Leave hardcoded (do NOT put in content.ts):
 - Structural UI labels that are not business-specific: filter button labels (`'All'`, `'Veg'`, `'Non-Veg'`), item count display (`'{n} items'`)
 - Emoji used as pure UI indicators (🟢 🔴) — not as part of a business string
@@ -304,6 +345,8 @@ In `App.tsx`, parse it back with `useMemo` using the correct key name for the pa
 ## Checklist before handing off the files
 
 - [ ] Every visible string on the page comes from `content.someKey`
+- [ ] Image keys end in `_image`, video keys end in `_video`, values are full `https://media.taplab.in/{slug}/...` URLs
+- [ ] Image/video tags are guarded with `{content.hero_image && ...}` — never render a broken `<img src="" />`
 - [ ] `defaultContent` has all keys that `App.tsx` references
 - [ ] Structured list data uses the correct type-specific key: `menu_data` / `portfolio_data` / `brochure_data` — never `page_data`
 - [ ] The JSON shape inside that key matches exactly the structure defined in this guide — no extra or missing fields
