@@ -66,8 +66,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   function SidebarContent() {
     return (
       <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="px-5 pt-6 pb-5 border-b border-gray-100 dark:border-gray-800">
-          <span className="text-lg font-bold text-indigo-600 tracking-tight">TapLab</span>
+        <div className="px-5 pt-3.5 pb-5 border-b border-gray-100 dark:border-gray-800">
+          <NavLink to="/pages">
+            <img
+              src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+              alt="TapLab"
+              className="h-10 w-auto"
+            />
+          </NavLink>
           {business && (
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{business.businessName}</p>
           )}
@@ -143,7 +149,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="text-base font-bold text-indigo-600 tracking-tight">TapLab</span>
+        <img
+            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            alt="TapLab"
+            className="h-10 w-auto"
+        />
         {business && (
           <span className="text-sm text-gray-400 dark:text-gray-500 truncate">{business.businessName}</span>
         )}

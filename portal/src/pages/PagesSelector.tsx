@@ -163,7 +163,11 @@ export default function PagesSelector() {
       {/* Top bar */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
-          <span className="text-base font-bold text-indigo-600 tracking-tight">TapLab</span>
+          <img
+            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            alt="TapLab"
+            className="h-10 w-auto mx-auto"
+          />
         </div>
 
         <div className="flex items-center gap-2">
