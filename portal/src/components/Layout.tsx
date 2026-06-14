@@ -149,11 +149,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <img
+        <NavLink to="/pages">
+          <img
             src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
             alt="TapLab"
             className="h-10 w-auto"
-        />
+          />
+        </NavLink>
         {business && (
           <span className="text-sm text-gray-400 dark:text-gray-500 truncate">{business.businessName}</span>
         )}
