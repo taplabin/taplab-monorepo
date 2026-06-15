@@ -12,6 +12,8 @@ import AddBusiness from './pages/AddBusiness';
 import BusinessDetail from './pages/BusinessDetail';
 import Alerts from './pages/Alerts';
 import Storage from './pages/Storage';
+import Brokers from './pages/Brokers';
+import BrokerDetail from './pages/BrokerDetail';
 
 function LoadingSpinner() {
   return (
@@ -62,6 +64,8 @@ export default function App() {
             <Route path="/business/:slug"    element={<BusinessDetail />} />
             <Route path="/alerts"            element={<Alerts />} />
             <Route path="/storage"           element={<Storage />} />
+            <Route path="/brokers"           element={<Brokers />} />
+            <Route path="/broker/:id"        element={<BrokerDetail />} />
             <Route path="*"                  element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

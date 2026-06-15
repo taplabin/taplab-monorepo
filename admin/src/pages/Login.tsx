@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,11 @@ export default function Login() {
       <div className="w-full max-w-sm">
 
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-indigo-600 tracking-tight">TapLab</span>
+          <img
+            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            alt="TapLab"
+            className="h-12 w-auto mx-auto"
+          />
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Admin — sign in to continue</p>
         </div>
 

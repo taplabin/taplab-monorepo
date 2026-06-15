@@ -7,6 +7,7 @@ import { webhookRoute } from './routes/webhook.js';
 import { portalRoute } from './routes/portal.js';
 import { analyticsRoute } from './routes/analytics.js';
 import { adminBusinessRoute } from './routes/admin/business.js';
+import { adminBrokerRoute } from './routes/admin/brokers.js';
 import { adminPaymentsRoute } from './routes/admin/payments.js';
 import { adminStorageRoute } from './routes/admin/storage.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
@@ -69,6 +70,7 @@ await app.register(analyticsRoute);
 await app.register(async (adminApp) => {
   adminApp.addHook('preHandler', verifyAdmin);
   await adminApp.register(adminBusinessRoute);
+  await adminApp.register(adminBrokerRoute);
   await adminApp.register(adminPaymentsRoute);
   await adminApp.register(adminStorageRoute);
 }, { prefix: '/admin' });

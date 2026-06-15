@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
+import BrokerCombobox from '../components/BrokerCombobox';
 
 const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow';
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300';
 
 export default function AddBusiness() {
   const navigate = useNavigate();
+  const { data: brokers } = useSWR('/api/admin/brokers', async (url) => {
+    const res = await adminFetch(url);
+    const json = await res.json();
+    return json.brokers as { id: string; name: string; phone: string }[];
+  });
+
   const [formData, setFormData] = useState({
     businessName: '',
     businessSlug: '',
@@ -15,6 +23,8 @@ export default function AddBusiness() {
     pricingAmount: 999,
     billingCycle: 'monthly' as 'monthly' | 'yearly',
     setupFee: 0,
+    brokerId: '',
+    commissionPercent: 10,
     freeTrialEnabled: false,
     trialDurationDays: 7,
     firstBillingDate: '',
@@ -42,6 +52,10 @@ export default function AddBusiness() {
         payload.startAt = Math.floor(new Date(formData.firstBillingDate).getTime() / 1000);
       }
       delete payload.firstBillingDate;
+      if (!payload.brokerId) {
+        delete payload.brokerId;
+        delete payload.commissionPercent;
+      }
 
       const res = await adminFetch('/api/admin/business', {
         method: 'POST',
@@ -132,6 +146,8 @@ export default function AddBusiness() {
                     pricingAmount: 999,
                     billingCycle: 'monthly',
                     setupFee: 0,
+                    brokerId: '',
+                    commissionPercent: 10,
                     freeTrialEnabled: false,
                     trialDurationDays: 7,
                     firstBillingDate: '',
@@ -244,6 +260,46 @@ export default function AddBusiness() {
                 </p>
               )}
             </div>
+
+            <div>
+              <label className={labelClass}>
+                Broker{' '}
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">(optional)</span>
+              </label>
+              <BrokerCombobox
+                brokers={brokers ?? []}
+                value={formData.brokerId}
+                onChange={(id) => setFormData({ ...formData, brokerId: id })}
+              />
+            </div>
+
+            {formData.brokerId && (
+              <div>
+                <label className={labelClass}>
+                  Commission %{' '}
+                  <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">(applied on setup fee)</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.commissionPercent}
+                  onChange={(e) => setFormData({ ...formData, commissionPercent: parseFloat(e.target.value) || 0 })}
+                  className={inputClass}
+                  min="0"
+                  max="100"
+                  step="0.5"
+                />
+                {formData.setupFee > 0 && formData.commissionPercent > 0 && (
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    Broker commission: ₹{Math.round(formData.commissionPercent / 100 * formData.setupFee).toLocaleString('en-IN')} on ₹{formData.setupFee.toLocaleString('en-IN')} setup fee
+                  </p>
+                )}
+                {formData.setupFee === 0 && (
+                  <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+                    No setup fee set — commission will be ₹0
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label className={labelClass}>

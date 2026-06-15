@@ -43,6 +43,15 @@ const NAV = [
     ),
   },
   {
+    to: '/brokers',
+    label: 'Brokers',
+    icon: (
+      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
     to: '/storage',
     label: 'Storage',
     icon: (
@@ -68,8 +77,12 @@ export default function Layout({ children }: LayoutProps) {
   function SidebarContent() {
     return (
       <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="px-5 pt-6 pb-5 border-b border-gray-100 dark:border-gray-800">
-          <span className="text-lg font-bold text-indigo-600 tracking-tight">TapLab</span>
+        <div className="px-5 pt-3.5 pb-5 border-b border-gray-100 dark:border-gray-800">
+          <img
+            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            alt="TapLab"
+            className="h-10 w-auto"
+          />
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Admin Panel</p>
         </div>
 
@@ -134,7 +147,11 @@ export default function Layout({ children }: LayoutProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="text-base font-bold text-indigo-600 tracking-tight">TapLab Admin</span>
+        <img
+          src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+          alt="TapLab"
+          className="h-8 w-auto"
+        />
       </div>
 
       {/* Mobile drawer overlay */}

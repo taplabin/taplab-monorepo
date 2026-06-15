@@ -28,6 +28,12 @@ export interface BusinessDocument {
   razorpayPaymentLink: string | null;
   setupFee: number | null;
 
+  // Broker / commission
+  brokerId: string | null;
+  brokerName: string | null;
+  commissionPercent: number | null;
+  commissionPaid: boolean;
+
   // Customer portal owner
   ownerEmail: string | null;
   ownerUid: string | null;

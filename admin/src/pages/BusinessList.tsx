@@ -1,9 +1,106 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import StatusBadge, { DisplayStatus } from '../components/StatusBadge';
+
+// Searchable broker filter combobox — value is 'all' | 'direct' | brokerId
+function BrokerFilterCombobox({
+  brokers,
+  value,
+  onChange,
+}: {
+  brokers: { id: string; name: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [query, setQuery] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const label =
+    value === 'all' ? 'All brokers' :
+    value === 'direct' ? 'Direct (no broker)' :
+    brokers.find((b) => b.id === value)?.name ?? 'All brokers';
+
+  const filtered = query.trim()
+    ? brokers.filter((b) => b.name.toLowerCase().includes(query.toLowerCase()))
+    : brokers;
+
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
+
+  function select(v: string) {
+    onChange(v);
+    setQuery('');
+    setOpen(false);
+  }
+
+  const optionClass = (active: boolean) =>
+    `w-full text-left px-3 py-2 text-sm transition-colors ${
+      active
+        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+    }`;
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div
+        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg cursor-text min-w-44"
+        onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+      >
+        {open ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search broker…"
+            className="flex-1 text-sm bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none"
+          />
+        ) : (
+          <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">{label}</span>
+        )}
+        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      {open && (
+        <div className="absolute z-30 mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden">
+          <div className="max-h-64 overflow-y-auto">
+            {!query && (
+              <>
+                <button type="button" onClick={() => select('all')} className={optionClass(value === 'all')}>All brokers</button>
+                <button type="button" onClick={() => select('direct')} className={optionClass(value === 'direct')}>Direct (no broker)</button>
+                {brokers.length > 0 && <div className="border-t border-gray-100 dark:border-gray-800" />}
+              </>
+            )}
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No brokers match</div>
+            ) : (
+              filtered.map((b) => (
+                <button key={b.id} type="button" onClick={() => select(b.id)} className={optionClass(value === b.id)}>
+                  {b.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface Business {
   businessName: string;
@@ -18,6 +115,8 @@ interface Business {
   pricingAmount: number;
   billingCycle: 'monthly' | 'yearly';
   createdAt: { seconds: number };
+  brokerId: string | null;
+  brokerName: string | null;
 }
 
 type FilterTab = DisplayStatus | 'all';
@@ -49,6 +148,8 @@ const ROW_BG: Record<DisplayStatus, string> = {
 
 export default function BusinessList() {
   const [activeTab, setActiveTab] = React.useState<FilterTab>('all');
+  const [search, setSearch] = React.useState('');
+  const [brokerFilter, setBrokerFilter] = React.useState('all'); // 'all' | 'direct' | brokerId
 
   const { data, error, isLoading } = useSWR('/api/admin/business', async (url) => {
     const res = await adminFetch(url);
@@ -61,10 +162,24 @@ export default function BusinessList() {
     [data]
   );
 
+  const brokerOptions = React.useMemo(() => {
+    const seen = new Map<string, string>();
+    enriched.forEach((b) => { if (b.brokerId && b.brokerName) seen.set(b.brokerId, b.brokerName); });
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }));
+  }, [enriched]);
+
   const filtered = React.useMemo(() => {
-    if (activeTab === 'all') return enriched;
-    return enriched.filter((b) => b.displayStatus === activeTab);
-  }, [enriched, activeTab]);
+    let list = activeTab === 'all' ? enriched : enriched.filter((b) => b.displayStatus === activeTab);
+    if (brokerFilter === 'direct') list = list.filter((b) => !b.brokerId);
+    else if (brokerFilter !== 'all') list = list.filter((b) => b.brokerId === brokerFilter);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((b) =>
+        b.businessName.toLowerCase().includes(q) || b.businessSlug.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [enriched, activeTab, brokerFilter, search]);
 
   const counts = React.useMemo(() => {
     const base = { all: enriched.length, active: 0, trial: 0, cancelled: 0, inactive: 0 };
@@ -113,6 +228,29 @@ export default function BusinessList() {
           </Link>
         </div>
 
+        {/* Search + broker filter */}
+        <div className="flex gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-48">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or slug…"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          {brokerOptions.length > 0 && (
+            <BrokerFilterCombobox
+              brokers={brokerOptions}
+              value={brokerFilter}
+              onChange={setBrokerFilter}
+            />
+          )}
+        </div>
+
         {/* Filter tabs */}
         <div className="border-b border-gray-200 dark:border-gray-800">
           <nav className="-mb-px flex gap-1 overflow-x-auto">
@@ -151,13 +289,14 @@ export default function BusinessList() {
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Subscription</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Page</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Billing</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Broker</th>
                     <th className="relative py-3 pl-3 pr-4"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                      <td colSpan={7} className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
                         No businesses in this category.
                       </td>
                     </tr>
@@ -192,6 +331,9 @@ export default function BusinessList() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                           ₹{business.pricingAmount}/{business.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {business.brokerName ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
                           <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">

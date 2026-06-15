@@ -15,6 +15,10 @@ interface Business {
   pricingAmount: number;
   billingCycle: 'monthly' | 'yearly';
   pageStatus: 'no_page' | 'deployed';
+  setupFee: number | null;
+  brokerId: string | null;
+  commissionPercent: number | null;
+  commissionPaid: boolean;
 }
 
 type DisplayStatus = 'active' | 'trial' | 'cancelled' | 'inactive';
@@ -137,6 +141,11 @@ export default function Overview() {
 
 const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
 
+  const totalSetupFees = businesses.reduce((sum, b) => sum + (b.setupFee ?? 0), 0);
+  const commissionOutstanding = businesses
+    .filter((b) => b.brokerId && !(b.commissionPaid ?? false) && b.setupFee && b.commissionPercent)
+    .reduce((sum, b) => sum + Math.round((b.commissionPercent! / 100) * b.setupFee!), 0);
+
   const colorClasses: Record<string, string> = {
     green:  'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
     blue:   'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -156,6 +165,8 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
     { label: 'Monthly Rev.',     value: inr(rawMRR),                            color: 'indigo' },
     { label: 'Annual Rev.',      value: inr(rawARR),                            color: 'purple' },
     { label: 'Awaiting Page',    value: counts.noPage,                          color: 'gray' },
+    { label: 'Setup Fee Rev.',   value: inr(totalSetupFees),                    color: 'teal' },
+    { label: 'Commission Due',   value: inr(commissionOutstanding),             color: commissionOutstanding > 0 ? 'red' : 'gray' },
   ];
 
   const inputClass = 'w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow';

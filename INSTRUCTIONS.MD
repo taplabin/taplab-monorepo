@@ -12,6 +12,7 @@ Before touching any code, collect the following from the client:
 - **Billing cycle** — Confirm whether they want monthly or yearly billing. *(Required for cloud/maintenance setup.)*
 - **Visual assets** — Photograph their menu or collect 2–3 reference images/illustrations (PNGs or JPGs) from Pinterest or similar. *(Required for development.)*
 - **Email address** — Their primary email. *(Required for CMS login.)*
+- **Broker Information** - Is there a broker or not ? Have we registered this broker on our system ? What is thier commission on this client ?
 
 ---
 
@@ -48,8 +49,8 @@ This step is mandatory. Do not skip it.
 ## Step 4 — Generate the Initial Design with Claude
 
 1. Open Claude in your browser.
-2. Upload the images collected in Step 1 and attach the `TAPLAB_PROMPT.md` file from the project root.
-3. In the message box, type: `slug name=whatever, Business name=whatever` and send.
+2. Upload the images collected in Step 1 and attach the `TAPLAB_PROMPT.md` file from the project root. Hit send.
+3. Claude will ask you 5 questions, answer them accordingly.
 4. Claude will return `App.tsx` and `content.ts`.
 5. Paste both files into the `src` folder of the scaffolded project.
 

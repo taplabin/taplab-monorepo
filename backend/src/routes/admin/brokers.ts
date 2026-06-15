@@ -1,0 +1,78 @@
+import { FastifyInstance } from 'fastify';
+import { db } from '../../firestore.js';
+
+export async function adminBrokerRoute(app: FastifyInstance) {
+  app.get('/brokers', async (_req, reply) => {
+    try {
+      const snap = await db.collection('brokers').get();
+      const brokers = snap.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .sort((a: any, b: any) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+      return reply.send({ brokers });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to fetch brokers' });
+    }
+  });
+
+  app.post('/brokers', async (req, reply) => {
+    const { name, phone, email } = req.body as any;
+    if (!name || !phone) return reply.status(400).send({ error: 'name and phone are required' });
+    try {
+      const ref = await db.collection('brokers').add({
+        name: name.trim(),
+        phone: phone.trim(),
+        email: (email ?? '').trim(),
+        createdAt: new Date(),
+      });
+      return reply.status(201).send({ id: ref.id, name, phone, email: email ?? '' });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to create broker' });
+    }
+  });
+
+  app.patch<{ Params: { id: string } }>('/brokers/:id', async (req, reply) => {
+    const { id } = req.params;
+    const { notes } = req.body as { notes?: string };
+    try {
+      await db.collection('brokers').doc(id).update({ notes: notes ?? '' });
+      return reply.send({ ok: true });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to update broker' });
+    }
+  });
+
+  app.get<{ Params: { id: string } }>('/brokers/:id', async (req, reply) => {
+    const { id } = req.params;
+    try {
+      const [brokerDoc, dealsSnap] = await Promise.all([
+        db.collection('brokers').doc(id).get(),
+        db.collection('businesses').where('brokerId', '==', id).get(),
+      ]);
+
+      if (!brokerDoc.exists) return reply.status(404).send({ error: 'Broker not found' });
+
+      const deals = dealsSnap.docs
+        .map((doc) => {
+          const d = doc.data();
+          return {
+            slug: doc.id,
+            businessName: d.businessName,
+            setupFee: d.setupFee ?? null,
+            commissionPercent: d.commissionPercent ?? null,
+            commissionPaid: d.commissionPaid ?? false,
+            subscriptionStatus: d.subscriptionStatus,
+            createdAt: d.createdAt,
+          };
+        })
+        .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+
+      return reply.send({ id, ...brokerDoc.data(), deals });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to fetch broker' });
+    }
+  });
+}

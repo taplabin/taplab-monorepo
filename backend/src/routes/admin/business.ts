@@ -17,6 +17,8 @@ export async function adminBusinessRoute(app: FastifyInstance) {
       trialDurationDays,
       startAt,
       setupFee,
+      brokerId,
+      commissionPercent,
     } = req.body as any;
 
     // Validate slug format
@@ -41,6 +43,13 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     }
 
     try {
+      // Resolve broker name (denormalized for display)
+      let brokerName: string | null = null;
+      if (brokerId) {
+        const brokerDoc = await db.collection('brokers').doc(brokerId).get();
+        if (brokerDoc.exists) brokerName = (brokerDoc.data() as any).name ?? null;
+      }
+
       // Create Razorpay subscription and payment link
       const { razorpaySubscriptionId, paymentLinkUrl } =
         await createSubscriptionAndLink(businessName, pricingAmount, billingCycle, startAt ?? undefined, setupFee > 0 ? setupFee : undefined);
@@ -95,6 +104,10 @@ export async function adminBusinessRoute(app: FastifyInstance) {
           razorpaySubscriptionId,
           razorpayPaymentLink: paymentLinkUrl,
           setupFee: setupFee > 0 ? setupFee : null,
+          brokerId: brokerId || null,
+          brokerName,
+          commissionPercent: brokerId && commissionPercent > 0 ? commissionPercent : null,
+          commissionPaid: false,
           createdAt: new Date() as any,
         };
 
@@ -247,6 +260,22 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     } catch (error: any) {
       app.log.error(error);
       return reply.status(500).send({ error: 'Failed to refresh payment link', detail: error?.message });
+    }
+  });
+
+  // Toggle commission paid status for a business
+  app.post<{ Params: { slug: string } }>('/business/:slug/toggle-commission-paid', async (req, reply) => {
+    const { slug } = req.params;
+    try {
+      const ref = db.collection('businesses').doc(slug);
+      const doc = await ref.get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+      const current = (doc.data() as any).commissionPaid ?? false;
+      await ref.update({ commissionPaid: !current });
+      return reply.send({ commissionPaid: !current });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to toggle commission paid' });
     }
   });
 
