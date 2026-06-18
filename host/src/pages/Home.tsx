@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Menu,
   X,
@@ -9,8 +9,6 @@ import {
   Star,
   Plus,
   Minus,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 /**
@@ -120,8 +118,9 @@ const css = `
 @keyframes rollIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
 /* feature sections */
-.lp-feat { padding: 30px 0; }
-.lp-card { border-radius: 34px; padding: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.lp-feat { padding: 0; }
+.lp-card { padding: 88px 0; }
+.lp-card .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
 .lp-card.mint { background: var(--mint); }
 .lp-card.lilac { background: var(--lilac); }
 .lp-card.ink { background: var(--ink); color: #fff; }
@@ -194,7 +193,8 @@ const css = `
   .lp-hero h1 { font-size: 42px; }
   .lp-carousel { max-width: 360px; }
   .lp-slide { height: 380px; }
-  .lp-card { grid-template-columns: 1fr; padding: 36px; }
+  .lp-card { padding: 56px 0; }
+  .lp-card .wrap { grid-template-columns: 1fr; }
   .lp-card.reverse .lp-card-media { order: 0; }
   .lp-testi .row { grid-template-columns: 1fr; }
   .lp-foot .cols { grid-template-columns: 1fr 1fr; }
@@ -203,6 +203,47 @@ const css = `
   .lp-rotate .rolling { font-size: 28px; }
   .lp-mobile.show { display: block; background: var(--cream-2); border-bottom: 1px solid var(--line); padding: 16px 24px; }
   .lp-mobile a { display: block; padding: 12px 0; font-weight: 600; color: var(--ink); }
+}
+@media (max-width: 480px) {
+  /* Hero */
+  .lp-hero { padding: 32px 0 48px; }
+  .lp-hero h1 { font-size: 32px; }
+  .lp-hero .sub { font-size: 16px; margin-bottom: 24px; }
+  /* Claim bar: stack vertically so all three elements have breathing room */
+  .lp-claim { flex-wrap: wrap; border-radius: 18px; padding: 14px 16px; gap: 10px; max-width: 100%; }
+  .lp-claim input { width: 100%; min-width: 0; font-size: 14px; }
+  .lp-claim .btn { width: 100%; justify-content: center; border-radius: 12px; }
+  /* Feature cards */
+  .lp-card { padding: 44px 0; }
+  .lp-card h2 { font-size: 26px; }
+  .lp-card p { font-size: 15px; }
+  /* CTA band */
+  .lp-band { padding: 44px 24px; border-radius: 22px; margin: 40px 0; }
+  .lp-band h2 { font-size: 28px; }
+  /* Rotating section */
+  .lp-rotate { padding: 40px 0; }
+  .lp-rotate h2 { font-size: 22px; }
+  .lp-rotate .rolling { font-size: 22px; }
+  /* Testimonials */
+  .lp-testi { padding: 48px 0; }
+  .lp-testi h2 { font-size: 28px; margin-bottom: 28px; }
+  /* FAQ */
+  .lp-faq { padding: 16px 0 52px; }
+  .lp-faq h2 { font-size: 28px; margin-bottom: 28px; }
+  .lp-q button { font-size: 15px; padding: 18px 4px; }
+  /* Final CTA */
+  .lp-final { border-radius: 22px; padding: 52px 24px; }
+  .lp-final h2 { font-size: 28px; }
+  .lp-final p { font-size: 15px; margin-bottom: 24px; }
+  /* Footer: single column */
+  .lp-foot .cols { grid-template-columns: 1fr; gap: 28px; }
+  .lp-foot .bottom { flex-direction: column; gap: 16px; text-align: center; }
+  /* Carousel: full width, shorter */
+  .lp-hero { overflow-x: hidden; }
+  .lp-carousel { max-width: 100%; width: 100%; }
+  .lp-slide { height: 300px; }
+  .lp-slide .cap b { font-size: 17px; }
+  .lp-trust { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .lp-blob, .lp-bar, .lp-rotate .word { animation: none !important; opacity: 1; transform: none; }
@@ -292,8 +333,17 @@ export default function TapLabLanding() {
   const [menu, setMenu] = useState(false);
   const [open, setOpen] = useState(0);
   const [index, setIndex] = useState(0);
+  const touchStartX = useRef<number>(0);
 
   const go = (d: number) => setIndex((s) => (s + d + showcase.length) % showcase.length);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) > 40) go(delta > 0 ? 1 : -1);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -370,7 +420,7 @@ export default function TapLabLanding() {
 
           <div className="reveal" style={{ animationDelay: ".1s" }}>
             <div className="lp-carousel">
-              <div className="lp-cframe">
+              <div className="lp-cframe" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                 <div className="lp-ctrack" style={{ transform: `translateX(-${index * 100}%)` }}>
                   {showcase.map((s, i) => (
                     <div className="lp-slide" key={i}>
@@ -401,10 +451,10 @@ export default function TapLabLanding() {
       </section>
 
       {/* FEATURES */}
-      <section className="lp-feat" id="features">
-        <div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <section id="features">
 
-          <div className="lp-card lilac reverse reveal">
+        <div className="lp-card lilac reverse reveal">
+          <div className="wrap">
             <div>
               <h2>Share it anywhere — tap, scan or link</h2>
               <p>Put your TapLab card on the counter, table or shopfront. Add the QR to flyers and bills. Drop the link in every bio. One destination, everywhere your customers are.</p>
@@ -416,8 +466,10 @@ export default function TapLabLanding() {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="lp-card ink reveal">
+        <div className="lp-card ink reveal">
+          <div className="wrap">
             <div>
               <h2>See what's actually working</h2>
               <p>Know how many people tapped, what they clicked and when they came back. Tweak your offers and links on the fly to keep customers coming through the door.</p>
@@ -437,6 +489,7 @@ export default function TapLabLanding() {
             </div>
           </div>
         </div>
+
       </section>
 
       {/* TESTIMONIALS */}
