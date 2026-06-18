@@ -1,773 +1,528 @@
 import React, { useState, useEffect } from "react";
-import type { ReactNode, ChangeEvent, FormEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import type { HTMLMotionProps } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
-  Wifi,
-  Shield,
-  Smartphone,
-  Zap,
+  ArrowRight,
+  Nfc,
+  QrCode,
+  BarChart3,
   Star,
-  Phone,
-  Mail,
-  MapPin,
-  ChevronDown,
-  Check,
-  Edit2,
-  Save,
+  Plus,
+  Minus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
-const InstagramIcon = ({ size = 18, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-  </svg>
-);
+/**
+ * TapLab — marketing landing page in the style of Linktree's homepage (linktr.ee).
+ * Hero right side: a vertical two-column carousel (Linktree-style) scrolling in
+ * opposite directions. Trust section: rotating "Built for ___" text.
+ *
+ * Self-contained preview: plain CSS animations + lucide-react. In your project,
+ * wire buttons to react-router / your register + WhatsApp flows. Rename to Home.tsx.
+ */
 
-const LinkedinIcon = ({ size = 18, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect x="2" y="9" width="4" height="12" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
+const css = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap');
 
-type Variant = "primary" | "secondary" | "outline";
+.lp {
+  --cream: #f5efe6;
+  --cream-2: #fbf7f0;
+  --ink: #171120;
+  --ink-soft: #3f5147;
+  --green: #5046e5;
+  --green-deep: #3b32c9;
+  --lilac: #e7defa;
+  --mint: #e6e3fb;
+  --line: rgba(17,32,24,0.12);
 
-interface ButtonProps extends HTMLMotionProps<"button"> {
-  children: ReactNode;
-  variant?: Variant;
-  className?: string;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
-
-interface NavbarProps {
-  currentPage: string;
-  setCurrentPage: (page: string) => void;
+.lp * { box-sizing: border-box; }
+.lp h1, .lp h2, .lp h3, .lp .display {
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin: 0;
 }
+.lp p { margin: 0; }
+.lp a { text-decoration: none; color: inherit; }
+.lp .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-interface FooterProps {
-  setCurrentPage: (page: string) => void;
+/* promo strip */
+.lp-strip { background: var(--ink); color: #fff; text-align: center; font-size: 13px; padding: 9px 16px; font-weight: 500; }
+.lp-strip a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* nav */
+.lp-nav { position: sticky; top: 0; z-index: 50; background: rgba(245,239,230,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; }
+.lp-nav.scrolled { border-bottom-color: var(--line); }
+.lp-nav .inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.lp-logo { display: flex; align-items: center; gap: 8px; font-family: 'Poppins'; font-weight: 800; font-size: 21px; }
+.lp-logo .dot { width: 26px; height: 26px; border-radius: 9px; background: var(--ink); color: var(--green); display: grid; place-items: center; }
+.lp-navlinks { display: flex; gap: 30px; align-items: center; }
+.lp-navlinks a { font-weight: 500; font-size: 15px; color: var(--ink-soft); }
+.lp-navlinks a:hover { color: var(--ink); }
+.lp-navcta { display: flex; gap: 10px; align-items: center; }
+.lp-burger { display: none; background: none; border: none; cursor: pointer; color: var(--ink); }
+
+.btn { font-family: 'Inter'; font-weight: 600; font-size: 15px; border: none; cursor: pointer; border-radius: 999px; padding: 12px 22px; display: inline-flex; align-items: center; gap: 8px; transition: transform .12s ease, background .2s ease, box-shadow .2s ease; }
+.btn:active { transform: scale(.97); }
+.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark:hover { box-shadow: 0 8px 22px rgba(17,32,24,0.22); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { box-shadow: 0 8px 22px rgba(80,70,229,0.35); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: rgba(17,32,24,0.06); }
+.btn-lg { padding: 16px 30px; font-size: 17px; }
+
+/* hero */
+.lp-hero { padding: 56px 0 80px; }
+.lp-hero .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+.lp-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--mint); color: var(--green-deep); font-weight: 600; font-size: 13px; padding: 7px 13px; border-radius: 999px; margin-bottom: 22px; }
+.lp-hero h1 { font-size: 60px; font-weight: 800; margin-bottom: 22px; }
+.lp-hero h1 .hl { color: var(--green-deep); }
+.lp-hero .sub { font-size: 18px; color: var(--ink-soft); max-width: 480px; margin-bottom: 30px; line-height: 1.5; }
+.lp-claim { display: flex; align-items: center; background: #fff; border: 2px solid var(--ink); border-radius: 999px; padding: 6px 6px 6px 18px; max-width: 440px; gap: 8px; }
+.lp-claim .pfx { font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.lp-claim input { flex: 1; border: none; outline: none; font-size: 15px; font-family: 'Inter'; min-width: 40px; background: transparent; color: var(--ink); }
+.lp-claim input::placeholder { color: #aab2ad; }
+.lp-trust { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 14px; color: var(--ink-soft); }
+.lp-trust .av { display: flex; }
+.lp-trust .av span { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--cream); margin-left: -8px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; }
+
+/* HERO image carousel */
+.lp-carousel { position: relative; width: 100%; max-width: 420px; margin: 0 auto; }
+.lp-cframe { position: relative; border-radius: 28px; overflow: hidden; box-shadow: 0 30px 60px rgba(17,32,24,0.22); border: 1px solid var(--line); background: var(--mint); }
+.lp-ctrack { display: flex; transition: transform .6s cubic-bezier(.5,.05,.2,1); }
+.lp-slide { position: relative; min-width: 100%; height: 480px; }
+.lp-slide > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-slide .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 22px 26px; background: linear-gradient(to top, rgba(17,32,24,0.82), rgba(17,32,24,0)); color: #fff; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.lp-slide .cap b { font-family: 'Poppins'; font-weight: 700; font-size: 21px; }
+.lp-slide .cap .tag { font-size: 12px; font-weight: 700; background: var(--green); color: #fff; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.lp-cnav { position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none; cursor: pointer; display: grid; place-items: center; color: var(--ink); box-shadow: 0 6px 16px rgba(17,32,24,0.18); transition: background .15s ease; z-index: 2; }
+.lp-cnav:hover { background: #fff; }
+.lp-cnav.prev { left: 14px; }
+.lp-cnav.next { right: 14px; }
+.lp-dots { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+.lp-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(17,32,24,0.2); border: none; cursor: pointer; padding: 0; transition: width .2s ease, background .2s ease; }
+.lp-dot.active { width: 24px; background: var(--green); }
+
+/* rotating trusted */
+.lp-rotate { padding: 70px 0; text-align: center; }
+.lp-rotate h2 { font-size: 40px; font-weight: 800; }
+.lp-rotate .rolling { display: block; font-family: 'Poppins'; font-weight: 800; font-size: 40px; letter-spacing: -0.02em; line-height: 1.05; color: var(--green-deep); margin-top: 10px; }
+.lp-rotate .word { display: inline-block; animation: rollIn .5s ease; }
+@keyframes rollIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* feature sections */
+.lp-feat { padding: 30px 0; }
+.lp-card { border-radius: 34px; padding: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.lp-card.mint { background: var(--mint); }
+.lp-card.lilac { background: var(--lilac); }
+.lp-card.ink { background: var(--ink); color: #fff; }
+.lp-card.reverse .lp-card-media { order: -1; }
+.lp-card h2 { font-size: 38px; font-weight: 800; margin-bottom: 16px; }
+.lp-card p { font-size: 16.5px; line-height: 1.55; margin-bottom: 26px; opacity: .92; }
+.lp-card.ink p { color: #cfe9d8; }
+.lp-card-media { display: grid; place-items: center; }
+.lp-tile { background: rgba(255,255,255,0.65); border-radius: 22px; padding: 26px; width: 100%; }
+.lp-card.ink .lp-tile { background: rgba(255,255,255,0.08); }
+.lp-tile-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fff; border-radius: 13px; margin-bottom: 10px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(17,32,24,0.06); }
+.lp-tile-icn { width: 34px; height: 34px; border-radius: 10px; background: var(--mint); color: var(--green-deep); display: grid; place-items: center; flex-shrink: 0; }
+.lp-bars { display: flex; align-items: flex-end; gap: 12px; height: 150px; }
+.lp-bar { flex: 1; background: var(--green); border-radius: 8px 8px 0 0; animation: grow 1s ease both; }
+
+/* big cta band */
+.lp-band { background: var(--green); color: #fff; border-radius: 34px; padding: 60px; text-align: center; margin: 60px 0; }
+.lp-band h2 { font-size: 42px; font-weight: 800; margin-bottom: 24px; }
+
+/* testimonials */
+.lp-testi { padding: 70px 0; }
+.lp-testi h2 { font-size: 38px; font-weight: 800; text-align: center; margin-bottom: 44px; }
+.lp-testi .row { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+.lp-quote { background: var(--cream-2); border: 1px solid var(--line); border-radius: 24px; padding: 30px; }
+.lp-quote .stars { display: flex; gap: 3px; margin-bottom: 16px; color: var(--green-deep); }
+.lp-quote .txt { font-size: 16px; line-height: 1.5; margin-bottom: 20px; }
+.lp-quote .who { display: flex; align-items: center; gap: 12px; }
+.lp-quote .who .c { width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: var(--green); display: grid; place-items: center; font-weight: 700; }
+.lp-quote .who b { font-family: 'Poppins'; }
+.lp-quote .who span { font-size: 13px; color: var(--ink-soft); }
+
+/* faq */
+.lp-faq { padding: 30px 0 80px; }
+.lp-faq h2 { font-size: 38px; font-weight: 800; text-align: center; margin-bottom: 40px; }
+.lp-faq .list { max-width: 760px; margin: 0 auto; }
+.lp-q { border-top: 1px solid var(--line); }
+.lp-q:last-child { border-bottom: 1px solid var(--line); }
+.lp-q button { width: 100%; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 24px 4px; text-align: left; font-family: 'Poppins'; font-weight: 600; font-size: 18px; color: var(--ink); }
+.lp-q .a { overflow: hidden; max-height: 0; transition: max-height .3s ease; }
+.lp-q.open .a { max-height: 240px; }
+.lp-q .a p { padding: 0 4px 24px; color: var(--ink-soft); font-size: 15.5px; line-height: 1.6; }
+.lp-q .ic { flex-shrink: 0; color: var(--green-deep); }
+
+/* final cta */
+.lp-final { background: var(--ink); border-radius: 40px; padding: 80px 40px; text-align: center; color: #fff; }
+.lp-final h2 { font-size: 50px; font-weight: 800; margin-bottom: 16px; }
+.lp-final p { color: #cfe9d8; font-size: 18px; margin-bottom: 30px; }
+
+/* footer */
+.lp-foot { padding: 70px 0 40px; }
+.lp-foot .cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 50px; }
+.lp-foot h4 { font-family: 'Poppins'; font-size: 14px; margin-bottom: 16px; }
+.lp-foot a { display: block; color: var(--ink-soft); font-size: 14px; margin-bottom: 11px; }
+.lp-foot a:hover { color: var(--ink); }
+.lp-foot .bottom { border-top: 1px solid var(--line); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-soft); }
+.lp-soc { display: flex; gap: 10px; }
+.lp-soc a { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--cream); display: grid; place-items: center; margin: 0; }
+
+/* reveal */
+.reveal { opacity: 0; transform: translateY(20px); animation: rise .6s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+@keyframes grow { from { height: 0; } }
+
+/* mobile */
+.lp-mobile { display: none; }
+@media (max-width: 900px) {
+  .lp-navlinks, .lp-navcta .btn-ghost { display: none; }
+  .lp-burger { display: block; }
+  .lp-hero .grid { grid-template-columns: 1fr; }
+  .lp-hero h1 { font-size: 42px; }
+  .lp-carousel { max-width: 360px; }
+  .lp-slide { height: 380px; }
+  .lp-card { grid-template-columns: 1fr; padding: 36px; }
+  .lp-card.reverse .lp-card-media { order: 0; }
+  .lp-testi .row { grid-template-columns: 1fr; }
+  .lp-foot .cols { grid-template-columns: 1fr 1fr; }
+  .lp-final h2 { font-size: 34px; }
+  .lp-rotate h2 { font-size: 28px; }
+  .lp-rotate .rolling { font-size: 28px; }
+  .lp-mobile.show { display: block; background: var(--cream-2); border-bottom: 1px solid var(--line); padding: 16px 24px; }
+  .lp-mobile a { display: block; padding: 12px 0; font-weight: 600; color: var(--ink); }
 }
-
-interface ProductCardProps {
-  title: string;
-  price: string;
-  image?: string;
-  features: string[];
-  onClick: () => void;
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .lp-blob, .lp-bar, .lp-rotate .word { animation: none !important; opacity: 1; transform: none; }
+  .lp-ctrack { transition: none !important; }
 }
+`;
 
-interface HomePageProps {
-  setCurrentPage: (page: string) => void;
-  setSelectedProduct: (id: ProductKey) => void;
-}
+const WA = "https://wa.me/919867145439";
 
-type ProductKey = "business-card" | "smart-tag" | "restaurant-tag";
+// Single source of truth: each entry pairs the rotating word with its matching
+// slide, so the word on screen always describes the business in the image.
+const showcase = [
+  {
+    word: "restaurants",
+    img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4",
+    name: "Spice Route",
+    tag: "Restaurant",
+  },
+  {
+    word: "salons",
+    img: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f",
+    name: "Glow Studio",
+    tag: "Salon",
+  },
+  {
+    word: "gyms",
+    img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48",
+    name: "Iron House",
+    tag: "Gym",
+  },
+  {
+    word: "clinics",
+    img: "https://images.unsplash.com/photo-1584515933487-779824d29309",
+    name: "Care Clinic",
+    tag: "Clinic",
+  },
+  {
+    word: "cafes",
+    img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93",
+    name: "Brew & Co.",
+    tag: "Cafe",
+  },
+  {
+    word: "boutiques",
+    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8",
+    name: "Thread Boutique",
+    tag: "Boutique",
+  },
+  {
+    word: "studios",
+    img: "https://images.unsplash.com/photo-1518611012118-696072aa579a",
+    name: "Pixel Studio",
+    tag: "Studio",
+  },
+  {
+    word: "retailers",
+    img: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a",
+    name: "Urban Retail",
+    tag: "Retail",
+  },
+  {
+    word: "spas",
+    img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874",
+    name: "Aura Spa",
+    tag: "Spa",
+  },
+  {
+    word: "clubs",
+    img: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67",
+    name: "Social Club",
+    tag: "Club",
+  },
+];
 
-interface ProductsPageProps {
-  selectedProduct: ProductKey;
-  setSelectedProduct: (id: ProductKey) => void;
-}
+const faqs = [
+  { q: "What exactly does TapLab build for my business?", a: "A fast, mobile-first page on taplab.in that holds your menu or services, booking link, reviews, location, UPI payments and socials — plus an NFC card or sticker so customers reach it with one tap. We build and host it; you just send us your details." },
+  { q: "Do my customers need an app to tap it?", a: "No. NFC works natively on every modern iPhone and Android. They tap your card or scan the QR code and your page opens straight in their browser — nothing to install." },
+  { q: "Can I update my page after it's live?", a: "Yes. Send us a change and it's live the same day, or use your dashboard for menus, hours, links and offers. The NFC card never needs reprinting because it always points to the same page." },
+  { q: "How much does it cost?", a: "A one-time setup fee plus a small monthly subscription that covers hosting, updates and your NFC card. Message us on WhatsApp for current pricing for your type of business." },
+  { q: "Which businesses is this for?", a: "Local businesses that want to look sharp without building a website — restaurants, cafes, salons, gyms, clinics, boutiques and more. If you have a counter, a table or a shopfront, TapLab fits." },
+];
 
-const Button = ({
-  children,
-  variant = "primary",
-  className = "",
-  ...props
-}: ButtonProps): React.ReactElement => {
-  const baseClass = "px-8 py-3 rounded-full font-medium transition-all duration-300";
-  const variants: Record<Variant, string> = {
-    primary: "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg hover:shadow-blue-500/50 hover:scale-105",
-    secondary: "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20",
-    outline: "border-2 border-white/30 text-white hover:bg-white/10",
-  };
-  return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`${baseClass} ${variants[variant]} ${className}`}
-      {...props}
-    >
-      {children}
-    </motion.button>
-  );
-};
+const hideOnError = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = "none"; };
 
-const Navbar = ({ currentPage, setCurrentPage }: NavbarProps): React.ReactElement => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [scrolled, setScrolled] = useState<boolean>(false);
+export default function TapLabLanding() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [open, setOpen] = useState(0);
+  const [index, setIndex] = useState(0);
+
+  const go = (d: number) => setIndex((s) => (s + d + showcase.length) % showcase.length);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navItems = [
-    { name: "Home", id: "home" },
-    { name: "Products", id: "products" },
-    { name: "Digital Profile", id: "profile" },
-    { name: "About", id: "about" },
-    { name: "Contact", id: "contact" },
-  ];
+  // One timer advances the word AND the carousel together. Re-arms after every
+  // change (manual or auto), so they never drift out of sync.
+  useEffect(() => {
+    const id = setTimeout(() => setIndex((s) => (s + 1) % showcase.length), 3000);
+    return () => clearTimeout(id);
+  }, [index]);
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/90 backdrop-blur-md shadow-lg" : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent cursor-pointer"
-          onClick={() => setCurrentPage("home")}
-        >
-          TapLab
-        </motion.div>
-        <div className="hidden md:flex items-center space-x-8">
-          {navItems.map((item) => (
-            <motion.button
-              key={item.id}
-              whileHover={{ scale: 1.1 }}
-              onClick={() => setCurrentPage(item.id)}
-              className={`text-sm font-medium transition-colors ${
-                currentPage === item.id ? "text-blue-400" : "text-gray-300 hover:text-white"
-              }`}
-            >
-              {item.name}
-            </motion.button>
-          ))}
-          <Button variant="primary" className="text-sm">Get Started</Button>
-        </div>
-        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-white">
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+    <div className="lp">
+      <style>{css}</style>
+
+      <div className="lp-strip">
+        New: order your NFC cards online · <a href={WA}>Get 20% off your first month →</a>
       </div>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/95 backdrop-blur-md"
-          >
-            <div className="px-6 py-4 space-y-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => { setCurrentPage(item.id); setIsOpen(false); }}
-                  className={`block w-full text-left py-2 ${
-                    currentPage === item.id ? "text-blue-400" : "text-gray-300"
-                  }`}
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
-  );
-};
 
-const Footer = ({ setCurrentPage }: FooterProps): React.ReactElement => {
-  const socials = [
-    { Icon: InstagramIcon, href: "https://www.instagram.com/taplab.in/" },
-    { Icon: LinkedinIcon, href: "https://www.linkedin.com/company/taplabindia/" },
-  ];
-
-  return (
-    <footer className="bg-gradient-to-b from-gray-900 to-black border-t border-white/10 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-4">
-              TapLab
-            </h3>
-            <p className="text-gray-400 text-sm">Premium NFC solutions for modern businesses & creators.</p>
+      <nav className={`lp-nav ${scrolled ? "scrolled" : ""}`}>
+        <div className="wrap inner">
+          <a className="lp-logo" href="#top">
+            <img src="/taplab.png" alt="TapLab" style={{ height: 48, width: 'auto' }} />
+          </a>
+          <div className="lp-navlinks">
+            <a href="#features">Products</a>
+            <a href="#testimonials">Stories</a>
+            <a href="#faq">FAQ</a>
+            <a href={WA}>Pricing</a>
           </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Products</h4>
-            <div className="space-y-2">
-              {["NFC Business Cards", "NFC Smart Tags", "Restaurant Table Tags"].map((item) => (
-                <button key={item} className="block text-gray-400 hover:text-white text-sm transition-colors">
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
-            <div className="space-y-2">
-              {[
-                { name: "About Us", id: "about" },
-                { name: "Contact", id: "contact" },
-                { name: "Support", id: "contact" },
-              ].map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setCurrentPage(item.id)}
-                  className="block text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Connect</h4>
-            <div className="flex space-x-4">
-              {socials.map(({ Icon, href }, i) => (
-                <motion.a
-                  key={i}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-blue-500/20 transition-colors"
-                >
-                  <Icon size={18} className="text-gray-400 hover:text-blue-400" />
-                </motion.a>
-              ))}
-            </div>
+          <div className="lp-navcta">
+            <a className="btn btn-ghost" href={WA}>Log in</a>
+            <a className="btn btn-green" href={WA}>Sign up free</a>
+            <button className="lp-burger" onClick={() => setMenu(!menu)} aria-label="Menu">
+              {menu ? <X size={26} /> : <Menu size={26} />}
+            </button>
           </div>
         </div>
-        <div className="border-t border-white/10 pt-8 text-center text-gray-500 text-sm">
-          <p>© 2025 TapLab. All rights reserved. Upgrade how you connect.</p>
+        <div className={`lp-mobile ${menu ? "show" : ""}`}>
+          <a href="#features">Products</a>
+          <a href="#testimonials">Stories</a>
+          <a href="#faq">FAQ</a>
+          <a href={WA}>Pricing</a>
+          <a href={WA}>Log in</a>
         </div>
-      </div>
-    </footer>
-  );
-};
+      </nav>
 
-const ProductCard = ({ title, price, image, features, onClick }: ProductCardProps): React.ReactElement => (
-  <motion.div
-    whileHover={{ y: -10, scale: 1.02 }}
-    className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10 hover:border-blue-500/50 transition-all cursor-pointer shadow-xl"
-    onClick={onClick}
-  >
-    <div className="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl mb-6 flex items-center justify-center">
-      {image ? <div className="text-6xl">{image}</div> : <Wifi size={64} className="text-blue-400" />}
-    </div>
-    <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-    <p className="text-3xl font-bold text-blue-400 mb-6">₹{price}</p>
-    <ul className="space-y-3 mb-6">
-      {features.map((feature, i) => (
-        <li key={i} className="flex items-start text-gray-300 text-sm">
-          <Check size={16} className="text-blue-400 mr-2 mt-1 flex-shrink-0" />
-          <span>{feature}</span>
-        </li>
-      ))}
-    </ul>
-    <Button variant="primary" className="w-full">Order Now</Button>
-  </motion.div>
-);
-
-const HomePage = ({ setCurrentPage, setSelectedProduct }: HomePageProps): React.ReactElement => {
-  const navigate = useNavigate();
-
-  const products = [
-    {
-      id: "business-card" as ProductKey,
-      title: "NFC Business Card",
-      price: "499",
-      image: "💳",
-      features: ["Premium metal finish", "Instant profile sharing", "Customizable design", "Lock-protected NFC"],
-    },
-    {
-      id: "smart-tag" as ProductKey,
-      title: "NFC Circular Tag",
-      price: "299",
-      image: "⭕",
-      features: ["Compact & portable", "Works on all phones", "Reusable & durable", "Easy to program"],
-    },
-    {
-      id: "restaurant-tag" as ProductKey,
-      title: "Restaurant Table Tag",
-      price: "399",
-      image: "🍽️",
-      features: ["Menu QR integration", "Digital ordering", "Contact-free service", "Brand customization"],
-    },
-  ];
-
-  const testimonials = [
-    { name: "Pizza Caprina", role: "Cafe Owner", text: "TapLab cards are a game-changer. Clients are always impressed!", rating: 5 },
-    { name: "High On Shakes", role: "Cafe Owner", text: "Premium quality and super easy to use. Highly recommend!", rating: 5 },
-    { name: "Seby D'costa", role: "Restaurant Owner", text: "Table tags revolutionized our customer experience.", rating: 5 },
-  ];
-
-  return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-black to-black" />
-        <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
-              style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
-              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-              transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, delay: Math.random() * 2 }}
-            />
-          ))}
-        </div>
-        <div className="relative z-10 text-center px-6 max-w-5xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} className="inline-block mb-6">
-              <Wifi size={80} className="text-blue-400 mx-auto" />
-            </motion.div>
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-blue-400 bg-clip-text text-transparent">
-              Tap. Connect. Impress.
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              Premium NFC solutions for modern businesses & creators.
+      {/* HERO */}
+      <header className="lp-hero" id="top">
+        <div className="wrap grid">
+          <div className="reveal">
+            <h1>Everything your customers need, in <span className="hl">one tap.</span></h1>
+            <p className="sub">
+              TapLab turns a single NFC tap or link into your menu, bookings, reviews, payments and socials —
+              designed, built and hosted for you. No website headache.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="primary" onClick={() => setCurrentPage("products")}>Explore Products</Button>
-              <Button variant="outline" onClick={() => navigate("/pizza_palace")}>Watch Demo</Button>
+            <div className="lp-claim">
+              <span className="pfx">taplab.in/</span>
+              <input placeholder="your-business" aria-label="Claim your page name" />
+              <a className="btn btn-green" href={WA}>Claim page</a>
             </div>
-          </motion.div>
-        </div>
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <ChevronDown size={32} className="text-gray-400" />
-        </motion.div>
-      </section>
-
-      {/* Products Grid */}
-      <section className="py-24 px-6 bg-black">
-        <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-4">Our Products</h2>
-            <p className="text-gray-400 text-lg">Premium NFC solutions for every need</p>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {products.map((product, i) => (
-              <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <ProductCard
-                  title={product.title}
-                  price={product.price}
-                  image={product.image}
-                  features={product.features}
-                  onClick={() => { setSelectedProduct(product.id); setCurrentPage("products"); }}
-                />
-              </motion.div>
-            ))}
+            <div className="lp-trust">
+              <span className="av">
+                <span style={{ background: "#5046e5" }}>P</span>
+                <span style={{ background: "#3b32c9" }}>H</span>
+                <span style={{ background: "#171120" }}>S</span>
+              </span>
+              Trusted by local businesses across Mumbai
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Why Us */}
-      <section className="py-24 px-6 bg-gradient-to-b from-black to-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-4">Why Choose TapLab?</h2>
-          </motion.div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { icon: Zap, title: "One Tap Instant Profile", desc: "Share everything instantly with a single tap" },
-              { icon: Shield, title: "Lock-Protected NFC Tags", desc: "Secure and safe from unauthorized access" },
-              { icon: Smartphone, title: "Works on All Phones", desc: "Compatible with iOS and Android devices" },
-              { icon: Star, title: "Premium Materials", desc: "Luxury metal and durable construction" },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="text-center p-8 bg-white/5 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all"
-              >
-                <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
-                  <item.icon size={32} className="text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                <p className="text-gray-400">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-24 px-6 bg-black">
-        <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-4">What Our Clients Say</h2>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((test, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-white/10"
-              >
-                <div className="flex mb-4">
-                  {[...Array(test.rating)].map((_, j) => (
-                    <Star key={j} size={20} className="text-yellow-400 fill-yellow-400" />
+          <div className="reveal" style={{ animationDelay: ".1s" }}>
+            <div className="lp-carousel">
+              <div className="lp-cframe">
+                <div className="lp-ctrack" style={{ transform: `translateX(-${index * 100}%)` }}>
+                  {showcase.map((s, i) => (
+                    <div className="lp-slide" key={i}>
+                      <img src={s.img} alt={s.name} loading="lazy" onError={hideOnError} />
+                      <div className="cap"><b>{s.name}</b></div>
+                    </div>
                   ))}
                 </div>
-                <p className="text-gray-300 mb-6 italic">"{test.text}"</p>
-                <div>
-                  <p className="text-white font-semibold">{test.name}</p>
-                  <p className="text-gray-500 text-sm">{test.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 px-6 bg-gradient-to-br from-blue-900/20 to-black">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-bold text-white mb-6">Upgrade How You Connect</h2>
-          <p className="text-xl text-gray-300 mb-8">Join thousands of professionals using TapLab</p>
-          <Button variant="primary" className="text-lg px-12 py-4">Get Started Today</Button>
-        </motion.div>
-      </section>
-    </div>
-  );
-};
-
-const ProductsPage = ({ selectedProduct, setSelectedProduct }: ProductsPageProps): React.ReactElement => {
-  const productDetails: Record<ProductKey, { title: string; price: string; image?: string; description: string; features: string[]; howItWorks: string[]; specs: string }> = {
-    "business-card": {
-      title: "NFC Business Card", price: "499", image: "💳",
-      description: "Premium metal business cards with embedded NFC technology for instant profile sharing.",
-      features: ["Premium stainless steel or black metal finish", "Customizable with your logo and design", "Instant digital profile sharing with one tap", "Lock-protected NFC chip for security", "Works with all NFC-enabled smartphones"],
-      howItWorks: ["We manufacture with premium materials", "Program your digital profile", "Tap to share with anyone, instantly"],
-      specs: "Size: 85.6 × 53.98 mm • Material: Stainless Steel • Chip: NTAG216",
-    },
-    "smart-tag": {
-      title: "NFC Circular Tag", price: "299", image: "⭕",
-      description: "Compact, portable NFC tags perfect for creators, freelancers, and anyone on the go.",
-      features: ["Ultra-compact circular design", "Durable waterproof construction", "Attach to phone case or wallet", "Works on all NFC phones", "Multiple color options"],
-      howItWorks: ["Receive your NFC tag", "Attach to your phone or accessories", "Share your profile with a tap"],
-      specs: "Diameter: 30mm • Material: PVC • Chip: NTAG213 • Waterproof: IP67",
-    },
-    "restaurant-tag": {
-      title: "Restaurant Table NFC Tag", price: "399", image: "🍽️",
-      description: "Transform your restaurant with contactless table ordering and digital menus.",
-      features: ["Custom branded table stands", "Contact-free customer experience", "Easy menu updates anytime"],
-      howItWorks: ["Install tags on your tables", "Upload your digital menu", "Customers tap to view and order"],
-      specs: "Size: Custom • Material: Acrylic Stand + NFC • Chip: NTAG215",
-    },
-  };
-
-  const product = productDetails[selectedProduct] ?? productDetails["business-card"];
-
-  return (
-    <div className="min-h-screen pt-24 pb-16 px-6 bg-black">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-center gap-4 mb-16 flex-wrap">
-          {(Object.keys(productDetails) as ProductKey[]).map((k) => (
-            <Button key={k} variant={selectedProduct === k ? "primary" : "secondary"} onClick={() => setSelectedProduct(k)}>
-              {productDetails[k].title}
-            </Button>
-          ))}
-        </div>
-        <motion.div key={selectedProduct} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid md:grid-cols-2 gap-12">
-          <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-16 border border-white/10 flex items-center justify-center">
-            <motion.div initial={{ scale: 0.8, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ duration: 0.5 }} className="text-9xl">
-              {product.image ?? "📦"}
-            </motion.div>
-          </div>
-          <div>
-            <h1 className="text-5xl font-bold text-white mb-4">{product.title}</h1>
-            <p className="text-4xl font-bold text-blue-400 mb-6">₹{product.price}</p>
-            <p className="text-gray-300 text-lg mb-8">{product.description}</p>
-            <h3 className="text-2xl font-bold text-white mb-4">Features</h3>
-            <ul className="space-y-3 mb-8">
-              {product.features.map((feature, i) => (
-                <motion.li key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="flex items-start text-gray-300">
-                  <Check size={20} className="text-blue-400 mr-3 mt-1 flex-shrink-0" />
-                  <span>{feature}</span>
-                </motion.li>
-              ))}
-            </ul>
-            <h3 className="text-2xl font-bold text-white mb-4">How It Works</h3>
-            <div className="space-y-4 mb-8">
-              {product.howItWorks.map((step, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="flex items-start">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">{i + 1}</div>
-                  <p className="text-gray-300 mt-1">{step}</p>
-                </motion.div>
-              ))}
-            </div>
-            <div className="bg-white/5 rounded-xl p-4 mb-8">
-              <p className="text-gray-400 text-sm">{product.specs}</p>
-            </div>
-            <Button variant="primary" className="w-full md:w-auto text-lg px-12">Order Now</Button>
-          </div>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
-
-const ProfilePage = (): React.ReactElement => {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [profile, setProfile] = useState({
-    name: "John Doe", title: "Product Designer",
-    bio: "Passionate about creating beautiful digital experiences.",
-    phone: "+91 98765 43210", email: "john@example.com",
-    website: "johndoe.com", upi: "john@upi",
-    instagram: "@johndoe", linkedin: "johndoe", twitter: "@johndoe",
-  });
-  const [tempProfile, setTempProfile] = useState(profile);
-
-  return (
-    <div className="min-h-screen pt-24 pb-16 px-6 bg-black">
-      <div className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">Digital Profile Demo</h1>
-          <p className="text-gray-400 text-lg">This is what people see when they tap your NFC card</p>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl">
-          <div className="flex justify-between items-start mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-4xl text-white font-bold">
-              {isEditing ? tempProfile.name.charAt(0) : profile.name.charAt(0)}
-            </div>
-            <Button variant="secondary" onClick={() => { if (isEditing) { setTempProfile(profile); setIsEditing(false); } else setIsEditing(true); }} className="flex items-center gap-2">
-              <Edit2 size={16} />{isEditing ? "Cancel" : "Edit Demo"}
-            </Button>
-          </div>
-          <div className="space-y-6 mb-8">
-            {isEditing ? (
-              <>
-                <input type="text" value={tempProfile.name} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, name: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-3xl font-bold focus:outline-none focus:border-blue-500" />
-                <input type="text" value={tempProfile.title} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-gray-300 text-xl focus:outline-none focus:border-blue-500" />
-                <textarea value={tempProfile.bio} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setTempProfile({ ...tempProfile, bio: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-gray-400 focus:outline-none focus:border-blue-500 min-h-[100px]" />
-              </>
-            ) : (
-              <>
-                <h2 className="text-4xl font-bold text-white">{profile.name}</h2>
-                <p className="text-xl text-gray-300">{profile.title}</p>
-                <p className="text-gray-400 leading-relaxed">{profile.bio}</p>
-              </>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {isEditing ? (
-              <>
-                <input type="tel" value={tempProfile.phone} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, phone: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Phone" />
-                <input type="email" value={tempProfile.email} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, email: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Email" />
-                <input type="text" value={tempProfile.website} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, website: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Website" />
-                <input type="text" value={tempProfile.upi} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, upi: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="UPI ID" />
-              </>
-            ) : (
-              <>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center justify-center gap-3 bg-blue-500 text-white rounded-xl px-6 py-4 font-medium"><Phone size={20} /> Call</motion.button>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center justify-center gap-3 bg-white/10 text-white rounded-xl px-6 py-4 font-medium"><Mail size={20} /> Email</motion.button>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center justify-center gap-3 bg-white/10 text-white rounded-xl px-6 py-4 font-medium"><Wifi size={20} /> Website</motion.button>
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center justify-center gap-3 bg-green-500 text-white rounded-xl px-6 py-4 font-medium">💰 Pay via UPI</motion.button>
-              </>
-            )}
-          </div>
-          <div className="border-t border-white/10 pt-8">
-            <h3 className="text-white font-semibold mb-4">Connect</h3>
-            {isEditing ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" value={tempProfile.instagram} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, instagram: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Instagram handle" />
-                <input type="text" value={tempProfile.linkedin} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, linkedin: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="LinkedIn username" />
-                <input type="text" value={tempProfile.twitter} onChange={(e: ChangeEvent<HTMLInputElement>) => setTempProfile({ ...tempProfile, twitter: e.target.value })} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Twitter handle" />
               </div>
-            ) : (
-              <div className="flex gap-4">
-                {[{ Icon: InstagramIcon }, { Icon: LinkedinIcon }].map(({ Icon }, i) => (
-                  <motion.button key={i} whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center hover:bg-blue-500/20 transition-colors">
-                    <Icon size={20} className="text-gray-400" />
-                  </motion.button>
+              <div className="lp-dots">
+                {showcase.map((_, i) => (
+                  <button key={i} className={`lp-dot ${index === i ? "active" : ""}`} onClick={() => setIndex(i)} aria-label={`Go to slide ${i + 1}`} />
                 ))}
               </div>
-            )}
+            </div>
           </div>
-          {!isEditing && (
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full mt-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl py-4 font-semibold text-lg">
-              💾 Save Contact
-            </motion.button>
-          )}
-          {isEditing && (
-            <Button variant="primary" onClick={() => { setProfile(tempProfile); setIsEditing(false); }} className="w-full mt-8 flex items-center justify-center gap-2">
-              <Save size={20} /> Save Changes
-            </Button>
-          )}
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-12 bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6">
-          <p className="text-blue-300 text-center">💡 This is a live demo. Try editing to see how your profile would look to others!</p>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
+        </div>
+      </header>
 
-const AboutPage = (): React.ReactElement => (
-  <div className="min-h-screen pt-24 pb-16 px-6 bg-black">
-    <div className="max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">About TapLab</h1>
-        <p className="text-xl text-gray-400">Revolutionizing how professionals connect</p>
-      </motion.div>
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-8">
-        <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10">
-          <h2 className="text-3xl font-bold text-white mb-4">Our Story</h2>
-          <p className="text-gray-300 leading-relaxed mb-4">TapLab was born from a simple observation: business cards are outdated, but the need for instant, professional networking has never been stronger. We set out to create a solution that combines premium materials with cutting-edge NFC technology.</p>
-          <p className="text-gray-300 leading-relaxed">Today, thousands of professionals, entrepreneurs, and businesses use TapLab to make lasting impressions and seamlessly share their digital presence.</p>
+      {/* ROTATING TRUSTED */}
+      <section className="lp-rotate">
+        <div className="wrap">
+          <h2>We build cool things for</h2>
+          <div className="rolling">
+            <span className="word" key={index}>{showcase[index].word}</span>
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10">
-          <h2 className="text-3xl font-bold text-white mb-4">Our Mission</h2>
-          <p className="text-gray-300 leading-relaxed">We believe in a world where sharing your professional identity is as simple as a tap. Our mission is to empower modern professionals with premium, sustainable, and intelligent networking solutions that leave a lasting impression.</p>
+      </section>
+
+      {/* FEATURES */}
+      <section className="lp-feat" id="features">
+        <div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+          <div className="lp-card lilac reverse reveal">
+            <div>
+              <h2>Share it anywhere — tap, scan or link</h2>
+              <p>Put your TapLab card on the counter, table or shopfront. Add the QR to flyers and bills. Drop the link in every bio. One destination, everywhere your customers are.</p>
+              <a className="btn btn-green" href={WA}>See how it works <ArrowRight size={16} /></a>
+            </div>
+            <div className="lp-card-media">
+              <div className="lp-tile" style={{ display: "grid", placeItems: "center", padding: 36 }}>
+                <QrCode size={120} color="#171120" />
+              </div>
+            </div>
+          </div>
+
+          <div className="lp-card ink reveal">
+            <div>
+              <h2>See what's actually working</h2>
+              <p>Know how many people tapped, what they clicked and when they came back. Tweak your offers and links on the fly to keep customers coming through the door.</p>
+              <a className="btn btn-green" href={WA}>View a demo <ArrowRight size={16} /></a>
+            </div>
+            <div className="lp-card-media">
+              <div className="lp-tile">
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18, color: "#fff", fontWeight: 600 }}>
+                  <BarChart3 size={18} /> This week's taps
+                </div>
+                <div className="lp-bars">
+                  {[40, 65, 50, 80, 60, 95, 75].map((h, i) => (
+                    <div key={i} className="lp-bar" style={{ height: `${h}%`, animationDelay: `${i * 0.08}s` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10">
-          <h2 className="text-3xl font-bold text-white mb-4">Our Values</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="lp-testi" id="testimonials">
+        <div className="wrap">
+          <h2>Loved by local businesses</h2>
+          <div className="row">
             {[
-              { title: "Quality First", desc: "Premium materials and craftsmanship in every product" },
-              { title: "Innovation", desc: "Constantly pushing boundaries in NFC technology" },
-              { title: "Sustainability", desc: "Reducing paper waste with reusable digital solutions" },
-              { title: "Customer Success", desc: "Your success is our success" },
-            ].map((value, i) => (
-              <div key={i} className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0"><Check size={20} className="text-white" /></div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">{value.title}</h3>
-                  <p className="text-gray-400 text-sm">{value.desc}</p>
-                </div>
+              { t: "Customers tap the card on the counter and order in seconds. It just looks premium.", n: "Pizza Caprina", r: "Cafe Owner", c: "P" },
+              { t: "Setup was effortless — I sent my menu once and the page was live the same day.", n: "High On Shakes", r: "Cafe Owner", c: "H" },
+              { t: "The table tags completely changed how our guests browse the menu. No more reprints.", n: "Seby D'costa", r: "Restaurant Owner", c: "S" },
+            ].map((x, i) => (
+              <div className="lp-quote reveal" key={i} style={{ animationDelay: `${i * 0.08}s` }}>
+                <div className="stars">{[...Array(5)].map((_, j) => <Star key={j} size={16} fill="currentColor" />)}</div>
+                <p className="txt">"{x.t}"</p>
+                <div className="who"><span className="c">{x.c}</span><div><b>{x.n}</b><br /><span>{x.r}</span></div></div>
               </div>
             ))}
           </div>
         </div>
-      </motion.div>
-    </div>
-  </div>
-);
+      </section>
 
-const ContactPage = (): React.ReactElement => {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    alert("Thank you! We will get back to you soon.");
-    setFormData({ name: "", email: "", message: "" });
-  };
-
-  const faqs = [
-    { q: "How does NFC technology work?", a: "NFC (Near Field Communication) allows devices to communicate when they are close together. Simply tap your TapLab card to any smartphone to instantly share your digital profile." },
-    { q: "Do I need an app?", a: "No app needed! NFC works natively on all modern smartphones (iPhone and Android). Recipients just tap and view your profile in their browser." },
-    { q: "What is the delivery time?", a: "Standard delivery takes 7-10 business days. Express delivery options are available at checkout." },
-    { q: "Is there a warranty?", a: "Yes! All TapLab products come with a lifetime chip warranty. If your NFC chip stops working, we will replace it free of charge." },
-  ];
-
-  return (
-    <div className="min-h-screen pt-24 pb-16 px-6 bg-black">
-      <div className="max-w-6xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Get in Touch</h1>
-          <p className="text-xl text-gray-400">We're here to help you upgrade how you connect</p>
-        </motion.div>
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10">
-            <h2 className="text-3xl font-bold text-white mb-6">Send us a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-gray-300 mb-2">Name</label>
-                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" required />
+      {/* FAQ */}
+      <section className="lp-faq" id="faq">
+        <div className="wrap">
+          <h2>Questions? Answered.</h2>
+          <div className="list">
+            {faqs.map((f, i) => (
+              <div className={`lp-q ${open === i ? "open" : ""}`} key={i}>
+                <button onClick={() => setOpen(open === i ? -1 : i)}>
+                  {f.q}
+                  <span className="ic">{open === i ? <Minus size={22} /> : <Plus size={22} />}</span>
+                </button>
+                <div className="a"><p>{f.a}</p></div>
               </div>
-              <div>
-                <label className="block text-gray-300 mb-2">Email</label>
-                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" required />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-2">Message</label>
-                <textarea value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 min-h-[150px]" required />
-              </div>
-              <Button variant="primary" className="w-full">Send Message</Button>
-            </form>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-8">
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-white/10">
-              <h2 className="text-3xl font-bold text-white mb-6">Contact Information</h2>
-              <div className="space-y-6">
-                <motion.a href="https://wa.me/919867145439" target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.05 }} className="flex items-center gap-4 p-4 bg-green-500/20 rounded-xl border border-green-500/30 hover:bg-green-500/30 transition-colors">
-                  <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center"><Phone size={24} className="text-white" /></div>
-                  <div><div className="text-gray-400 text-sm">WhatsApp Support</div><div className="text-white font-semibold">+91 98671 45439</div></div>
-                </motion.a>
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                  <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center"><Mail size={24} className="text-white" /></div>
-                  <div><div className="text-gray-400 text-sm">Email</div><div className="text-white font-semibold">contact@taplab.in</div></div>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                  <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center"><MapPin size={24} className="text-white" /></div>
-                  <div><div className="text-gray-400 text-sm">Location</div><div className="text-white font-semibold">Mumbai, India</div></div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-2xl p-6 border border-blue-500/30">
-              <h3 className="text-white font-semibold mb-2">💬 Quick Response</h3>
-              <p className="text-gray-300 text-sm">We typically respond within 2-4 hours during business hours (9 AM - 6 PM IST)</p>
-            </div>
-          </motion.div>
-        </div>
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <h2 className="text-4xl font-bold text-white mb-8 text-center">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }} className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-semibold text-white mb-3">{faq.q}</h3>
-                <p className="text-gray-400">{faq.a}</p>
-              </motion.div>
             ))}
           </div>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
+        </div>
+      </section>
 
-export default function Home(): React.ReactElement {
-  const [currentPage, setCurrentPage] = useState<string>("home");
-  const [selectedProduct, setSelectedProduct] = useState<ProductKey>("business-card");
+      {/* FINAL CTA */}
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPage]);
-
-  return (
-    <div className="bg-black min-h-screen text-white">
-      <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentPage}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {currentPage === "home" && <HomePage setCurrentPage={setCurrentPage} setSelectedProduct={setSelectedProduct} />}
-          {currentPage === "products" && <ProductsPage selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} />}
-          {currentPage === "profile" && <ProfilePage />}
-          {currentPage === "about" && <AboutPage />}
-          {currentPage === "contact" && <ContactPage />}
-        </motion.div>
-      </AnimatePresence>
-      <Footer setCurrentPage={setCurrentPage} />
+      {/* FOOTER */}
+      <footer className="lp-foot">
+        <div className="wrap">
+          <div className="cols">
+            <div>
+              <a className="lp-logo" href="#top">
+            <img src="/taplab.png" alt="TapLab" style={{ height: 28, width: 'auto' }} />
+          </a>
+              <p style={{ color: "var(--ink-soft)", fontSize: 14, maxWidth: 260 }}>
+                Tap-ready pages for local businesses. Designed, built and hosted in Mumbai.
+              </p>
+            </div>
+            <div>
+              <h4>Products</h4>
+              <a href="#features">NFC business cards</a>
+              <a href="#features">Smart tags</a>
+              <a href="#features">Restaurant table tags</a>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <a href={WA}>About</a>
+              <a href={WA}>Contact</a>
+              <a href={WA}>Pricing</a>
+            </div>
+            <div>
+              <h4>Support</h4>
+              <a href={WA}>WhatsApp us</a>
+              <a href="mailto:contact@taplab.in">contact@taplab.in</a>
+              <a href={WA}>Help</a>
+            </div>
+          </div>
+          <div className="bottom">
+            <span>© 2025 TapLab. Upgrade how you connect.</span>
+            <div className="lp-soc">
+              <a href="https://www.instagram.com/taplab.in/" aria-label="Instagram">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" /></svg>
+              </a>
+              <a href="https://www.linkedin.com/company/taplabindia/" aria-label="LinkedIn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
