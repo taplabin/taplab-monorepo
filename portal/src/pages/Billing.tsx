@@ -102,7 +102,7 @@ export default function Billing() {
                 href={business.razorpayPaymentLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                className="inline-block bg-[#13204d] hover:bg-[#0e1836] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 Subscribe Now
               </a>
@@ -159,7 +159,7 @@ export default function Billing() {
             href={inv.short_url}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="text-xs text-[#13204d] dark:text-[#a8b4d4] hover:underline"
           >
             View
           </a>

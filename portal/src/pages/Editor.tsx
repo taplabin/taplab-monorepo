@@ -138,7 +138,7 @@ export default function Editor() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-[#13204d] hover:bg-[#0e1836] text-white py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {saving ? 'Saving…' : 'Save Changes'}
         </button>

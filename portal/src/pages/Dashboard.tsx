@@ -143,7 +143,7 @@ export default function Dashboard() {
             />
             <button
               onClick={handleCopy}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition-colors"
+              className="px-4 py-2 bg-[#13204d] hover:bg-[#0e1836] text-white text-sm rounded-lg transition-colors"
             >
               Copy
             </button>
@@ -152,7 +152,7 @@ export default function Dashboard() {
             href={pageUrl}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-indigo-500 dark:text-indigo-400 hover:underline mt-2 inline-block"
+            className="text-xs text-[#13204d] dark:text-[#a8b4d4] hover:underline mt-2 inline-block"
           >
             Open page →
           </a>
@@ -167,7 +167,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={handleDownloadQR}
-            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
+            className="text-sm text-[#13204d] dark:text-[#a8b4d4] hover:text-[#0e1836] dark:hover:text-[#c5cde6] font-medium transition-colors"
           >
             Download QR Code
           </button>

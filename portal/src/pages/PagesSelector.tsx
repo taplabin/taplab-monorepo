@@ -96,10 +96,10 @@ function PageCard({
   return (
     <button
       onClick={onSelect}
-      className={`group text-left w-full rounded-2xl overflow-hidden border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+      className={`group text-left w-full rounded-2xl overflow-hidden border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#13204d] ${
         isSelected
-          ? 'border-indigo-500 shadow-lg shadow-indigo-500/10'
-          : 'border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg'
+          ? 'border-[#13204d] shadow-lg shadow-[#13204d]/10'
+          : 'border-gray-200 dark:border-gray-800 hover:border-[#13204d]/40 dark:hover:border-[#a8b4d4]/40 hover:shadow-lg'
       } bg-white dark:bg-gray-900`}
     >
       {/* Preview */}
@@ -108,9 +108,9 @@ function PageCard({
           <PagePreview slug={business.slug} name={business.businessName} />
         ) : (
           <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ height: 192 }}>
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#13204d]/5 to-[#13204d]/10 dark:from-[#13204d]/20 dark:to-[#13204d]/30">
+              <div className="w-14 h-14 rounded-2xl bg-[#13204d]/10 dark:bg-[#13204d]/30 flex items-center justify-center">
+                <span className="text-2xl font-bold text-[#13204d] dark:text-[#a8b4d4]">
                   {business.businessName.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -119,7 +119,7 @@ function PageCard({
           </div>
         )}
         {isSelected && (
-          <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full z-10">
+          <div className="absolute top-2 right-2 bg-[#13204d] text-white text-xs font-semibold px-2 py-0.5 rounded-full z-10">
             Selected
           </div>
         )}
@@ -129,7 +129,7 @@ function PageCard({
       <div className="px-4 py-3.5 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className={`text-sm font-semibold truncate transition-colors ${
-            isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
+            isSelected ? 'text-[#13204d] dark:text-[#a8b4d4]' : 'text-gray-900 dark:text-white group-hover:text-[#13204d] dark:group-hover:text-[#a8b4d4]'
           }`}>
             {business.businessName}
           </p>

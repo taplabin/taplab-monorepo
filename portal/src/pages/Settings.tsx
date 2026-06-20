@@ -65,7 +65,7 @@ export default function Settings() {
   }
 
   const email = auth.currentUser?.email ?? '—';
-  const inputClass = 'w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow';
+  const inputClass = 'w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#13204d] transition-shadow';
 
   return (
     <Layout>
@@ -104,7 +104,7 @@ export default function Settings() {
             <button
               onClick={toggleTheme}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                theme === 'dark' ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                theme === 'dark' ? 'bg-[#13204d]' : 'bg-gray-200 dark:bg-gray-700'
               }`}
               role="switch"
               aria-checked={theme === 'dark'}
@@ -137,7 +137,7 @@ export default function Settings() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-[#13204d] hover:bg-[#0e1836] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Updating…' : 'Update Password'}
             </button>
@@ -150,7 +150,7 @@ export default function Settings() {
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Pages</p>
             <Link
               to="/pages"
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#13204d] dark:hover:text-[#a8b4d4] transition-colors"
             >
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />

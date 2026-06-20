@@ -54,7 +54,10 @@ const NAV = [
   },
 ];
 
-const activeClass = 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400';
+
+const activeClass =
+  'bg-[#13204d] text-white dark:bg-[#13204d] dark:text-white';
+
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
 
 export default function Layout({ children }: { children: React.ReactNode }) {

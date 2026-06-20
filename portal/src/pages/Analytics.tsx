@@ -313,7 +313,7 @@ function ViewToggle({ pie, onToggle }: { pie: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
-      className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-[#13204d] hover:text-[#13204d] transition-colors"
     >
       {pie ? 'List' : 'Pie'}
     </button>
@@ -363,12 +363,12 @@ function Insights({ data, total30, mobileViews, desktopViews, newVisitors, retur
   if (insights.length === 0) return null;
 
   return (
-    <div className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl p-4">
-      <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-2.5">Insights</p>
+    <div className="bg-[#13204d]/5 dark:bg-[#13204d]/10 border border-[#13204d]/10 dark:border-[#13204d]/20 rounded-xl p-4">
+      <p className="text-[11px] font-semibold text-[#13204d] dark:text-[#a8b4d4] uppercase tracking-wide mb-2.5">Insights</p>
       <ul className="space-y-1.5">
         {insights.map((insight, i) => (
-          <li key={i} className="flex items-start gap-2 text-xs text-indigo-900 dark:text-indigo-300">
-            <span className="text-indigo-400 mt-0.5 flex-shrink-0">›</span>
+          <li key={i} className="flex items-start gap-2 text-xs text-[#13204d] dark:text-[#c5cde6]">
+            <span className="text-[#13204d]/50 mt-0.5 flex-shrink-0">›</span>
             {insight}
           </li>
         ))}
