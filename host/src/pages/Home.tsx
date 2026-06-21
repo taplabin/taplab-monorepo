@@ -24,6 +24,7 @@ const css = `
   --ink: #0a1128; /* Very dark navy for primary text */
   --ink-soft: #4a577a; /* Slate blue for secondary text */
   --theme: #13204d; /* Primary requested theme color */
+  --theme-hl: #2087e6;
   --theme-deep: #090f26; /* Darker shade for hovers/strips */
   --theme-light: #e4e9f5; /* Light wash for accents */
   --theme-soft: #d2dcf0; /* Secondary light wash */
@@ -77,7 +78,7 @@ const css = `
 .lp-hero .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
 .lp-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--theme-light); color: var(--theme); font-weight: 600; font-size: 13px; padding: 7px 13px; border-radius: 999px; margin-bottom: 22px; }
 .lp-hero h1 { font-size: 60px; font-weight: 800; margin-bottom: 22px; }
-.lp-hero h1 .hl { color: var(--theme); }
+.lp-hero h1 .hl { color: var(--theme-hl); }
 .lp-hero .sub { font-size: 18px; color: var(--ink-soft); max-width: 480px; margin-bottom: 30px; line-height: 1.5; }
 .lp-claim { display: flex; align-items: center; background: #fff; border: 2px solid var(--theme); border-radius: 999px; padding: 6px 6px 6px 18px; max-width: 440px; gap: 8px; }
 .lp-claim .pfx { font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
@@ -107,7 +108,7 @@ const css = `
 /* rotating trusted */
 .lp-rotate { padding: 70px 0; text-align: center; }
 .lp-rotate h2 { font-size: 40px; font-weight: 800; }
-.lp-rotate .rolling { display: block; font-family: 'Poppins'; font-weight: 800; font-size: 40px; letter-spacing: -0.02em; line-height: 1.05; color: var(--theme); margin-top: 10px; }
+.lp-rotate .rolling { display: block; font-family: 'Poppins'; font-weight: 800; font-size: 40px; letter-spacing: -0.02em; line-height: 1.05; color: var(--theme-hl); margin-top: 10px; }
 .lp-rotate .word { display: inline-block; animation: rollIn .5s ease; }
 @keyframes rollIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
