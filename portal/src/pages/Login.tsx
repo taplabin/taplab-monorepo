@@ -140,7 +140,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#13204d] hover:bg-[#0e1836] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-[#2087e6] hover:bg-[#13204d] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'Sending…' : 'Send Reset Link'}
               </button>
