@@ -102,7 +102,7 @@ export default function Billing() {
                 href={business.razorpayPaymentLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-block bg-[#13204d] hover:bg-[#0e1836] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                className="inline-block bg-[#2087e6] hover:bg-[#13204d] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 Subscribe Now
               </a>

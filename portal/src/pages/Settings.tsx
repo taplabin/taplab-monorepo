@@ -104,7 +104,7 @@ export default function Settings() {
             <button
               onClick={toggleTheme}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                theme === 'dark' ? 'bg-[#13204d]' : 'bg-gray-200 dark:bg-gray-700'
+                theme === 'dark' ? 'bg-[#2087e6]' : 'bg-gray-200 dark:bg-gray-700'
               }`}
               role="switch"
               aria-checked={theme === 'dark'}
@@ -137,7 +137,7 @@ export default function Settings() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-[#13204d] hover:bg-[#0e1836] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-[#2087e6] hover:bg-[#13204d] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Updating…' : 'Update Password'}
             </button>

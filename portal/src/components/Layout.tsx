@@ -56,7 +56,7 @@ const NAV = [
 
 
 const activeClass =
-  'bg-[#13204d] text-white dark:bg-[#13204d] dark:text-white';
+  'bg-[#2087e6] text-white dark:bg-[#2087e6] dark:text-white';
 
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
 

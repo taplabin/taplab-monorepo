@@ -288,7 +288,7 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
 
 // ─── Horizontal bar ───────────────────────────────────────────────────────────
 
-function HorizBar({ label, views, maxViews, gradient = 'linear-gradient(to right, #6366f1, #818cf8)' }: {
+function HorizBar({ label, views, maxViews, gradient = 'linear-gradient(to right, #2087e6, #63b3f7)' }: {
   label: string; views: number; maxViews: number; gradient?: string;
 }) {
   const pct = Math.round((views / Math.max(maxViews, 1)) * 100);
@@ -497,16 +497,16 @@ export default function Analytics() {
   const hasAnyData = total30 > 0 || (data.totalSessions ?? 0) > 0;
 
   const deviceSegments = [
-    { label: 'Mobile',  value: mobileViews,  color: '#6366f1' },
-    { label: 'Desktop', value: desktopViews, color: '#a78bfa' },
+    { label: 'Mobile',  value: mobileViews,  color: '#2087e6' },
+    { label: 'Desktop', value: desktopViews, color: '#06b6d4' },
   ].filter((s) => s.value > 0);
 
   const visitorSegments = [
-    { label: 'New',       value: newVisitors,       color: '#6366f1' },
-    { label: 'Returning', value: returningVisitors, color: '#34d399' },
+    { label: 'New',       value: newVisitors,       color: '#2087e6' },
+    { label: 'Returning', value: returningVisitors, color: '#10b981' },
   ].filter((s) => s.value > 0);
 
-  const langColors = ['#6366f1', '#a78bfa', '#34d399', '#fb923c', '#f43f5e'];
+  const langColors = ['#2087e6', '#06b6d4', '#10b981', '#f59e0b', '#f43f5e'];
   const langSegments = (data.languages ?? []).map((r, i) => ({
     label: r.language,
     value: Number(r.views),
@@ -609,7 +609,7 @@ export default function Analytics() {
           </p>
           <AreaLineChart
             points={area30dPoints}
-            color="#6366f1"
+            color="#2087e6"
             gradientId="area-grad-30d"
             xLabels={area30dXLabels}
             emptyMsg="No views in this period yet."
@@ -627,7 +627,7 @@ export default function Analytics() {
                 <div>
                   <SmallBarChart
                     items={dowData}
-                    gradient="linear-gradient(to top, #4338ca, #818cf8)"
+                    gradient="linear-gradient(to top, #1a6fc4, #2087e6)"
                   />
                   <div className="flex mt-1.5">
                     {dowData.map((d) => (
@@ -654,7 +654,7 @@ export default function Analytics() {
               </p>
               <AreaLineChart
                 points={areaHourPoints}
-                color="#7c3aed"
+                color="#06b6d4"
                 gradientId="area-grad-24h"
                 xLabels={areaHourXLabels}
                 emptyMsg="No data yet."
@@ -689,7 +689,7 @@ export default function Analytics() {
                         label={`${row.campaign}${row.source !== 'none' ? ` · ${row.source}` : ''}`}
                         views={Number(row.views)}
                         maxViews={maxUTM}
-                        gradient="linear-gradient(to right, #d97706, #fbbf24)"
+                        gradient="linear-gradient(to right, #d97706, #f59e0b)"
                       />
                     );
                   })}
