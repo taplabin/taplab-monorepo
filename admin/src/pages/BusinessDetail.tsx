@@ -27,6 +27,11 @@ interface Business {
   ownerEmail: string | null;
   ownerUid: string | null;
   notes?: string;
+  brokerId: string | null;
+  brokerName: string | null;
+  referralBonusPending: boolean;
+  referralBonusSent: boolean;
+  referralBonusAmount: number | null;
 }
 
 interface PaymentsData {
@@ -96,6 +101,57 @@ function RefreshLinkButton({ label, onFetch }: { label: string; onFetch: () => P
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function ReferralBonusCard({ slug, brokerName }: { slug: string; brokerName: string }) {
+  const toast = useToast();
+  const [amount, setAmount] = useState('');
+  const [paying, setPaying] = useState(false);
+
+  const handlePay = async () => {
+    const amt = parseFloat(amount);
+    if (!amt || amt <= 0) return;
+    setPaying(true);
+    try {
+      const res = await adminFetch(`/api/admin/business/${slug}/pay-referral-bonus`, {
+        method: 'POST',
+        body: JSON.stringify({ amount: amt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast('Referral bonus sent via RazorpayX');
+    } catch (err: any) {
+      toast(err.message || 'Failed to send bonus', 'error');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  return (
+    <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-5">
+      <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-300 mb-1">Referral Bonus Pending</h2>
+      <p className="text-xs text-amber-700 dark:text-amber-400 mb-4">
+        {brokerName} was referred by another broker. Set the bonus amount and pay via RazorpayX.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount (₹)"
+          min="500"
+          className="flex-1 px-3 py-2 border border-amber-200 dark:border-amber-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+        />
+        <button
+          onClick={handlePay}
+          disabled={paying || !amount || parseFloat(amount) <= 0}
+          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+        >
+          {paying ? 'Paying…' : 'Pay Now'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -445,6 +501,18 @@ export default function BusinessDetail() {
             {notesSaving ? 'Saving…' : 'Save Notes'}
           </button>
         </div>
+
+        {business.referralBonusPending && !business.referralBonusSent && (
+          <ReferralBonusCard slug={slug!} brokerName={business.brokerName ?? 'Broker'} />
+        )}
+        {business.referralBonusSent && business.referralBonusAmount && (
+          <div className={cardClass}>
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Referral Bonus</h2>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              ₹{business.referralBonusAmount.toLocaleString('en-IN')} paid to referring broker
+            </p>
+          </div>
+        )}
       </div>
     </Layout>
   );
