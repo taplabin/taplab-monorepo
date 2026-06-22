@@ -14,6 +14,9 @@ import Alerts from './pages/Alerts';
 import Storage from './pages/Storage';
 import Brokers from './pages/Brokers';
 import BrokerDetail from './pages/BrokerDetail';
+import Leads from './pages/Leads';
+import LeadDetail from './pages/LeadDetail';
+import StreakConfig from './pages/StreakConfig';
 
 function LoadingSpinner() {
   return (
@@ -66,6 +69,9 @@ export default function App() {
             <Route path="/storage"           element={<Storage />} />
             <Route path="/brokers"           element={<Brokers />} />
             <Route path="/broker/:id"        element={<BrokerDetail />} />
+            <Route path="/leads"             element={<Leads />} />
+            <Route path="/leads/:id"         element={<LeadDetail />} />
+            <Route path="/streak-config"     element={<StreakConfig />} />
             <Route path="*"                  element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

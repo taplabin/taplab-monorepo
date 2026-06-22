@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 export default function Leads() {
   const [tab, setTab] = useState<LeadStatus>('pending');
 
-  const { data, isLoading } = useSWR(`/api/admin/leads?status=${tab}`, async (url) => {
+  const { data, isLoading } = useSWR(`/api/admin/leads?status=${tab}`, async (url: string) => {
     const res = await adminFetch(url);
     const json = await res.json();
     return json.leads as Lead[];
