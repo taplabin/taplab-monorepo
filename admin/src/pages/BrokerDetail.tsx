@@ -21,6 +21,11 @@ interface BrokerWithDeals {
   phone: string;
   email: string;
   notes?: string;
+  bankAccountNumber: string | null;
+  bankIfsc: string | null;
+  upiId: string | null;
+  bankVerified: boolean;
+  razorpayFundAccountId: string | null;
   deals: Deal[];
 }
 
@@ -155,6 +160,33 @@ export default function BrokerDetail() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Bank Details */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Bank Details</h2>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              broker.bankVerified
+                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+            }`}>
+              {broker.bankVerified ? 'Verified' : 'Awaiting verification'}
+            </span>
+          </div>
+          <dl className="space-y-2">
+            {[
+              { label: 'Account', value: broker.bankAccountNumber ?? '—' },
+              { label: 'IFSC', value: broker.bankIfsc ?? '—' },
+              { label: 'UPI', value: broker.upiId ?? '—' },
+              { label: 'RazorpayX Fund Account', value: broker.razorpayFundAccountId ?? 'Not created yet' },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex justify-between">
+                <dt className="text-xs text-gray-400 dark:text-gray-500">{label}</dt>
+                <dd className="text-xs font-medium text-gray-900 dark:text-white font-mono">{value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         {/* Deal stack */}
