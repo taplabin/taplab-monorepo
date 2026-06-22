@@ -53,7 +53,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 await app.register(cors, {
   origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
