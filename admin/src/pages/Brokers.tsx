@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import { useToast } from '../components/Toast';
+import BrokerCombobox from '../components/BrokerCombobox';
 
 interface Broker {
   id: string;
@@ -38,7 +39,7 @@ export default function Brokers() {
 
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', bankAccountNumber: '', bankIfsc: '', upiId: '', referredBy: '' });
   const [saving, setSaving] = useState(false);
 
   const pendingPayouts = useMemo(() => {
@@ -74,8 +75,9 @@ export default function Brokers() {
         const err = await res.json();
         throw new Error(err.error);
       }
-      toast('Broker added');
-      setForm({ name: '', phone: '', email: '' });
+      const data = await res.json();
+      toast(`Broker added — invite link: ${data.inviteLink}`);
+      setForm({ name: '', phone: '', email: '', bankAccountNumber: '', bankIfsc: '', upiId: '', referredBy: '' });
       setAdding(false);
       mutate();
     } catch (err: any) {
@@ -164,6 +166,44 @@ export default function Brokers() {
                   className={inputClass}
                 />
               </div>
+              <div>
+                <label className={labelClass}>Bank Account Number</label>
+                <input
+                  type="text"
+                  value={form.bankAccountNumber}
+                  onChange={(e) => setForm({ ...form, bankAccountNumber: e.target.value })}
+                  placeholder="123456789012"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>IFSC Code</label>
+                <input
+                  type="text"
+                  value={form.bankIfsc}
+                  onChange={(e) => setForm({ ...form, bankIfsc: e.target.value.toUpperCase() })}
+                  placeholder="HDFC0000001"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>UPI ID <span className="font-normal normal-case text-gray-400 dark:text-gray-500">(optional)</span></label>
+                <input
+                  type="text"
+                  value={form.upiId}
+                  onChange={(e) => setForm({ ...form, upiId: e.target.value })}
+                  placeholder="broker@upi"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Referred By <span className="font-normal normal-case text-gray-400 dark:text-gray-500">(optional)</span></label>
+                <BrokerCombobox
+                  brokers={brokers ?? []}
+                  value={form.referredBy}
+                  onChange={(id) => setForm({ ...form, referredBy: id })}
+                />
+              </div>
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
@@ -174,7 +214,7 @@ export default function Brokers() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setAdding(false); setForm({ name: '', phone: '', email: '' }); }}
+                  onClick={() => { setAdding(false); setForm({ name: '', phone: '', email: '', bankAccountNumber: '', bankIfsc: '', upiId: '', referredBy: '' }); }}
                   className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                 >
                   Cancel
