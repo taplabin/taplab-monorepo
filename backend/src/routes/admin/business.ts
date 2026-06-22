@@ -3,6 +3,84 @@ import { getAuth } from 'firebase-admin/auth';
 import { db } from '../../firestore.js';
 import { BusinessDocument } from '../../types.js';
 import { createSubscriptionAndLink, razorpay } from '../../razorpay.js';
+import { createPayout } from '../../razorpayx.js';
+
+export async function createBusinessFromData(data: {
+  businessName: string;
+  businessSlug: string;
+  ownerEmail?: string;
+  pricingAmount: number;
+  billingCycle: 'monthly' | 'yearly';
+  freeTrialEnabled?: boolean;
+  trialDurationDays?: number;
+  startAt?: number;
+  setupFee?: number;
+  brokerId?: string;
+  commissionPercent?: number;
+  leadId?: string;
+}): Promise<{ slug: string; paymentLinkUrl: string; razorpaySubscriptionId: string; inviteLink: string | null }> {
+  const { businessName, businessSlug, ownerEmail, pricingAmount, billingCycle,
+    freeTrialEnabled, trialDurationDays, startAt, setupFee, brokerId, commissionPercent, leadId } = data;
+
+  let brokerName: string | null = null;
+  if (brokerId) {
+    const brokerDoc = await db.collection('brokers').doc(brokerId).get();
+    if (brokerDoc.exists) brokerName = (brokerDoc.data() as any).name ?? null;
+  }
+
+  const { razorpaySubscriptionId, paymentLinkUrl } = await createSubscriptionAndLink(
+    businessName, pricingAmount, billingCycle, startAt,
+    setupFee && setupFee > 0 ? setupFee : undefined
+  );
+
+  let ownerUid: string | null = null;
+  let inviteLink: string | null = null;
+  if (ownerEmail) {
+    try {
+      const userRecord = await getAuth().createUser({ email: ownerEmail });
+      ownerUid = userRecord.uid;
+      inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+    } catch (authError: any) {
+      if (authError?.code === 'auth/email-already-exists') {
+        const existing = await getAuth().getUserByEmail(ownerEmail);
+        ownerUid = existing.uid;
+        inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
+      } else throw authError;
+    }
+  }
+
+  await db.runTransaction(async (tx) => {
+    const ref = db.collection('businesses').doc(businessSlug);
+    const snap = await tx.get(ref);
+    if (snap.exists) throw new Error(`Slug '${businessSlug}' is already taken`);
+
+    const businessData: BusinessDocument = {
+      businessName, businessSlug,
+      ownerEmail: ownerEmail ?? null, ownerUid,
+      subscriptionStatus: 'inactive', subscriptionEndsAt: null,
+      freeTrialEnabled: freeTrialEnabled ?? false,
+      trialStartDate: freeTrialEnabled ? new Date() as any : null,
+      trialDurationDays: trialDurationDays ?? 7,
+      pricingAmount, billingCycle,
+      pageJsUrl: null, componentTagName: null, pageVersion: null,
+      pageStatus: 'no_page', lastDeployedAt: null,
+      razorpaySubscriptionId, razorpayPaymentLink: paymentLinkUrl,
+      setupFee: setupFee && setupFee > 0 ? setupFee : null,
+      brokerId: brokerId || null, brokerName,
+      commissionPercent: brokerId && commissionPercent && commissionPercent > 0 ? commissionPercent : null,
+      commissionPaid: false,
+      commissionPayoutSent: false, commissionPayoutId: null, commissionPayoutAmount: null, commissionPayoutSentAt: null,
+      streakBonusSent: false, streakBonusAmount: null, streakBonusPayoutId: null, streakBonusSentAt: null,
+      referralBonusPending: false, referralBonusAmount: null,
+      referralBonusSent: false, referralBonusPayoutId: null, referralBonusSentAt: null,
+      leadId: leadId ?? null,
+      createdAt: new Date() as any,
+    };
+    tx.set(ref, businessData);
+  });
+
+  return { slug: businessSlug, paymentLinkUrl, razorpaySubscriptionId, inviteLink };
+}
 
 export async function adminBusinessRoute(app: FastifyInstance) {
   // Create new business
@@ -43,89 +121,21 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     }
 
     try {
-      // Resolve broker name (denormalized for display)
-      let brokerName: string | null = null;
-      if (brokerId) {
-        const brokerDoc = await db.collection('brokers').doc(brokerId).get();
-        if (brokerDoc.exists) brokerName = (brokerDoc.data() as any).name ?? null;
-      }
-
-      // Create Razorpay subscription and payment link
-      const { razorpaySubscriptionId, paymentLinkUrl } =
-        await createSubscriptionAndLink(businessName, pricingAmount, billingCycle, startAt ?? undefined, setupFee > 0 ? setupFee : undefined);
-
-      // Create Firebase Auth user for the business owner (if email provided)
-      let ownerUid: string | null = null;
-      let inviteLink: string | null = null;
-
-      if (ownerEmail) {
-        try {
-          const userRecord = await getAuth().createUser({ email: ownerEmail });
-          ownerUid = userRecord.uid;
-          inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
-        } catch (authError: any) {
-          // If user already exists, fetch their UID and generate a new invite link
-          if (authError?.code === 'auth/email-already-exists') {
-            const existing = await getAuth().getUserByEmail(ownerEmail);
-            ownerUid = existing.uid;
-            inviteLink = await getAuth().generatePasswordResetLink(ownerEmail);
-          } else {
-            throw authError;
-          }
-        }
-      }
-
-      // Use Firestore transaction to ensure slug uniqueness
-      await db.runTransaction(async (tx) => {
-        const ref = db.collection('businesses').doc(businessSlug);
-        const snap = await tx.get(ref);
-
-        if (snap.exists) {
-          throw new Error(`Slug '${businessSlug}' is already taken`);
-        }
-
-        const businessData: BusinessDocument = {
-          businessName,
-          businessSlug,
-          ownerEmail: ownerEmail ?? null,
-          ownerUid,
-          subscriptionStatus: 'inactive',
-          subscriptionEndsAt: null,
-          freeTrialEnabled: freeTrialEnabled ?? false,
-          trialStartDate: freeTrialEnabled ? new Date() as any : null,
-          trialDurationDays: trialDurationDays ?? 7,
-          pricingAmount,
-          billingCycle,
-          pageJsUrl: null,
-          componentTagName: null,
-          pageVersion: null,
-          pageStatus: 'no_page',
-          lastDeployedAt: null,
-          razorpaySubscriptionId,
-          razorpayPaymentLink: paymentLinkUrl,
-          setupFee: setupFee > 0 ? setupFee : null,
-          brokerId: brokerId || null,
-          brokerName,
-          commissionPercent: brokerId && commissionPercent > 0 ? commissionPercent : null,
-          commissionPaid: false,
-          createdAt: new Date() as any,
-        };
-
-        tx.set(ref, businessData);
+      const result = await createBusinessFromData({
+        businessName, businessSlug, ownerEmail, pricingAmount, billingCycle,
+        freeTrialEnabled, trialDurationDays, startAt: startAt ?? undefined,
+        setupFee, brokerId, commissionPercent,
       });
-
       return reply.status(201).send({
-        slug: businessSlug,
-        paymentLink: paymentLinkUrl,
-        razorpaySubscriptionId,
-        inviteLink,
+        slug: result.slug,
+        paymentLink: result.paymentLinkUrl,
+        razorpaySubscriptionId: result.razorpaySubscriptionId,
+        inviteLink: result.inviteLink,
       });
     } catch (error: any) {
-      const message = error?.message ?? error?.error?.description ?? JSON.stringify(error);
-      if (message?.includes('already taken')) {
-        return reply.status(409).send({ error: message });
-      }
-      app.log.error({ razorpayError: error?.error ?? error, message }, 'Failed to create business');
+      const message = error?.message ?? JSON.stringify(error);
+      if (message?.includes('already taken')) return reply.status(409).send({ error: message });
+      app.log.error(error, 'Failed to create business');
       return reply.status(500).send({ error: 'Failed to create business', detail: message });
     }
   });
@@ -276,6 +286,46 @@ export async function adminBusinessRoute(app: FastifyInstance) {
     } catch (err) {
       app.log.error(err);
       return reply.status(500).send({ error: 'Failed to toggle commission paid' });
+    }
+  });
+
+  app.post<{ Params: { slug: string } }>('/business/:slug/pay-referral-bonus', async (req, reply) => {
+    const { slug } = req.params;
+    const { amount } = req.body as { amount: number };
+    if (!amount || amount <= 0) return reply.status(400).send({ error: 'amount must be > 0' });
+    try {
+      const ref = db.collection('businesses').doc(slug);
+      const doc = await ref.get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Business not found' });
+      const biz = doc.data() as any;
+      if (!biz.referralBonusPending) return reply.status(400).send({ error: 'No referral bonus pending' });
+      if (biz.referralBonusSent) return reply.status(400).send({ error: 'Referral bonus already sent' });
+
+      const brokerBDoc = await db.collection('brokers').doc(biz.brokerId).get();
+      if (!brokerBDoc.exists) return reply.status(404).send({ error: 'Broker not found' });
+      const brokerB = brokerBDoc.data() as any;
+      if (!brokerB.referredBy) return reply.status(400).send({ error: 'Broker was not referred by anyone' });
+
+      const brokerADoc = await db.collection('brokers').doc(brokerB.referredBy).get();
+      if (!brokerADoc.exists) return reply.status(404).send({ error: 'Referring broker not found' });
+      const brokerA = brokerADoc.data() as any;
+      if (!brokerA.razorpayFundAccountId) return reply.status(400).send({ error: 'Referring broker has no verified bank account' });
+
+      const payoutId = await createPayout({
+        fundAccountId: brokerA.razorpayFundAccountId,
+        amountInRupees: amount,
+        narration: `Referral bonus for ${biz.businessName}`,
+      });
+
+      await ref.update({
+        referralBonusPending: false, referralBonusAmount: amount,
+        referralBonusSent: true, referralBonusPayoutId: payoutId, referralBonusSentAt: new Date(),
+      });
+
+      return reply.send({ ok: true, payoutId });
+    } catch (err: any) {
+      app.log.error(err);
+      return reply.status(500).send({ error: err.message ?? 'Failed to send referral bonus' });
     }
   });
 

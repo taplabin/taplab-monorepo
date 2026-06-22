@@ -10,7 +10,12 @@ import { adminBusinessRoute } from './routes/admin/business.js';
 import { adminBrokerRoute } from './routes/admin/brokers.js';
 import { adminPaymentsRoute } from './routes/admin/payments.js';
 import { adminStorageRoute } from './routes/admin/storage.js';
+import { adminLeadsRoute } from './routes/admin/leads.js';
+import { adminBrokerReferralsRoute } from './routes/admin/brokerReferrals.js';
+import { adminConfigRoute } from './routes/admin/config.js';
+import { brokerRoute } from './routes/broker/index.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
+import { verifyBroker } from './middleware/verifyBroker.js';
 
 dotenv.config();
 
@@ -73,7 +78,15 @@ await app.register(async (adminApp) => {
   await adminApp.register(adminBrokerRoute);
   await adminApp.register(adminPaymentsRoute);
   await adminApp.register(adminStorageRoute);
+  await adminApp.register(adminLeadsRoute);
+  await adminApp.register(adminBrokerReferralsRoute);
+  await adminApp.register(adminConfigRoute);
 }, { prefix: '/admin' });
+
+await app.register(async (brokerApp) => {
+  brokerApp.addHook('preHandler', verifyBroker);
+  await brokerApp.register(brokerRoute);
+}, { prefix: '/broker' });
 
 const port = Number(process.env.PORT) || 3000;
 const host = '0.0.0.0';

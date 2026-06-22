@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import crypto from 'crypto';
 import { db } from '../firestore.js';
+import { handleCommissionPayout, handleStreakBonus, handleReferralFlag } from '../payouts.js';
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
@@ -76,9 +77,22 @@ async function handleWebhookEvent(
 
   switch (eventType) {
     case 'subscription.activated':
-    case 'subscription.charged':
       await docRef.update({ subscriptionStatus: 'active', subscriptionEndsAt: null });
       break;
+
+    case 'subscription.charged': {
+      await docRef.update({ subscriptionStatus: 'active', subscriptionEndsAt: null });
+      const freshDoc = await docRef.get();
+      if (freshDoc.exists) {
+        const freshData = freshDoc.data()!;
+        await handleCommissionPayout(docRef.id, freshData, app.log);
+        const afterCommission = (await docRef.get()).data()!;
+        await handleStreakBonus(docRef.id, afterCommission, app.log);
+        const afterStreak = (await docRef.get()).data()!;
+        await handleReferralFlag(docRef.id, afterStreak, app.log);
+      }
+      break;
+    }
 
     case 'subscription.cancelled': {
       const currentEnd = event.payload?.subscription?.entity?.current_end;

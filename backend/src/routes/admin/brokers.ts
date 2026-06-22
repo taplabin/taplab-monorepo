@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { getAuth } from 'firebase-admin/auth';
 import { db } from '../../firestore.js';
 
 export async function adminBrokerRoute(app: FastifyInstance) {
@@ -16,19 +17,43 @@ export async function adminBrokerRoute(app: FastifyInstance) {
   });
 
   app.post('/brokers', async (req, reply) => {
-    const { name, phone, email } = req.body as any;
-    if (!name || !phone) return reply.status(400).send({ error: 'name and phone are required' });
+    const { name, phone, email, bankAccountNumber, bankIfsc, upiId, referredBy } = req.body as any;
+    if (!name || !phone || !email) {
+      return reply.status(400).send({ error: 'name, phone, and email are required' });
+    }
     try {
+      let ownerUid: string;
+      try {
+        const userRecord = await getAuth().createUser({ email });
+        ownerUid = userRecord.uid;
+      } catch (authError: any) {
+        if (authError?.code === 'auth/email-already-exists') {
+          ownerUid = (await getAuth().getUserByEmail(email)).uid;
+        } else throw authError;
+      }
+
+      await getAuth().setCustomUserClaims(ownerUid, { broker: true });
+      const inviteLink = await getAuth().generatePasswordResetLink(email);
+
       const ref = await db.collection('brokers').add({
         name: name.trim(),
         phone: phone.trim(),
-        email: (email ?? '').trim(),
+        email: email.trim(),
+        ownerUid,
+        referredBy: referredBy || null,
+        bankAccountNumber: bankAccountNumber?.trim() || null,
+        bankIfsc: bankIfsc?.trim() || null,
+        upiId: upiId?.trim() || null,
+        bankVerified: false,
+        razorpayContactId: null,
+        razorpayFundAccountId: null,
         createdAt: new Date(),
       });
-      return reply.status(201).send({ id: ref.id, name, phone, email: email ?? '' });
-    } catch (err) {
+
+      return reply.status(201).send({ id: ref.id, inviteLink });
+    } catch (err: any) {
       app.log.error(err);
-      return reply.status(500).send({ error: 'Failed to create broker' });
+      return reply.status(500).send({ error: err.message ?? 'Failed to create broker' });
     }
   });
 
@@ -51,9 +76,7 @@ export async function adminBrokerRoute(app: FastifyInstance) {
         db.collection('brokers').doc(id).get(),
         db.collection('businesses').where('brokerId', '==', id).get(),
       ]);
-
       if (!brokerDoc.exists) return reply.status(404).send({ error: 'Broker not found' });
-
       const deals = dealsSnap.docs
         .map((doc) => {
           const d = doc.data();
@@ -63,12 +86,12 @@ export async function adminBrokerRoute(app: FastifyInstance) {
             setupFee: d.setupFee ?? null,
             commissionPercent: d.commissionPercent ?? null,
             commissionPaid: d.commissionPaid ?? false,
+            commissionPayoutSent: d.commissionPayoutSent ?? false,
             subscriptionStatus: d.subscriptionStatus,
             createdAt: d.createdAt,
           };
         })
         .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
-
       return reply.send({ id, ...brokerDoc.data(), deals });
     } catch (err) {
       app.log.error(err);
