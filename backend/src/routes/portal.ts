@@ -149,8 +149,9 @@ export async function portalRoute(app: FastifyInstance) {
         return reply.status(400).send({ error: 'Feedback must be at least 10 characters' });
       }
       const biz = await getBusinessByUid(uid);
-      const slug = biz?.businessSlug ?? null;
-      const businessName = biz?.businessName ?? null;
+      if (!biz) return reply.status(400).send({ error: 'No business found for this account' });
+      const slug = biz.businessSlug;
+      const businessName = biz.businessName;
       const ref = db.collection('customerFeedback').doc();
       await ref.set({
         businessSlug: slug,
