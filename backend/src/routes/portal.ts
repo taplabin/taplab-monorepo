@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { getAuth } from 'firebase-admin/auth';
+import { Timestamp } from 'firebase-admin/firestore';
 import { db } from '../firestore.js';
 import { BusinessDocument } from '../types.js';
 import { razorpay } from '../razorpay.js';
@@ -130,6 +131,59 @@ export async function portalRoute(app: FastifyInstance) {
     } catch (err) {
       app.log.error(err);
       return reply.send({ plan, subscription: null, invoices: [] });
+    }
+  });
+
+  // POST /portal/feedback — submit customer feedback
+  app.post('/portal/feedback', async (req, reply) => {
+    let uid: string;
+    try {
+      uid = await verifyPortalToken(req.headers.authorization);
+    } catch {
+      return reply.status(401).send({ error: 'Invalid or expired token' });
+    }
+
+    try {
+      const { content } = req.body as { content: string };
+      if (!content || content.trim().length < 10) {
+        return reply.status(400).send({ error: 'Feedback must be at least 10 characters' });
+      }
+      const biz = await getBusinessByUid(uid);
+      const slug = biz?.businessSlug ?? null;
+      const businessName = biz?.businessName ?? null;
+      const ref = db.collection('customerFeedback').doc();
+      await ref.set({
+        businessSlug: slug,
+        businessName,
+        ownerUid: uid,
+        content: content.trim().slice(0, 2000),
+        createdAt: Timestamp.now(),
+      });
+      return reply.status(201).send({ id: ref.id });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to submit feedback' });
+    }
+  });
+
+  // GET /portal/feedback — get own feedback submissions
+  app.get('/portal/feedback', async (req, reply) => {
+    let uid: string;
+    try {
+      uid = await verifyPortalToken(req.headers.authorization);
+    } catch {
+      return reply.status(401).send({ error: 'Invalid or expired token' });
+    }
+
+    try {
+      const snap = await db.collection('customerFeedback')
+        .where('ownerUid', '==', uid)
+        .orderBy('createdAt', 'desc')
+        .get();
+      return reply.send({ feedback: snap.docs.map(d => ({ id: d.id, ...d.data() })) });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to fetch feedback' });
     }
   });
 }

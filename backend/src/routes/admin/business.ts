@@ -349,4 +349,15 @@ export async function adminBusinessRoute(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to fetch business' });
     }
   });
+
+  // GET /admin/customer-feedback — all customer feedback
+  app.get('/customer-feedback', async (_req, reply) => {
+    try {
+      const snap = await db.collection('customerFeedback').orderBy('createdAt', 'desc').get();
+      return reply.send({ feedback: snap.docs.map(d => ({ id: d.id, ...d.data() })) });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to fetch customer feedback' });
+    }
+  });
 }
