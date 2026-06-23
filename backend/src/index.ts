@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import multipart from '@fastify/multipart';
 import dotenv from 'dotenv';
 import { pageRoute } from './routes/page.js';
 import { webhookRoute } from './routes/webhook.js';
@@ -14,6 +15,7 @@ import { adminLeadsRoute } from './routes/admin/leads.js';
 import { adminBrokerReferralsRoute } from './routes/admin/brokerReferrals.js';
 import { adminConfigRoute } from './routes/admin/config.js';
 import { brokerRoute } from './routes/broker/index.js';
+import { brokerProfileRoute } from './routes/broker/profile.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
 import { verifyBroker } from './middleware/verifyBroker.js';
 
@@ -41,6 +43,8 @@ app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, 
 // Rate limiting — uses CF-Connecting-IP so each real visitor is tracked
 // individually even though all traffic arrives via Cloudflare's IP range.
 // Webhook route is exempt (Razorpay must never be blocked).
+await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024 } });
+
 await app.register(rateLimit, {
   global: true,
   max: 100,
@@ -70,6 +74,9 @@ await app.register(pageRoute);
 await app.register(webhookRoute);
 await app.register(portalRoute);
 await app.register(analyticsRoute);
+
+// Broker profile routes — mixed auth (public GETs + protected PATCH/POST via per-route preHandler)
+await app.register(brokerProfileRoute, { prefix: '/broker' });
 
 // Admin routes (protected)
 await app.register(async (adminApp) => {
