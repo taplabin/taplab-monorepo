@@ -99,6 +99,22 @@ export async function adminBrokerRoute(app: FastifyInstance) {
     }
   });
 
+  // POST /admin/brokers/:id/reset-invite — generate a fresh invite link for a broker
+  app.post<{ Params: { id: string } }>('/brokers/:id/reset-invite', async (req, reply) => {
+    const { id } = req.params;
+    try {
+      const doc = await db.collection('brokers').doc(id).get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Broker not found' });
+      const email = doc.data()!.email;
+      if (!email) return reply.status(400).send({ error: 'Broker has no email set' });
+      const inviteLink = await getAuth().generatePasswordResetLink(email);
+      return reply.send({ inviteLink });
+    } catch (err: any) {
+      app.log.error(err);
+      return reply.status(500).send({ error: err.message ?? 'Failed to generate invite link' });
+    }
+  });
+
   // GET /admin/broker-feedback — all broker feedback
   app.get('/broker-feedback', async (req, reply) => {
     try {
