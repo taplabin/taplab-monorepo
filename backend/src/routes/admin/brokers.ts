@@ -98,4 +98,42 @@ export async function adminBrokerRoute(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to fetch broker' });
     }
   });
+
+  // GET /admin/broker-feedback — all broker feedback
+  app.get('/broker-feedback', async (req, reply) => {
+    try {
+      const { status, tag } = req.query as { status?: string; tag?: string };
+      let query: any = db.collection('brokerFeedback').orderBy('createdAt', 'desc');
+      const snap = await query.get();
+      let items = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      if (status) items = items.filter((i: any) => i.status === status);
+      if (tag) items = items.filter((i: any) => i.tag === tag);
+      items.sort((a: any, b: any) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
+      return reply.send({ feedback: items });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to fetch feedback' });
+    }
+  });
+
+  // PATCH /admin/broker-feedback/:id — update status and/or reply
+  app.patch('/broker-feedback/:id', async (req, reply) => {
+    try {
+      const { id } = req.params as { id: string };
+      const { status, adminReply } = req.body as { status?: string; adminReply?: string };
+      const VALID_STATUSES = ['open', 'under_review', 'implemented', 'wont_fix'];
+      const updates: Record<string, any> = {};
+      if (status) {
+        if (!VALID_STATUSES.includes(status)) return reply.status(400).send({ error: 'Invalid status' });
+        updates.status = status;
+      }
+      if (adminReply !== undefined) updates.adminReply = adminReply.slice(0, 500);
+      if (Object.keys(updates).length === 0) return reply.send({ ok: true });
+      await db.collection('brokerFeedback').doc(id).update(updates);
+      return reply.send({ ok: true });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to update feedback' });
+    }
+  });
 }
