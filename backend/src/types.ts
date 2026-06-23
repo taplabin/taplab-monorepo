@@ -58,6 +58,31 @@ export interface BrokerDocument {
   bankVerified: boolean;
   razorpayContactId: string | null;
   razorpayFundAccountId: string | null;
+  bio: string | null;
+  city: string | null;
+  photoUrl: string | null;
+  createdAt: Timestamp;
+}
+
+export interface BrokerFeedbackDocument {
+  brokerId: string;
+  brokerName: string;
+  brokerPhotoUrl: string | null;
+  content: string;
+  tag: 'Suggestion' | 'Complaint' | 'Question' | 'Win';
+  upvotes: number;
+  downvotes: number;
+  status: 'open' | 'under_review' | 'implemented' | 'wont_fix';
+  adminReply: string | null;
+  createdAt: Timestamp;
+  weekKey: string; // format: "2026-W25" — used for one-per-week enforcement
+}
+
+export interface CustomerFeedbackDocument {
+  businessSlug: string;
+  businessName: string;
+  ownerUid: string;
+  content: string;
   createdAt: Timestamp;
 }
 
