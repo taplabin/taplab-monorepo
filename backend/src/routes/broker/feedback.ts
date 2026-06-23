@@ -15,8 +15,10 @@ const VALID_TAGS = ['Suggestion', 'Complaint', 'Question', 'Win'];
 
 export async function brokerFeedbackRoute(app: FastifyInstance) {
   // GET /broker/feedback — all feedback sorted by (upvotes - downvotes) desc
-  app.get('/feedback', async (_req, reply) => {
+  app.get('/feedback', async (req, reply) => {
     try {
+      const uid = (req as any).brokerUid;
+      if (!uid) return reply.status(401).send({ error: 'Unauthorized' });
       const snap = await db.collection('brokerFeedback').orderBy('createdAt', 'desc').get();
       const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       // Sort by net votes descending
@@ -38,6 +40,9 @@ export async function brokerFeedbackRoute(app: FastifyInstance) {
       if (!content || content.trim().length < 10) {
         return reply.status(400).send({ error: 'Feedback must be at least 10 characters' });
       }
+      if (content.trim().length > 1000) {
+        return reply.status(400).send({ error: 'Feedback must be 1000 characters or fewer' });
+      }
       if (!VALID_TAGS.includes(tag)) {
         return reply.status(400).send({ error: `Tag must be one of: ${VALID_TAGS.join(', ')}` });
       }
@@ -56,7 +61,7 @@ export async function brokerFeedbackRoute(app: FastifyInstance) {
         brokerId: broker.id,
         brokerName: broker.name,
         brokerPhotoUrl: (broker as any).photoUrl ?? null,
-        content: content.trim().slice(0, 1000),
+        content: content.trim(),
         tag,
         upvotes: 0,
         downvotes: 0,
@@ -83,8 +88,10 @@ export async function brokerFeedbackRoute(app: FastifyInstance) {
       if (vote !== 1 && vote !== -1) return reply.status(400).send({ error: 'vote must be 1 or -1' });
       const feedbackRef = db.collection('brokerFeedback').doc(id);
       const voteRef = feedbackRef.collection('votes').doc(broker.id);
-      const existing = await voteRef.get();
+      const feedbackDoc = await feedbackRef.get();
+      if (!feedbackDoc.exists) return reply.status(404).send({ error: 'Feedback not found' });
       await db.runTransaction(async (tx) => {
+        const existing = await tx.get(voteRef);
         if (existing.exists) {
           const prev = existing.data()!.vote as 1 | -1;
           if (prev === vote) {
