@@ -62,6 +62,15 @@ const NAV = [
     ),
   },
   {
+    to: '/streak-config',
+    label: 'Streak Config',
+    icon: (
+      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+  },
+  {
     to: '/storage',
     label: 'Storage',
     icon: (
