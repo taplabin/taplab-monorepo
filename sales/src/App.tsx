@@ -11,6 +11,10 @@ import Dashboard from './pages/Dashboard';
 import Submissions from './pages/Submissions';
 import Leaderboard from './pages/Leaderboard';
 import Earnings from './pages/Earnings';
+import MyProfile from './pages/MyProfile';
+import BrokerProfile from './pages/BrokerProfile';
+import Team from './pages/Team';
+import Feedback from './pages/Feedback';
 
 function Spinner() {
   return (
@@ -73,6 +77,10 @@ export default function App() {
             <Route path="/submissions" element={<Submissions />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/earnings"    element={<Earnings />} />
+            <Route path="/profile/me"  element={<MyProfile />} />
+            <Route path="/profile/:id" element={<BrokerProfile />} />
+            <Route path="/team"        element={<Team />} />
+            <Route path="/feedback"    element={<Feedback />} />
             <Route path="*"            element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>

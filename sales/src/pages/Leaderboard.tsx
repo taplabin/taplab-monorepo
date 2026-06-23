@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -8,6 +9,7 @@ import { auth } from '../lib/firebase';
 export default function Leaderboard() {
   const [tab, setTab] = useState<'monthly' | 'allTime'>('monthly');
   const currentUid = auth.currentUser?.uid;
+  const navigate = useNavigate();
 
   const { data } = useSWR('/api/broker/leaderboard', async (url) => {
     const res = await brokerFetch(url);
@@ -70,9 +72,12 @@ export default function Leaderboard() {
                     <span className={`text-sm font-bold w-7 text-center ${i < 3 ? ['text-yellow-500', 'text-gray-400', 'text-amber-600'][i] : 'text-gray-400 dark:text-gray-600'}`}>
                       {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
                     </span>
-                    <span className={`text-sm font-medium flex-1 ${isMe ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}>
+                    <button
+                      onClick={() => navigate(`/profile/${row.brokerId}`)}
+                      className={`text-sm font-medium flex-1 text-left hover:underline ${isMe ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}
+                    >
                       {row.name}{isMe ? ' (you)' : ''}
-                    </span>
+                    </button>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {count} deal{count !== 1 ? 's' : ''}
                     </span>

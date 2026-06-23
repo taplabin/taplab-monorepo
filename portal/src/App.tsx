@@ -12,6 +12,7 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
 import PagesSelector from './pages/PagesSelector';
+import Feedback from './pages/Feedback';
 
 function LoadingSpinner() {
   return (
@@ -55,6 +56,7 @@ function PortalApp() {
       <Route path="/billing"   element={selectedSlug ? <Billing />    : goToPages} />
       <Route path="/analytics" element={selectedSlug ? <Analytics />  : goToPages} />
       <Route path="/settings"  element={selectedSlug ? <Settings />   : goToPages} />
+      <Route path="/feedback"  element={selectedSlug ? <Feedback />   : goToPages} />
       <Route path="/login"     element={goToDashboard} />
       <Route path="*"          element={selectedSlug ? goToDashboard  : goToPages} />
     </Routes>
