@@ -58,6 +58,12 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+*.js.map
+
+# Compiled JS alongside TS source (emitted by tsc, not needed in repo)
+admin/src/**/*.js
+sales/src/**/*.js
+portal/src/**/*.js
 
 # Vite
 .vite/
