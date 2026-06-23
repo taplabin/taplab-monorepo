@@ -95,7 +95,7 @@ export async function brokerProfileRoute(app: FastifyInstance) {
       return reply.send({ ok: true, photoUrl });
     } catch (err: any) {
       app.log.error(err);
-      if (err.code === 'FST_FILES_LIMIT' || err.statusCode === 413 || err.message?.includes('too large')) {
+      if (err.code === 'FST_REQ_FILE_TOO_LARGE' || err.statusCode === 413) {
         return reply.status(400).send({ error: 'Image must be under 2MB' });
       }
       return reply.status(500).send({ error: err.message ?? 'Upload failed' });
