@@ -2,8 +2,11 @@ import { FastifyInstance } from 'fastify';
 import { db } from '../../firestore.js';
 import { getBrokerByUid } from '../../middleware/verifyBroker.js';
 import { createContact, createFundAccount } from '../../razorpayx.js';
+import { brokerFeedbackRoute } from './feedback.js';
 
 export async function brokerRoute(app: FastifyInstance) {
+  await app.register(brokerFeedbackRoute);
+
   app.get('/me', async (req, reply) => {
     const uid = (req as any).brokerUid;
     try {
