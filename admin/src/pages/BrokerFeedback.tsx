@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -71,7 +71,7 @@ export default function BrokerFeedback() {
 
   return (
     <Layout>
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Broker Feedback</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Suggestions, complaints, and wins from the sales team</p>
@@ -106,7 +106,7 @@ export default function BrokerFeedback() {
               key={t}
               onClick={() => setTagFilter(t)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                tagFilter === t ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                tagFilter === t ? 'bg-[#2087e6] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               {t}
@@ -132,19 +132,31 @@ export default function BrokerFeedback() {
                   </div>
                   <p className="text-sm text-gray-800 dark:text-gray-200">{item.content}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="text-xs text-gray-400">👍 {item.upvotes}</span>
-                    <span className="text-xs text-gray-400">👎 {item.downvotes}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">Net: {item.upvotes - item.downvotes}</span>
+                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                      </svg>
+                      {item.upvotes}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {item.downvotes}
+                    </span>
+                    <span className={`text-xs font-medium ${item.upvotes - item.downvotes > 0 ? 'text-[#2087e6]' : item.upvotes - item.downvotes < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                      Net {item.upvotes - item.downvotes > 0 ? '+' : ''}{item.upvotes - item.downvotes}
+                    </span>
                   </div>
                   {item.adminReply && (
-                    <div className="mt-3 pl-3 border-l-2 border-indigo-300 dark:border-indigo-700">
-                      <p className="text-xs text-indigo-700 dark:text-indigo-400">{item.adminReply}</p>
+                    <div className="mt-3 pl-3 border-l-2 border-[#2087e6]/40 dark:border-blue-700">
+                      <p className="text-xs text-[#2087e6] dark:text-blue-400">{item.adminReply}</p>
                     </div>
                   )}
                 </div>
                 <button
                   onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex-shrink-0"
+                  className="text-xs text-[#2087e6] dark:text-blue-400 hover:underline flex-shrink-0"
                 >
                   {expandedId === item.id ? 'Close' : 'Manage'}
                 </button>
@@ -161,7 +173,7 @@ export default function BrokerFeedback() {
                           onClick={() => update(item.id, { status: s })}
                           disabled={saving === item.id}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                            item.status === s ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
+                            item.status === s ? 'bg-[#2087e6] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
                           }`}
                         >
                           {STATUS_LABELS[s]}
@@ -175,13 +187,13 @@ export default function BrokerFeedback() {
                       value={replyDraft[item.id] ?? item.adminReply ?? ''}
                       onChange={(e) => setReplyDraft({ ...replyDraft, [item.id]: e.target.value })}
                       rows={2}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
                       placeholder="Write a reply visible to all brokers…"
                     />
                     <button
                       onClick={() => update(item.id, { adminReply: replyDraft[item.id] ?? item.adminReply ?? '' })}
                       disabled={saving === item.id}
-                      className="mt-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg disabled:opacity-50 transition-colors"
+                      className="mt-1.5 px-4 py-1.5 bg-[#2087e6] hover:bg-blue-600 text-white text-xs font-medium rounded-lg disabled:opacity-50 transition-colors"
                     >
                       {saving === item.id ? 'Saving…' : 'Save Reply'}
                     </button>

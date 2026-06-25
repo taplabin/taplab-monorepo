@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -34,6 +34,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 };
 
 export default function Leads() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<LeadStatus>('pending');
 
   const { data, isLoading, error } = useSWR(`/api/admin/leads?status=${tab}`, async (url: string) => {
@@ -45,7 +46,7 @@ export default function Leads() {
 
   return (
     <Layout>
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Leads</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Client leads and broker referrals submitted by your sales network</p>
@@ -95,10 +96,10 @@ export default function Leads() {
           {!isLoading && !error && data && data.length > 0 && (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {data.map((lead) => (
-                <Link
+                <button
                   key={lead.id}
-                  to={`/leads/${lead.id}`}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  onClick={() => navigate(lead.status === 'pending' ? `/businesses/new?leadId=${lead.id}` : `/leads/${lead.id}`)}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -115,7 +116,7 @@ export default function Leads() {
                   <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0 ml-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                </Link>
+                </button>
               ))}
             </div>
           )}

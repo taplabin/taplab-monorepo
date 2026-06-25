@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -30,7 +30,7 @@ function AlertRow({ slug, name, detail, link }: { slug: string; name: string; de
         <p className="text-sm font-medium text-gray-900 dark:text-white">{name}</p>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{detail}</p>
       </div>
-      <Link to={`/business/${slug}`} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 flex-shrink-0 ml-4">
+      <Link to={`/business/${slug}`} className="text-xs text-[#2087e6] dark:text-blue-400 hover:text-blue-800 flex-shrink-0 ml-4">
         {link ?? 'View →'}
       </Link>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
@@ -24,7 +24,7 @@ interface Lead {
   trialDurationDays: number;
 }
 
-const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2087e6]';
 const labelClass = 'block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide';
 
 export default function LeadDetail() {
@@ -106,7 +106,7 @@ export default function LeadDetail() {
   };
 
   if (isLoading || !lead) {
-    return <Layout><div className="max-w-2xl animate-pulse space-y-4"><div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-48" /><div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl" /></div></Layout>;
+    return <Layout><div className="max-w-3xl animate-pulse space-y-4"><div className="h-7 bg-gray-200 dark:bg-gray-800 rounded w-48" /><div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl" /></div></Layout>;
   }
 
   const isPending = lead.status === 'pending';
@@ -114,7 +114,7 @@ export default function LeadDetail() {
 
   return (
     <Layout>
-      <div className="max-w-2xl space-y-5">
+      <div className="max-w-3xl space-y-5">
         <div className="flex items-center gap-3">
           <Link to="/leads" className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export default function LeadDetail() {
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Payment Link</p>
               <div className="flex gap-2">
                 <input readOnly value={result.paymentLink} className="flex-1 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300" />
-                <button onClick={() => { navigator.clipboard.writeText(result.paymentLink); toast('Copied'); }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg">Copy</button>
+                <button onClick={() => { navigator.clipboard.writeText(result.paymentLink); toast('Copied'); }} className="px-3 py-1.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg">Copy</button>
               </div>
             </div>
             {result.inviteLink && (
@@ -150,7 +150,7 @@ export default function LeadDetail() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Portal Invite Link</p>
                 <div className="flex gap-2">
                   <input readOnly value={result.inviteLink} className="flex-1 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300" />
-                  <button onClick={() => { navigator.clipboard.writeText(result.inviteLink!); toast('Copied'); }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg">Copy</button>
+                  <button onClick={() => { navigator.clipboard.writeText(result.inviteLink!); toast('Copied'); }} className="px-3 py-1.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg">Copy</button>
                 </div>
               </div>
             )}

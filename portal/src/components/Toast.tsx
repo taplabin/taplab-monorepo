@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+﻿import { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={t.id}
             className={`flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg shadow-black/10 text-sm font-medium pointer-events-auto animate-slide-in max-w-sm ${
               t.type === 'error' ? 'bg-red-600 text-white' :
-              t.type === 'info'  ? 'bg-indigo-600 text-white' :
+              t.type === 'info'  ? 'bg-[#2087e6] text-white' :
                                    'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
             }`}
           >

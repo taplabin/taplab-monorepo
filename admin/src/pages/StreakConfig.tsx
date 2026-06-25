@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -40,11 +40,11 @@ export default function StreakConfig() {
     }
   };
 
-  const inputClass = 'px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full';
+  const inputClass = 'px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2087e6] w-full';
 
   return (
     <Layout>
-      <div className="max-w-lg space-y-5">
+      <div className="max-w-3xl space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Streak Config</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Configure bonus amounts for broker deal streaks</p>
@@ -95,7 +95,7 @@ export default function StreakConfig() {
           <button
             type="button"
             onClick={() => setTiers([...tiers, { fromDeal: 0, bonusAmount: 0 }])}
-            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="text-sm text-[#2087e6] dark:text-blue-400 hover:underline"
           >
             + Add tier
           </button>
@@ -104,7 +104,7 @@ export default function StreakConfig() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
         >
           {saving ? 'Saving…' : 'Save Config'}
         </button>

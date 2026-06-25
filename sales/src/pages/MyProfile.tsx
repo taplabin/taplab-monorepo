@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -66,7 +66,7 @@ export default function MyProfile() {
     }
   };
 
-  const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+  const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2087e6]';
 
   return (
     <Layout>
@@ -93,7 +93,7 @@ export default function MyProfile() {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="mt-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
+                className="mt-1 text-xs text-[#2087e6] dark:text-blue-400 hover:underline disabled:opacity-50"
               >
                 {uploading ? 'Uploading…' : 'Change photo'}
               </button>
@@ -129,7 +129,7 @@ export default function MyProfile() {
           <button
             onClick={handleSave}
             disabled={saving || !form}
-            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving…' : 'Save Changes'}
           </button>

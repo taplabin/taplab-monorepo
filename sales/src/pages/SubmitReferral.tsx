@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { brokerFetch } from '../lib/api';
 import { useToast } from '../components/Toast';
 
@@ -7,7 +7,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2087e6]';
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300';
 
 export default function SubmitReferral({ onSuccess, onCancel }: Props) {
@@ -48,7 +48,7 @@ export default function SubmitReferral({ onSuccess, onCancel }: Props) {
         <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
       </div>
       <div className="flex gap-3 pt-1">
-        <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
+        <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
           {saving ? 'Submitting…' : 'Submit Referral'}
         </button>
         <button type="button" onClick={onCancel} className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">

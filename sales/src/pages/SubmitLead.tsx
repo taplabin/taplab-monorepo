@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { brokerFetch } from '../lib/api';
 import { useToast } from '../components/Toast';
 
@@ -7,7 +7,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const inputClass = 'mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2087e6]';
 const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300';
 
 export default function SubmitLead({ onSuccess, onCancel }: Props) {
@@ -90,7 +90,7 @@ export default function SubmitLead({ onSuccess, onCancel }: Props) {
           role="switch"
           aria-checked={form.freeTrialEnabled}
           onClick={() => setForm({ ...form, freeTrialEnabled: !form.freeTrialEnabled })}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${form.freeTrialEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${form.freeTrialEnabled ? 'bg-[#2087e6]' : 'bg-gray-200 dark:bg-gray-700'}`}
         >
           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.freeTrialEnabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
         </button>
@@ -105,7 +105,7 @@ export default function SubmitLead({ onSuccess, onCancel }: Props) {
       )}
 
       <div className="flex gap-3 pt-1">
-        <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
+        <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
           {saving ? 'Submitting…' : 'Submit Lead'}
         </button>
         <button type="button" onClick={onCancel} className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">

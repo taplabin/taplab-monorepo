@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
 import Layout from '../components/Layout';
@@ -41,7 +41,7 @@ export default function Submissions() {
 
   return (
     <Layout>
-      <div className="max-w-2xl space-y-5">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Submissions</h1>
@@ -50,7 +50,7 @@ export default function Submissions() {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
               + Submit
             </button>

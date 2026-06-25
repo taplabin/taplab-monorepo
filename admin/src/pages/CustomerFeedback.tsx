@@ -1,4 +1,4 @@
-import useSWR from 'swr';
+﻿import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import { useToast } from '../components/Toast';
@@ -44,7 +44,7 @@ export default function CustomerFeedback() {
 
   return (
     <Layout>
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Customer Feedback</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Private feedback submitted by portal customers</p>
@@ -69,13 +69,13 @@ export default function CustomerFeedback() {
             <div
               key={item.id}
               className={`px-5 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0 flex items-start gap-4 ${
-                !item.read ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : ''
+                !item.read ? 'bg-blue-50/40 dark:bg-blue-500/10' : ''
               }`}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    {!item.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />}
+                    {!item.read && <span className="w-1.5 h-1.5 rounded-full bg-[#2087e6] flex-shrink-0" />}
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">{item.businessName}</p>
                   </div>
                   <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(item.createdAt)}</p>
@@ -88,7 +88,7 @@ export default function CustomerFeedback() {
                 className={`flex-shrink-0 mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
                   item.read
                     ? 'text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500'
-                    : 'text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300'
+                    : 'text-[#2087e6] hover:text-[#2087e6] dark:text-blue-400 dark:hover:text-blue-300'
                 }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

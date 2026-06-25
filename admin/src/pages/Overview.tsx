@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
@@ -151,7 +151,7 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
     blue:   'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
     yellow: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
     red:    'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
-    indigo: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+    tapblue: 'bg-blue-50 dark:bg-blue-900/20 text-[#2087e6] dark:text-blue-300 border-blue-200 dark:border-blue-800',
     purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
     gray:   'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700',
     teal:   'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800',
@@ -162,14 +162,14 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
     { label: 'Free Trial',       value: counts.trial,                           color: 'blue' },
     { label: 'Cancelled',        value: counts.cancelled,                       color: 'yellow' },
     { label: 'Inactive',         value: counts.inactive,                        color: 'red' },
-    { label: 'Monthly Rev.',     value: inr(rawMRR),                            color: 'indigo' },
+    { label: 'Monthly Rev.',     value: inr(rawMRR),                            color: 'tapblue' },
     { label: 'Annual Rev.',      value: inr(rawARR),                            color: 'purple' },
     { label: 'Awaiting Page',    value: counts.noPage,                          color: 'gray' },
     { label: 'Setup Fee Rev.',   value: inr(totalSetupFees),                    color: 'teal' },
     { label: 'Commission Due',   value: inr(commissionOutstanding),             color: commissionOutstanding > 0 ? 'red' : 'gray' },
   ];
 
-  const inputClass = 'w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow';
+  const inputClass = 'w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2087e6] transition-shadow';
 
   return (
     <Layout>
@@ -195,7 +195,7 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
 
             <div className="px-5 py-4">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Projected ARR</p>
-              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">{inr(projectedARR)}</p>
+              <p className="text-2xl font-bold text-[#2087e6] dark:text-blue-400 tracking-tight">{inr(projectedARR)}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">if current MRR holds</p>
             </div>
 
@@ -308,7 +308,7 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">{daysLeft}d left</p>
-                      <Link to={`/business/${b.businessSlug}`} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                      <Link to={`/business/${b.businessSlug}`} className="text-xs text-[#2087e6] dark:text-blue-400 hover:underline">
                         View →
                       </Link>
                     </div>
@@ -325,7 +325,7 @@ const trialsExpiringSoon = businesses.filter(isTrialExpiringSoon);
           <div className="flex flex-wrap gap-3">
             <Link
               to="/businesses/new"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[#2087e6] hover:bg-blue-600 transition-colors"
             >
               Add New Business
             </Link>

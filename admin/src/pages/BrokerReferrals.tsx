@@ -1,8 +1,8 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
-import { useToast } from '../components/Toast';
 
 type ReferralStatus = 'pending' | 'converted' | 'rejected';
 
@@ -90,7 +90,7 @@ function ApproveForm({ id, onDone }: { id: string; onDone: () => void }) {
             value={(bank as any)[key]}
             onChange={(e) => setBank((prev) => ({ ...prev, [key]: e.target.value }))}
             placeholder={placeholder}
-            className="mt-0.5 w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-0.5 w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#2087e6]"
           />
         </div>
       ))}
@@ -98,7 +98,7 @@ function ApproveForm({ id, onDone }: { id: string; onDone: () => void }) {
         <button
           onClick={handleApprove}
           disabled={saving}
-          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 bg-[#2087e6] hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
         >
           {saving ? 'Creating broker…' : 'Confirm Approve'}
         </button>
@@ -159,10 +159,10 @@ function RejectForm({ id, onDone }: { id: string; onDone: () => void }) {
 }
 
 export default function BrokerReferrals() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<'pending' | 'all'>('pending');
-  const [expanding, setExpanding] = useState<string | null>(null);
 
-  const { data: referrals, isLoading, mutate } = useSWR(
+  const { data: referrals, isLoading } = useSWR(
     `/api/admin/broker-referrals${tab === 'pending' ? '?status=pending' : ''}`,
     async (url: string) => {
       const res = await adminFetch(url);
@@ -177,14 +177,9 @@ export default function BrokerReferrals() {
 
   const brokerMap = new Map<string, string>(brokers?.map((b): [string, string] => [b.id, b.name]) ?? []);
 
-  const handleDone = () => {
-    setExpanding(null);
-    mutate();
-  };
-
   return (
     <Layout>
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Broker Referrals</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Broker-to-broker referrals submitted through the sales portal</p>
@@ -229,45 +224,30 @@ export default function BrokerReferrals() {
           {!isLoading && referrals && referrals.length > 0 && (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {referrals.map((r) => (
-                <div key={r.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{r.name}</p>
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${STATUS_COLORS[r.status]}`}>
-                          {r.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{r.phone} · {r.email}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                        Referred by {brokerMap.get(r.referringBrokerId) ?? r.referringBrokerId}
-                      </p>
-                      {r.status === 'rejected' && r.rejectionReason && (
-                        <p className="text-xs text-red-500 dark:text-red-400 mt-1">{r.rejectionReason}</p>
-                      )}
+                <div
+                  key={r.id}
+                  onClick={() => r.status === 'pending' && navigate(`/brokers/new?referralId=${r.id}`)}
+                  className={`flex items-center justify-between px-5 py-4 ${r.status === 'pending' ? 'hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors' : ''}`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{r.name}</p>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${STATUS_COLORS[r.status]}`}>
+                        {r.status}
+                      </span>
                     </div>
-                    {r.status === 'pending' && (
-                      <div className="flex gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => setExpanding(expanding === `approve-${r.id}` ? null : `approve-${r.id}`)}
-                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => setExpanding(expanding === `reject-${r.id}` ? null : `reject-${r.id}`)}
-                          className="px-3 py-1.5 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-medium rounded-lg transition-colors"
-                        >
-                          Reject
-                        </button>
-                      </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{r.phone} · {r.email}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                      Referred by {brokerMap.get(r.referringBrokerId) ?? r.referringBrokerId}
+                    </p>
+                    {r.status === 'rejected' && r.rejectionReason && (
+                      <p className="text-xs text-red-500 dark:text-red-400 mt-1">{r.rejectionReason}</p>
                     )}
                   </div>
-                  {expanding === `approve-${r.id}` && (
-                    <ApproveForm id={r.id} onDone={handleDone} />
-                  )}
-                  {expanding === `reject-${r.id}` && (
-                    <RejectForm id={r.id} onDone={handleDone} />
+                  {r.status === 'pending' && (
+                    <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0 ml-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
                   )}
                 </div>
               ))}

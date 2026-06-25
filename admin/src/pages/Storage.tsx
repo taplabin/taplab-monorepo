@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import { useToast } from '../components/Toast';
@@ -51,7 +51,7 @@ export default function Storage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl space-y-5">
+      <div className="max-w-3xl space-y-5">
 
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Storage</h1>
@@ -73,7 +73,7 @@ export default function Storage() {
           {state.phase === 'idle' && (
             <button
               onClick={handleScan}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
               Scan bucket
             </button>
@@ -82,7 +82,7 @@ export default function Storage() {
           {/* Scanning */}
           {state.phase === 'scanning' && (
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <div className="w-4 h-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin flex-shrink-0" />
+              <div className="w-4 h-4 rounded-full border-2 border-[#2087e6] border-t-transparent animate-spin flex-shrink-0" />
               Scanning R2 bucket and Firestore…
             </div>
           )}
@@ -163,7 +163,7 @@ export default function Storage() {
               </p>
               <button
                 onClick={() => setState({ phase: 'idle' })}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 Scan again
               </button>

@@ -1,4 +1,4 @@
-import useSWR from 'swr';
+﻿import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import { Skeleton } from '../components/Skeleton';
@@ -23,7 +23,7 @@ export default function Earnings() {
 
   return (
     <Layout>
-      <div className="max-w-2xl space-y-5">
+      <div className="max-w-4xl space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Earnings</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">All payouts received from TapLab</p>

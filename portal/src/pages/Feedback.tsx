@@ -57,7 +57,7 @@ export default function Feedback() {
 
   return (
     <Layout>
-      <div className="max-w-lg space-y-6 px-1">
+      <div className="max-w-2xl space-y-8">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Feedback</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
@@ -66,20 +66,23 @@ export default function Feedback() {
         </div>
 
         {/* Submit form */}
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
-          <textarea
-            value={content}
-            onChange={(e) => { setContent(e.target.value.slice(0, 2000)); setSubmitted(false); }}
-            rows={5}
-            placeholder="What's working well? What could be better? Any feature requests?"
-            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">{content.length}/2000</span>
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your feedback</label>
+            <textarea
+              value={content}
+              onChange={(e) => { setContent(e.target.value.slice(0, 2000)); setSubmitted(false); }}
+              rows={6}
+              placeholder="What's working well? What could be better? Any feature requests?"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2087e6] resize-none"
+            />
+          </div>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-gray-400">{content.length}/2000 characters</span>
             <button
               type="submit"
               disabled={submitting || content.trim().length < 10}
-              className="px-5 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+              className="px-6 py-2.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
             >
               {submitting ? 'Sending…' : submitted ? 'Sent ✓' : 'Send Feedback'}
             </button>

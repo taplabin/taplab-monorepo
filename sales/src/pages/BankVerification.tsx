@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { brokerFetch } from '../lib/api';
@@ -73,7 +73,7 @@ export default function BankVerification({ onVerified }: Props) {
             <button
               onClick={handleVerify}
               disabled={verifying || !profile?.bankAccountNumber}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
             >
               {verifying ? 'Verifying…' : 'Confirm & Continue'}
             </button>

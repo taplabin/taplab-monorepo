@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
@@ -29,7 +29,7 @@ export default function Leaderboard() {
 
   return (
     <Layout>
-      <div className="max-w-2xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Leaderboard</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Rankings across the sales network</p>
@@ -68,13 +68,13 @@ export default function Leaderboard() {
                 const isMe = row.brokerId === myId;
                 const count = tab === 'monthly' ? row.dealsThisMonth : row.dealsAllTime;
                 return (
-                  <div key={row.brokerId} className={`flex items-center gap-4 px-5 py-4 ${isMe ? 'bg-indigo-50 dark:bg-indigo-900/10' : ''}`}>
+                  <div key={row.brokerId} className={`flex items-center gap-4 px-5 py-4 ${isMe ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}>
                     <span className={`text-sm font-bold w-7 text-center ${i < 3 ? ['text-yellow-500', 'text-gray-400', 'text-amber-600'][i] : 'text-gray-400 dark:text-gray-600'}`}>
                       {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
                     </span>
                     <button
                       onClick={() => navigate(`/profile/${row.brokerId}`)}
-                      className={`text-sm font-medium flex-1 text-left hover:underline ${isMe ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}
+                      className={`text-sm font-medium flex-1 text-left hover:underline ${isMe ? 'text-[#2087e6] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}
                     >
                       {row.name}{isMe ? ' (you)' : ''}
                     </button>

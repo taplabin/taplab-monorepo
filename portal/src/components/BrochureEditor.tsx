@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface BrochureItem {
   heading: string;
@@ -39,7 +39,7 @@ export default function BrochureEditor({ value, onChange }: BrochureEditorProps)
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={8}
-        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
       />
     );
   }
@@ -95,7 +95,7 @@ export default function BrochureEditor({ value, onChange }: BrochureEditorProps)
                   onChange={(e) => updateField(idx, 'icon', e.target.value)}
                   placeholder="✦"
                   maxLength={4}
-                  className="w-full px-2.5 py-1.5 text-lg text-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-2.5 py-1.5 text-lg text-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
                 />
               </div>
               <div>
@@ -105,7 +105,7 @@ export default function BrochureEditor({ value, onChange }: BrochureEditorProps)
                   value={item.heading}
                   onChange={(e) => updateField(idx, 'heading', e.target.value)}
                   placeholder="Feature or service name"
-                  className="w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
                 />
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function BrochureEditor({ value, onChange }: BrochureEditorProps)
                 value={item.body}
                 onChange={(e) => updateField(idx, 'body', e.target.value)}
                 placeholder="One or two sentence description"
-                className="w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function BrochureEditor({ value, onChange }: BrochureEditorProps)
       <button
         type="button"
         onClick={addItem}
-        className="w-full py-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-1.5"
+        className="w-full py-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs font-medium text-[#2087e6] dark:text-blue-400 hover:border-[#2087e6] dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors flex items-center justify-center gap-1.5"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

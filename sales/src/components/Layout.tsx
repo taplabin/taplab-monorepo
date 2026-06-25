@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -61,7 +61,7 @@ const NAV = [
   },
 ];
 
-const activeClass = 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400';
+const activeClass = 'bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400';
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
 
 export default function Layout({ children }: { children: React.ReactNode }) {

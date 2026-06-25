@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 
 export interface BrokerOption {
   id: string;
@@ -89,7 +89,7 @@ export default function BrokerCombobox({ brokers, value, onChange }: Props) {
               onClick={() => select(null)}
               className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
                 !value
-                  ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-[#2087e6] dark:text-blue-400'
                   : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
             >
@@ -106,7 +106,7 @@ export default function BrokerCombobox({ brokers, value, onChange }: Props) {
                   onClick={() => select(broker)}
                   className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
                     value === broker.id
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-[#2087e6] dark:text-blue-400'
                       : 'text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >

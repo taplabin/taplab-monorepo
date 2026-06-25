@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
@@ -9,110 +9,10 @@ import { useReferralsCount } from '../hooks/useReferralsCount';
 import { useBrokerFeedbackCount } from '../hooks/useBrokerFeedbackCount';
 import { useCustomerFeedbackCount } from '../hooks/useCustomerFeedbackCount';
 
-const NAV = [
-  {
-    to: '/',
-    label: 'Overview',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/businesses',
-    label: 'Businesses',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ),
-  },
-  {
-    to: '/alerts',
-    label: 'Alerts',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
-    ),
-  },
-  {
-    to: '/leads',
-    label: 'Leads',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-    ),
-  },
-  {
-    to: '/businesses/new',
-    label: 'Add Business',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/broker-referrals',
-    label: 'Referrals',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/brokers',
-    label: 'Brokers',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/streak-config',
-    label: 'Streak Config',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/broker-feedback',
-    label: 'Broker Feedback',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/customer-feedback',
-    label: 'Customer Feedback',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-      </svg>
-    ),
-  },
-  {
-    to: '/storage',
-    label: 'Storage',
-    icon: (
-      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-      </svg>
-    ),
-  },
-];
-
-const activeClass = 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400';
+const activeClass = 'bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400';
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
+const groupItemClass = 'flex items-center gap-3 pl-8 pr-3 py-2 rounded-lg text-sm font-medium transition-all duration-150';
+const groupLabelClass = 'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -121,78 +21,109 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
   const alertCount = useAlertCount();
   const leadsCount = useLeadsCount();
   const referralsCount = useReferralsCount();
   const brokerFeedbackCount = useBrokerFeedbackCount();
   const customerFeedbackCount = useCustomerFeedbackCount();
 
+  const businessPaths = ['/businesses', '/leads', '/customer-feedback'];
+  const salesPaths = ['/brokers', '/broker-referrals', '/broker-feedback'];
+  const isInBusinessGroup = businessPaths.some(p => location.pathname.startsWith(p));
+  const isInSalesGroup = salesPaths.some(p => location.pathname.startsWith(p));
+
+  const [businessOpen, setBusinessOpen] = useState(isInBusinessGroup);
+  const [salesOpen, setSalesOpen] = useState(isInSalesGroup);
+
+  function Badge({ count, color = 'blue' }: { count: number; color?: 'red' | 'blue' }) {
+    if (count <= 0) return null;
+    return (
+      <span className={`ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full text-white text-[10px] font-bold flex items-center justify-center leading-none ${color === 'red' ? 'bg-red-500' : 'bg-[#2087e6]'}`}>
+        {count > 99 ? '99+' : count}
+      </span>
+    );
+  }
+
+  function ChevronIcon({ open }: { open: boolean }) {
+    return (
+      <svg className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${open ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    );
+  }
+
   function SidebarContent() {
     return (
       <div className="flex flex-col flex-1 overflow-y-auto">
         <div className="px-5 pt-3.5 pb-5 border-b border-gray-100 dark:border-gray-800">
-          <img
-            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
-            alt="TapLab"
-            className="h-10 w-auto"
-          />
+          <img src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'} alt="TapLab" className="h-10 w-auto" />
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Admin Panel</p>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
-              }
-            >
-              {item.icon}
-              <span className="flex-1">{item.label}</span>
-              {item.to === '/alerts' && alertCount > 0 && (
-                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {alertCount > 99 ? '99+' : alertCount}
-                </span>
-              )}
-              {item.to === '/leads' && leadsCount > 0 && (
-                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {leadsCount > 99 ? '99+' : leadsCount}
-                </span>
-              )}
-              {item.to === '/broker-referrals' && referralsCount > 0 && (
-                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {referralsCount > 99 ? '99+' : referralsCount}
-                </span>
-              )}
-              {item.to === '/broker-feedback' && brokerFeedbackCount > 0 && (
-                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {brokerFeedbackCount > 99 ? '99+' : brokerFeedbackCount}
-                </span>
-              )}
-              {item.to === '/customer-feedback' && customerFeedbackCount > 0 && (
-                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {customerFeedbackCount > 99 ? '99+' : customerFeedbackCount}
-                </span>
-              )}
-            </NavLink>
-          ))}
+          <NavLink to="/" end onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+            <span className="flex-1">Overview</span>
+          </NavLink>
+
+          <NavLink to="/alerts" onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            <span className="flex-1">Alerts</span>
+            <Badge count={alertCount} color="red" />
+          </NavLink>
+
+          {/* Business & Customers */}
+          <div>
+            <button onClick={() => setBusinessOpen(!businessOpen)} className={groupLabelClass}>
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              <span className="flex-1">Business & Customers</span>
+              <ChevronIcon open={businessOpen} />
+            </button>
+            {businessOpen && (
+              <div className="mt-0.5 space-y-0.5">
+                <NavLink to="/businesses" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Businesses</span></NavLink>
+                <NavLink to="/businesses/new" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Add Business</span></NavLink>
+                <NavLink to="/leads" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Leads</span><Badge count={leadsCount} /></NavLink>
+                <NavLink to="/customer-feedback" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Customer Feedback</span><Badge count={customerFeedbackCount} /></NavLink>
+              </div>
+            )}
+          </div>
+
+          {/* Sales & Referrals */}
+          <div>
+            <button onClick={() => setSalesOpen(!salesOpen)} className={groupLabelClass}>
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <span className="flex-1">Sales & Referrals</span>
+              <ChevronIcon open={salesOpen} />
+            </button>
+            {salesOpen && (
+              <div className="mt-0.5 space-y-0.5">
+                <NavLink to="/brokers" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Brokers</span></NavLink>
+                <NavLink to="/brokers/new" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Add Broker</span></NavLink>
+                <NavLink to="/broker-referrals" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Referrals</span><Badge count={referralsCount} /></NavLink>
+                <NavLink to="/broker-feedback" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Broker Feedback</span><Badge count={brokerFeedbackCount} /></NavLink>
+              </div>
+            )}
+          </div>
+
+          <NavLink to="/settings" onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <span className="flex-1">Settings</span>
+          </NavLink>
+
+          <NavLink to="/storage" onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+            <span className="flex-1">Storage</span>
+          </NavLink>
         </nav>
 
         <div className="px-3 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-0.5">
-          <button
-            onClick={toggleTheme}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
-          >
+          <button onClick={toggleTheme} className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}>
             {theme === 'light' ? <MoonIcon /> : <SunIcon />}
             {theme === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
-          <button
-            onClick={() => signOut(auth)}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}
-          >
+          <button onClick={() => signOut(auth)} className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${inactiveClass}`}>
             <SignOutIcon />
             Sign out
           </button>
@@ -203,83 +134,44 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
-
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex md:flex-col md:w-56 md:fixed md:inset-y-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
         <SidebarContent />
       </aside>
 
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="Open menu"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Open menu">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
-        <img
-          src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
-          alt="TapLab"
-          className="h-8 w-auto"
-        />
+        <img src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'} alt="TapLab" className="h-8 w-auto" />
       </div>
 
-      {/* Mobile drawer overlay */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside className="relative flex flex-col w-64 bg-white dark:bg-gray-900 h-full shadow-2xl">
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Close menu"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Close menu">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <SidebarContent />
           </aside>
         </div>
       )}
 
-      {/* Main content */}
       <div className="flex-1 md:ml-56 pt-14 md:pt-0 min-w-0">
-        <main className="px-4 sm:px-6 lg:px-8 py-6">
-          {children}
-        </main>
+        <main className="px-4 sm:px-6 lg:px-8 py-6">{children}</main>
       </div>
-
     </div>
   );
 }
 
 function MoonIcon() {
-  return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-    </svg>
-  );
+  return <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>;
 }
 
 function SunIcon() {
-  return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-  );
+  return <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
 }
 
 function SignOutIcon() {
-  return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-    </svg>
-  );
+  return <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
 }

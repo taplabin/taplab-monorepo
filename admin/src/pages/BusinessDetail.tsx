@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
@@ -80,7 +80,7 @@ function RefreshLinkButton({ label, onFetch }: { label: string; onFetch: () => P
       <button
         onClick={handleClick}
         disabled={loading}
-        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
+        className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
       >
         {loading ? 'Fetching...' : label}
       </button>
@@ -256,7 +256,7 @@ export default function BusinessDetail() {
   return (
     <Layout>
       <div className="space-y-5">
-        <Link to="/businesses" className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+        <Link to="/businesses" className="inline-flex items-center gap-1 text-sm text-[#2087e6] dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
           ← Back to businesses
         </Link>
 
@@ -319,12 +319,12 @@ export default function BusinessDetail() {
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="owner@business.com"
                   required
-                  className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
                 />
                 <button
                   type="submit"
                   disabled={emailSaving}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
                 >
                   {emailSaving ? 'Setting…' : 'Set Email'}
                 </button>
@@ -385,7 +385,7 @@ export default function BusinessDetail() {
                   />
                   <button
                     onClick={() => { navigator.clipboard.writeText(business.razorpayPaymentLink!); toast('Payment link copied'); }}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition-colors"
+                    className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg transition-colors"
                   >
                     Copy
                   </button>
@@ -491,12 +491,12 @@ export default function BusinessDetail() {
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             placeholder="Add internal notes about this business..."
-            className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2087e6] resize-none"
           />
           <button
             onClick={handleSaveNotes}
             disabled={notesSaving}
-            className="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
+            className="mt-3 px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
           >
             {notesSaving ? 'Saving…' : 'Save Notes'}
           </button>

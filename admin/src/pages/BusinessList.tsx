@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+﻿import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
@@ -49,7 +49,7 @@ function BrokerFilterCombobox({
   const optionClass = (active: boolean) =>
     `w-full text-left px-3 py-2 text-sm transition-colors ${
       active
-        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+        ? 'bg-blue-50 dark:bg-blue-900/20 text-[#2087e6] dark:text-blue-400'
         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
     }`;
 
@@ -222,7 +222,7 @@ export default function BusinessList() {
           </div>
           <Link
             to="/businesses/new"
-            className="flex-shrink-0 inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition-colors"
+            className="flex-shrink-0 inline-flex items-center px-4 py-2 rounded-lg bg-[#2087e6] hover:bg-blue-600 text-sm font-medium text-white transition-colors"
           >
             Add business
           </Link>
@@ -239,7 +239,7 @@ export default function BusinessList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or slug…"
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2087e6]"
             />
           </div>
           {brokerOptions.length > 0 && (
@@ -260,14 +260,14 @@ export default function BusinessList() {
                 onClick={() => setActiveTab(tab.value)}
                 className={`whitespace-nowrap pb-3 px-1 border-b-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   activeTab === tab.value
-                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                    ? 'border-[#2087e6] text-[#2087e6] dark:text-blue-400 dark:border-blue-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 {tab.label}
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   activeTab === tab.value
-                    ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                    ? 'bg-blue-100 dark:bg-blue-500/20 text-[#2087e6] dark:text-blue-400'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                 }`}>
                   {counts[tab.value]}
@@ -336,7 +336,7 @@ export default function BusinessList() {
                           {business.brokerName ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
-                          <Link to={`/business/${business.businessSlug}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                          <Link to={`/business/${business.businessSlug}`} className="text-[#2087e6] dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
                             View
                           </Link>
                         </td>
