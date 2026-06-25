@@ -25,7 +25,7 @@ export default function Dashboard() {
     return res.json() as Promise<DashboardData>;
   });
 
-  if (isLoading || !data) {
+  if (isLoading || !data || !('dealsThisMonth' in data)) {
     return (
       <Layout>
         <div className="max-w-2xl space-y-5">

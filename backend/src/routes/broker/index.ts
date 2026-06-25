@@ -31,12 +31,19 @@ export async function brokerRoute(app: FastifyInstance) {
       if (!broker.bankAccountNumber || !broker.bankIfsc) {
         return reply.status(400).send({ error: 'Bank details not set — contact admin' });
       }
-      const contactId = await createContact({ name: broker.name, email: broker.email, referenceId: broker.id });
-      const fundAccountId = await createFundAccount({
-        contactId, name: broker.name, accountNumber: broker.bankAccountNumber, ifsc: broker.bankIfsc,
-      });
+      const razorpayKeysSet = process.env.RAZORPAYX_KEY_ID && process.env.RAZORPAYX_KEY_SECRET;
+      let contactId: string | null = null;
+      let fundAccountId: string | null = null;
+      if (razorpayKeysSet) {
+        contactId = await createContact({ name: broker.name, email: broker.email, referenceId: broker.id });
+        fundAccountId = await createFundAccount({
+          contactId, name: broker.name, accountNumber: broker.bankAccountNumber, ifsc: broker.bankIfsc,
+        });
+      }
       await db.collection('brokers').doc(broker.id).update({
-        bankVerified: true, razorpayContactId: contactId, razorpayFundAccountId: fundAccountId,
+        bankVerified: true,
+        razorpayContactId: contactId,
+        razorpayFundAccountId: fundAccountId,
       });
       return reply.send({ ok: true });
     } catch (err: any) {
