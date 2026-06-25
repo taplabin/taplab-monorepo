@@ -5,6 +5,7 @@ import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
 import { useAlertCount } from '../hooks/useAlertCount';
 import { useLeadsCount } from '../hooks/useLeadsCount';
+import { useReferralsCount } from '../hooks/useReferralsCount';
 
 const NAV = [
   {
@@ -120,6 +121,7 @@ export default function Layout({ children }: LayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const alertCount = useAlertCount();
   const leadsCount = useLeadsCount();
+  const referralsCount = useReferralsCount();
 
   function SidebarContent() {
     return (
@@ -154,6 +156,11 @@ export default function Layout({ children }: LayoutProps) {
               {item.to === '/leads' && leadsCount > 0 && (
                 <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                   {leadsCount > 99 ? '99+' : leadsCount}
+                </span>
+              )}
+              {item.to === '/broker-referrals' && referralsCount > 0 && (
+                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {referralsCount > 99 ? '99+' : referralsCount}
                 </span>
               )}
             </NavLink>
