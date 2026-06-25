@@ -36,9 +36,10 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 export default function Leads() {
   const [tab, setTab] = useState<LeadStatus>('pending');
 
-  const { data, isLoading } = useSWR(`/api/admin/leads?status=${tab}`, async (url: string) => {
+  const { data, isLoading, error } = useSWR(`/api/admin/leads?status=${tab}`, async (url: string) => {
     const res = await adminFetch(url);
     const json = await res.json();
+    if (!res.ok) throw new Error(json.error ?? 'Failed to fetch leads');
     return json.leads as Lead[];
   });
 
@@ -79,13 +80,19 @@ export default function Leads() {
             </div>
           )}
 
-          {!isLoading && (!data || data.length === 0) && (
+          {!isLoading && error && (
+            <div className="px-5 py-12 text-center">
+              <p className="text-sm text-red-500 dark:text-red-400">Failed to load leads — try refreshing.</p>
+            </div>
+          )}
+
+          {!isLoading && !error && (!data || data.length === 0) && (
             <div className="px-5 py-12 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">No {tab} leads.</p>
             </div>
           )}
 
-          {!isLoading && data && data.length > 0 && (
+          {!isLoading && !error && data && data.length > 0 && (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {data.map((lead) => (
                 <Link
