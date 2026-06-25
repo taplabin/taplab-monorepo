@@ -164,18 +164,18 @@ export default function BrokerReferrals() {
 
   const { data: referrals, isLoading, mutate } = useSWR(
     `/api/admin/broker-referrals${tab === 'pending' ? '?status=pending' : ''}`,
-    async (url) => {
+    async (url: string) => {
       const res = await adminFetch(url);
       return (await res.json()).referrals as BrokerReferral[];
     }
   );
 
-  const { data: brokers } = useSWR('/api/admin/brokers', async (url) => {
+  const { data: brokers } = useSWR('/api/admin/brokers', async (url: string) => {
     const res = await adminFetch(url);
     return (await res.json()).brokers as Broker[];
   });
 
-  const brokerMap = new Map(brokers?.map((b) => [b.id, b.name]) ?? []);
+  const brokerMap = new Map<string, string>(brokers?.map((b): [string, string] => [b.id, b.name]) ?? []);
 
   const handleDone = () => {
     setExpanding(null);
