@@ -21,9 +21,11 @@ export default function CustomerFeedback() {
     return json.feedback as FeedbackItem[];
   });
 
-  function formatDate(ts: { seconds: number } | null): string {
+  function formatDate(ts: any): string {
     if (!ts) return '—';
-    return new Date(ts.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const secs = ts.seconds ?? ts._seconds;
+    if (!secs) return '—';
+    return new Date(secs * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   async function toggleRead(item: FeedbackItem) {

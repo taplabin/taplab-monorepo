@@ -154,25 +154,26 @@ export default function Feedback() {
               <div key={item.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
                 <div className="flex items-start gap-3">
                   {/* Vote buttons */}
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
+                  <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
                     <button
                       onClick={() => handleVote(item.id, 1)}
                       disabled={votingId === item.id}
-                      className={`p-1 rounded transition-colors ${myVote === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'}`}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${myVote === 1 ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 4l8 8H4l8-8z" />
                       </svg>
+                      <span className="text-xs font-semibold">{item.upvotes}</span>
                     </button>
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{item.upvotes - item.downvotes}</span>
                     <button
                       onClick={() => handleVote(item.id, -1)}
                       disabled={votingId === item.id}
-                      className={`p-1 rounded transition-colors ${myVote === -1 ? 'text-red-500 dark:text-red-400' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'}`}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${myVote === -1 ? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 20l-8-8h16l-8 8z" />
                       </svg>
+                      <span className="text-xs font-semibold">{item.downvotes}</span>
                     </button>
                   </div>
 
