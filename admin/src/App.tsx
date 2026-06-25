@@ -19,6 +19,7 @@ import LeadDetail from './pages/LeadDetail';
 import StreakConfig from './pages/StreakConfig';
 import BrokerFeedback from './pages/BrokerFeedback';
 import CustomerFeedback from './pages/CustomerFeedback';
+import BrokerReferrals from './pages/BrokerReferrals';
 
 function LoadingSpinner() {
   return (
@@ -76,6 +77,7 @@ export default function App() {
             <Route path="/streak-config"     element={<StreakConfig />} />
             <Route path="/broker-feedback"   element={<BrokerFeedback />} />
             <Route path="/customer-feedback" element={<CustomerFeedback />} />
+            <Route path="/broker-referrals"  element={<BrokerReferrals />} />
             <Route path="*"                  element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
