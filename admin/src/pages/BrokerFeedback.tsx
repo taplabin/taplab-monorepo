@@ -85,9 +85,9 @@ export default function BrokerFeedback() {
             [1, 2, 3].map((i) => <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)
           ) : error ? (
             <p className="text-sm text-red-500 dark:text-red-400 py-8 text-center">Failed to load feedback — try refreshing.</p>
-          ) : filtered.length === 0 ? (
+          ) : (filtered ?? []).length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">No feedback yet.</p>
-          ) : filtered.map((item: any) => (
+          ) : (filtered ?? []).map((item: any) => (
             <div key={item.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
