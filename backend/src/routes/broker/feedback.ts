@@ -21,8 +21,13 @@ export async function brokerFeedbackRoute(app: FastifyInstance) {
       if (!uid) return reply.status(401).send({ error: 'Unauthorized' });
       const snap = await db.collection('brokerFeedback').orderBy('createdAt', 'desc').get();
       const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort by net votes descending
-      items.sort((a: any, b: any) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
+      const activeStatuses = ['open', 'under_review'];
+      items.sort((a: any, b: any) => {
+        const aActive = activeStatuses.includes(a.status) ? 1 : 0;
+        const bActive = activeStatuses.includes(b.status) ? 1 : 0;
+        if (aActive !== bActive) return bActive - aActive;
+        return (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes);
+      });
       return reply.send({ feedback: items });
     } catch (err) {
       app.log.error(err);

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { adminFetch } from '../lib/api';
 import Layout from '../components/Layout';
 import { useToast } from '../components/Toast';
+
+type MainTab = 'unanswered' | 'answered';
 
 const TAGS = ['All', 'Suggestion', 'Complaint', 'Question', 'Win'];
 const STATUSES = ['open', 'under_review', 'implemented', 'wont_fix'];
@@ -22,8 +24,12 @@ const TAG_COLORS: Record<string, string> = {
   Win: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400',
 };
 
+const UNANSWERED = ['open', 'under_review'];
+const ANSWERED = ['implemented', 'wont_fix'];
+
 export default function BrokerFeedback() {
   const toast = useToast();
+  const [tab, setTab] = useState<MainTab>('unanswered');
   const [tagFilter, setTagFilter] = useState('All');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
@@ -36,9 +42,15 @@ export default function BrokerFeedback() {
     return json.feedback as any[];
   });
 
-  const filtered = data
-    ? tagFilter === 'All' ? data : data.filter((f: any) => f.tag === tagFilter)
-    : null;
+  const byTab = useMemo(() => {
+    if (!data) return null;
+    const statuses = tab === 'unanswered' ? UNANSWERED : ANSWERED;
+    const inTab = data.filter((f: any) => statuses.includes(f.status));
+    return tagFilter === 'All' ? inTab : inTab.filter((f: any) => f.tag === tagFilter);
+  }, [data, tab, tagFilter]);
+
+  const unansweredCount = useMemo(() => data?.filter((f: any) => UNANSWERED.includes(f.status)).length ?? 0, [data]);
+  const answeredCount = useMemo(() => data?.filter((f: any) => ANSWERED.includes(f.status)).length ?? 0, [data]);
 
   const update = async (id: string, updates: object) => {
     setSaving(id);
@@ -65,6 +77,28 @@ export default function BrokerFeedback() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Suggestions, complaints, and wins from the sales team</p>
         </div>
 
+        {/* Unanswered / Answered tabs */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+          {(['unanswered', 'answered'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setExpandedId(null); }}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                tab === t
+                  ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              {t === 'unanswered' ? 'Unanswered' : 'Answered'}
+              {data && (
+                <span className="ml-1.5 text-[10px] font-semibold text-gray-400 dark:text-gray-500">
+                  {t === 'unanswered' ? unansweredCount : answeredCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         {/* Tag filter */}
         <div className="flex gap-2 flex-wrap">
           {TAGS.map((t) => (
@@ -81,13 +115,13 @@ export default function BrokerFeedback() {
         </div>
 
         <div className="space-y-3">
-          {!filtered && !error ? (
+          {!byTab && !error ? (
             [1, 2, 3].map((i) => <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)
           ) : error ? (
             <p className="text-sm text-red-500 dark:text-red-400 py-8 text-center">Failed to load feedback — try refreshing.</p>
-          ) : (filtered ?? []).length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">No feedback yet.</p>
-          ) : (filtered ?? []).map((item: any) => (
+          ) : (byTab ?? []).length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">No {tab} feedback yet.</p>
+          ) : (byTab ?? []).map((item: any) => (
             <div key={item.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -100,7 +134,7 @@ export default function BrokerFeedback() {
                   <div className="flex items-center gap-3 mt-2">
                     <span className="text-xs text-gray-400">👍 {item.upvotes}</span>
                     <span className="text-xs text-gray-400">👎 {item.downvotes}</span>
-                    <span className="text-xs text-gray-400">Net: {item.upvotes - item.downvotes}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">Net: {item.upvotes - item.downvotes}</span>
                   </div>
                   {item.adminReply && (
                     <div className="mt-3 pl-3 border-l-2 border-indigo-300 dark:border-indigo-700">

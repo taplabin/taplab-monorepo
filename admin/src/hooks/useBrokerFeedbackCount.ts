@@ -8,5 +8,5 @@ export function useBrokerFeedbackCount(): number {
     if (!res.ok) return [];
     return json.feedback as any[];
   }, { refreshInterval: 60000 });
-  return data?.filter((f: any) => f.status === 'open').length ?? 0;
+  return data?.filter((f: any) => f.status === 'open' || f.status === 'under_review').length ?? 0;
 }
