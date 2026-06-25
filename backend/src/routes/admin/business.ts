@@ -360,4 +360,19 @@ export async function adminBusinessRoute(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to fetch customer feedback' });
     }
   });
+
+  // PATCH /admin/customer-feedback/:id/read — toggle read status
+  app.patch<{ Params: { id: string } }>('/customer-feedback/:id/read', async (req, reply) => {
+    const { id } = req.params;
+    try {
+      const doc = await db.collection('customerFeedback').doc(id).get();
+      if (!doc.exists) return reply.status(404).send({ error: 'Not found' });
+      const current = (doc.data() as any).read ?? false;
+      await db.collection('customerFeedback').doc(id).update({ read: !current });
+      return reply.send({ read: !current });
+    } catch (err) {
+      app.log.error(err);
+      return reply.status(500).send({ error: 'Failed to update' });
+    }
+  });
 }

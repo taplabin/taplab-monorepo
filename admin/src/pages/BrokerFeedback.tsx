@@ -29,9 +29,11 @@ export default function BrokerFeedback() {
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
-  const { data, mutate } = useSWR('/admin/broker-feedback', async (url) => {
+  const { data, error, mutate } = useSWR('/api/admin/broker-feedback', async (url: string) => {
     const res = await adminFetch(url);
-    return (await res.json()).feedback as any[];
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error ?? 'Failed to fetch feedback');
+    return json.feedback as any[];
   });
 
   const filtered = data
@@ -41,7 +43,7 @@ export default function BrokerFeedback() {
   const update = async (id: string, updates: object) => {
     setSaving(id);
     try {
-      const res = await adminFetch(`/admin/broker-feedback/${id}`, {
+      const res = await adminFetch(`/api/admin/broker-feedback/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(updates),
       });
@@ -79,8 +81,10 @@ export default function BrokerFeedback() {
         </div>
 
         <div className="space-y-3">
-          {!filtered ? (
+          {!filtered && !error ? (
             [1, 2, 3].map((i) => <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)
+          ) : error ? (
+            <p className="text-sm text-red-500 dark:text-red-400 py-8 text-center">Failed to load feedback — try refreshing.</p>
           ) : filtered.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">No feedback yet.</p>
           ) : filtered.map((item: any) => (

@@ -6,6 +6,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useAlertCount } from '../hooks/useAlertCount';
 import { useLeadsCount } from '../hooks/useLeadsCount';
 import { useReferralsCount } from '../hooks/useReferralsCount';
+import { useBrokerFeedbackCount } from '../hooks/useBrokerFeedbackCount';
+import { useCustomerFeedbackCount } from '../hooks/useCustomerFeedbackCount';
 
 const NAV = [
   {
@@ -122,6 +124,8 @@ export default function Layout({ children }: LayoutProps) {
   const alertCount = useAlertCount();
   const leadsCount = useLeadsCount();
   const referralsCount = useReferralsCount();
+  const brokerFeedbackCount = useBrokerFeedbackCount();
+  const customerFeedbackCount = useCustomerFeedbackCount();
 
   function SidebarContent() {
     return (
@@ -161,6 +165,16 @@ export default function Layout({ children }: LayoutProps) {
               {item.to === '/broker-referrals' && referralsCount > 0 && (
                 <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                   {referralsCount > 99 ? '99+' : referralsCount}
+                </span>
+              )}
+              {item.to === '/broker-feedback' && brokerFeedbackCount > 0 && (
+                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {brokerFeedbackCount > 99 ? '99+' : brokerFeedbackCount}
+                </span>
+              )}
+              {item.to === '/customer-feedback' && customerFeedbackCount > 0 && (
+                <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {customerFeedbackCount > 99 ? '99+' : customerFeedbackCount}
                 </span>
               )}
             </NavLink>
