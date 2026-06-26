@@ -1,6 +1,7 @@
 ﻿import { useState, useRef } from 'react';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
+import { auth } from '../lib/firebase';
 import Layout from '../components/Layout';
 import { useToast } from '../components/Toast';
 
