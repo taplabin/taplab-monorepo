@@ -1,8 +1,10 @@
 ﻿import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
+import useSWR from 'swr';
 import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
+import { brokerFetch } from '../lib/api';
 
 const NAV = [
   {
@@ -64,9 +66,18 @@ const NAV = [
 const activeClass = 'bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400';
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
 
+function useFeedbackCount(): number {
+  const { data } = useSWR('/api/broker/feedback', async (url) => {
+    const res = await brokerFetch(url);
+    return (await res.json()).feedback as any[];
+  }, { refreshInterval: 60000 });
+  return data?.filter((f: any) => f.status === 'open' || f.status === 'under_review').length ?? 0;
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const feedbackCount = useFeedbackCount();
 
   function SidebarContent() {
     return (
@@ -85,7 +96,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`
               }
             >
-              {({ isActive }) => <>{item.icon(isActive)}<span>{item.label}</span></>}
+              {({ isActive }) => (
+                <>
+                  {item.icon(isActive)}
+                  <span className="flex-1">{item.label}</span>
+                  {item.to === '/feedback' && feedbackCount > 0 && (
+                    <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-[#2087e6] text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                      {feedbackCount > 99 ? '99+' : feedbackCount}
+                    </span>
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

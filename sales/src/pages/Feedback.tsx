@@ -240,41 +240,41 @@ export default function Feedback() {
             const isAnswered = ANSWERED_STATUSES.includes(item.status);
             return (
               <div key={item.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-                <div className="flex items-start gap-3">
-                  {/* Vote column */}
-                  <div className={`flex flex-col items-center gap-0.5 flex-shrink-0 w-10 ${isAnswered ? 'opacity-40 pointer-events-none' : ''}`}>
-                    <button
-                      onClick={() => !isAnswered && handleVote(item.id, 1)}
-                      disabled={votingId === item.id || isAnswered}
-                      title="Upvote"
-                      className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg transition-all ${myVote === 1 ? 'bg-[#2087e6] text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-                      </svg>
-                      <span className="text-[11px] font-bold leading-none">{item.upvotes}</span>
-                    </button>
-                    <button
-                      onClick={() => !isAnswered && handleVote(item.id, -1)}
-                      disabled={votingId === item.id || isAnswered}
-                      title="Downvote"
-                      className={`flex flex-col items-center gap-0.5 w-10 py-1.5 rounded-lg transition-all ${myVote === -1 ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                    >
-                      <span className="text-[11px] font-bold leading-none">{item.downvotes}</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Content */}
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${TAG_COLORS[item.tag as Tag] ?? ''}`}>{item.tag}</span>
                       <span className={`text-[10px] font-medium ${STATUS_COLORS[item.status]}`}>{STATUS_LABELS[item.status]}</span>
                       <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">{item.brokerName}</span>
                     </div>
                     <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{item.content}</p>
+                    <div className={`flex items-center gap-3 mt-2 ${isAnswered ? 'opacity-40 pointer-events-none' : ''}`}>
+                      <button
+                        onClick={() => handleVote(item.id, 1)}
+                        disabled={votingId === item.id}
+                        className={`flex items-center gap-1 text-xs transition-colors ${myVote === 1 ? 'text-[#2087e6]' : 'text-gray-400 dark:text-gray-500 hover:text-[#2087e6]'}`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                        {item.upvotes}
+                      </button>
+                      <button
+                        onClick={() => handleVote(item.id, -1)}
+                        disabled={votingId === item.id}
+                        className={`flex items-center gap-1 text-xs transition-colors ${myVote === -1 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500 hover:text-red-500'}`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        {item.downvotes}
+                      </button>
+                      {(() => { const net = item.upvotes - item.downvotes; return (
+                        <span className={`text-xs font-medium ${net > 0 ? 'text-[#2087e6]' : net < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                          Net {net > 0 ? '+' : ''}{net}
+                        </span>
+                      ); })()}
+                    </div>
                     {item.adminReply && (
                       <div className="mt-3 pl-3 border-l-2 border-[#2087e6]/40 dark:border-blue-700">
                         <p className="text-xs font-semibold text-[#2087e6] dark:text-blue-400 mb-0.5">TapLab</p>

@@ -1,9 +1,8 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { brokerFetch } from '../lib/api';
 import Layout from '../components/Layout';
-import SubmitLead from './SubmitLead';
-import SubmitReferral from './SubmitReferral';
 
 type MainTab = 'clients' | 'brokers';
 type LeadStatus = 'pending' | 'approved' | 'rejected';
@@ -15,29 +14,18 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
 };
 
 export default function Submissions() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<MainTab>('clients');
-  const [showForm, setShowForm] = useState(false);
 
-  const { data: leads, mutate: mutateLeads } = useSWR('/api/broker/leads', async (url) => {
+  const { data: leads } = useSWR('/api/broker/leads', async (url) => {
     const res = await brokerFetch(url);
     return (await res.json()).leads as any[];
   });
 
-  const { data: referrals, mutate: mutateReferrals } = useSWR('/api/broker/referrals', async (url) => {
+  const { data: referrals } = useSWR('/api/broker/referrals', async (url) => {
     const res = await brokerFetch(url);
     return (await res.json()).referrals as any[];
   });
-
-  const tabBtn = (t: MainTab, label: string) => (
-    <button
-      onClick={() => { setTab(t); setShowForm(false); }}
-      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-        tab === t ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-      }`}
-    >
-      {label}
-    </button>
-  );
 
   return (
     <Layout>
@@ -45,29 +33,37 @@ export default function Submissions() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Submissions</h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Track all your submitted leads and referrals</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Track your submitted leads and referrals</p>
           </div>
-          {!showForm && (
+          <div className="flex gap-2">
             <button
-              onClick={() => setShowForm(true)}
+              onClick={() => navigate('/submissions/add-client')}
               className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              + Submit
+              Add Client
             </button>
-          )}
+            <button
+              onClick={() => navigate('/submissions/add-referral')}
+              className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Refer Broker
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
-          {tabBtn('clients', 'Clients')}
-          {tabBtn('brokers', 'Brokers')}
+          {(['clients', 'brokers'] as MainTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                tab === t ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              {t === 'clients' ? 'Clients' : 'Brokers'}
+            </button>
+          ))}
         </div>
-
-        {showForm && tab === 'clients' && (
-          <SubmitLead onSuccess={() => { setShowForm(false); mutateLeads(); }} onCancel={() => setShowForm(false)} />
-        )}
-        {showForm && tab === 'brokers' && (
-          <SubmitReferral onSuccess={() => { setShowForm(false); mutateReferrals(); }} onCancel={() => setShowForm(false)} />
-        )}
 
         {tab === 'clients' && (
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -76,7 +72,10 @@ export default function Submissions() {
                 {[1, 2].map((i) => <div key={i} className="px-5 py-4 animate-pulse"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" /><div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/4" /></div>)}
               </div>
             ) : leads.length === 0 ? (
-              <div className="px-5 py-12 text-center"><p className="text-sm text-gray-500 dark:text-gray-400">No leads submitted yet.</p></div>
+              <div className="px-5 py-12 text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400">No leads yet.</p>
+                <button onClick={() => navigate('/submissions/add-client')} className="mt-2 text-xs text-[#2087e6] hover:underline">Add your first client →</button>
+              </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {leads.map((lead: any) => (
@@ -106,7 +105,10 @@ export default function Submissions() {
             {!referrals ? (
               <div className="px-5 py-4 animate-pulse"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" /></div>
             ) : referrals.length === 0 ? (
-              <div className="px-5 py-12 text-center"><p className="text-sm text-gray-500 dark:text-gray-400">No broker referrals yet.</p></div>
+              <div className="px-5 py-12 text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400">No broker referrals yet.</p>
+                <button onClick={() => navigate('/submissions/add-referral')} className="mt-2 text-xs text-[#2087e6] hover:underline">Refer your first broker →</button>
+              </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {referrals.map((r: any) => (

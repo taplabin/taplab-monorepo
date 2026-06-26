@@ -9,6 +9,8 @@ import Login from './pages/Login';
 import BankVerification from './pages/BankVerification';
 import Dashboard from './pages/Dashboard';
 import Submissions from './pages/Submissions';
+import AddClient from './pages/AddClient';
+import AddReferral from './pages/AddReferral';
 import Leaderboard from './pages/Leaderboard';
 import Earnings from './pages/Earnings';
 import MyProfile from './pages/MyProfile';
@@ -75,6 +77,8 @@ export default function App() {
           <Routes>
             <Route path="/dashboard"   element={<Dashboard />} />
             <Route path="/submissions" element={<Submissions />} />
+            <Route path="/submissions/add-client"   element={<AddClient />} />
+            <Route path="/submissions/add-referral" element={<AddReferral />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/earnings"    element={<Earnings />} />
             <Route path="/profile/me"  element={<MyProfile />} />

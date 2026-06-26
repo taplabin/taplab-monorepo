@@ -42,11 +42,13 @@ export default function MyProfile() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Please select an image file', 'error'); return; }
     if (file.size > 2 * 1024 * 1024) { toast('Image must be under 2MB', 'error'); return; }
+    const user = auth.currentUser;
+    if (!user) { toast('Not authenticated', 'error'); return; }
     setUploading(true);
     try {
-      const { getAuth } = await import('firebase/auth');
-      const token = await getAuth().currentUser!.getIdToken();
+      const token = await user.getIdToken();
       const fd = new FormData();
       fd.append('file', file);
       const res = await fetch('/api/broker/profile/photo', {
@@ -55,7 +57,7 @@ export default function MyProfile() {
         body: fd,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || `Upload failed (${res.status})`);
       toast('Photo updated');
       mutate();
     } catch (err: any) {

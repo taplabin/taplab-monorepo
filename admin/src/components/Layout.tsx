@@ -112,10 +112,6 @@ export default function Layout({ children }: LayoutProps) {
             <span className="flex-1">Settings</span>
           </NavLink>
 
-          <NavLink to="/storage" onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive ? activeClass : inactiveClass}`}>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-            <span className="flex-1">Storage</span>
-          </NavLink>
         </nav>
 
         <div className="px-3 pb-5 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-0.5">

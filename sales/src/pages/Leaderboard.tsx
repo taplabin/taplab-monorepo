@@ -24,7 +24,7 @@ export default function Leaderboard() {
     return res.json() as Promise<{ id: string }>;
   });
 
-  const rows = data ? (tab === 'monthly' ? data.monthly : data.allTime) : null;
+  const rows = data ? (tab === 'monthly' ? (data.monthly ?? []) : (data.allTime ?? [])) : null;
   const myId = me?.id;
 
   return (

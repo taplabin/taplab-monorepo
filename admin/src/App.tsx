@@ -78,6 +78,7 @@ export default function App() {
             <Route path="/leads/:id"         element={<LeadDetail />} />
             <Route path="/settings"          element={<Settings />} />
             <Route path="/streak-config"     element={<Navigate to="/settings" replace />} />
+            <Route path="/storage"           element={<Navigate to="/settings" replace />} />
             <Route path="/broker-feedback"   element={<BrokerFeedback />} />
             <Route path="/customer-feedback" element={<CustomerFeedback />} />
             <Route path="/broker-referrals"  element={<BrokerReferrals />} />
