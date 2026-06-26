@@ -122,7 +122,7 @@ export default function Feedback() {
               onClick={() => setShowForm(true)}
               className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              + Submit
+              Add
             </button>
           )}
         </div>
