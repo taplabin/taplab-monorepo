@@ -57,7 +57,7 @@ export default function Feedback() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Feedback</h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
