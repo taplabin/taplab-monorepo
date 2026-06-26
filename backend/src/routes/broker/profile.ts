@@ -3,14 +3,18 @@ import { db } from '../../firestore.js';
 import { getBrokerByUid, verifyBroker } from '../../middleware/verifyBroker.js';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-const s3 = new S3Client({
-  region: 'auto',
-  endpoint: process.env.R2_ENDPOINT!,
-  credentials: {
-    accessKeyId: process.env.R2_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_KEY!,
-  },
-});
+function getS3() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT!,
+    credentials: {
+      accessKeyId: process.env.R2_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_KEY!,
+    },
+  });
+}
+
+const MEDIA_BUCKET = () => process.env.R2_MEDIA_BUCKET ?? process.env.R2_BUCKET ?? '';
 
 export async function brokerProfileRoute(app: FastifyInstance) {
   // GET /broker/profile/:id — public profile for any broker (used by team page + leaderboard click)
@@ -82,15 +86,17 @@ export async function brokerProfileRoute(app: FastifyInstance) {
       if (buffer.length > 2 * 1024 * 1024) {
         return reply.status(400).send({ error: 'Image must be under 2MB' });
       }
+      const bucket = MEDIA_BUCKET();
+      if (!bucket) return reply.status(503).send({ error: 'Media storage not configured' });
       const key = `pfps/${broker.id}`;
-      await s3.send(new PutObjectCommand({
-        Bucket: 'taplab-media',
+      await getS3().send(new PutObjectCommand({
+        Bucket: bucket,
         Key: key,
         Body: buffer,
         ContentType: data.mimetype,
         CacheControl: 'no-cache',
       }));
-      const photoUrl = `https://media.taplab.in/${key}`;
+      const photoUrl = `${process.env.R2_MEDIA_PUBLIC_URL ?? process.env.R2_PUBLIC_URL ?? 'https://media.taplab.in'}/${key}`;
       await db.collection('brokers').doc(broker.id).update({ photoUrl });
       return reply.send({ ok: true, photoUrl });
     } catch (err: any) {
