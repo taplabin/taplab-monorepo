@@ -6,15 +6,17 @@ import Layout from '../components/Layout';
 import MenuEditor from '../components/MenuEditor';
 import PortfolioEditor from '../components/PortfolioEditor';
 import BrochureEditor from '../components/BrochureEditor';
+import SocialEditor from '../components/SocialEditor';
 import { PageSkeleton } from '../components/Skeleton';
 
 // Keys that get a dedicated visual editor
-const STRUCTURED_KEYS = ['menu_data', 'portfolio_data', 'brochure_data'];
+const STRUCTURED_KEYS = ['menu_data', 'portfolio_data', 'brochure_data', 'social_data'];
 
 const STRUCTURED_LABEL: Record<string, string> = {
   menu_data: 'Menu',
   portfolio_data: 'Portfolio Projects',
   brochure_data: 'Services & Features',
+  social_data: 'Social Handles',
 };
 
 function toLabel(key: string): string {
@@ -86,7 +88,7 @@ export default function Editor() {
   };
 
   const keys = business.contentKeys.length > 0 ? business.contentKeys : Object.keys(content);
-  const structuredKey = keys.find((k) => STRUCTURED_KEYS.includes(k));
+  const structuredKeys = keys.filter((k) => STRUCTURED_KEYS.includes(k));
 
   const setField = (key: string, val: string) =>
     setContent((prev) => ({ ...prev, [key]: val }));
@@ -100,39 +102,45 @@ export default function Editor() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Edit your page content</p>
         </div>
 
-        {/* ── Structured data editor ── */}
-        {structuredKey && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        {/* ── Structured data editors ── */}
+        {structuredKeys.map((sk) => (
+          <div key={sk} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-                {STRUCTURED_LABEL[structuredKey] ?? toLabel(structuredKey)}
+                {STRUCTURED_LABEL[sk] ?? toLabel(sk)}
               </h2>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 Add, edit or remove items — changes save when you click Save below
               </p>
             </div>
             <div className="p-5">
-              {structuredKey === 'menu_data' && (
+              {sk === 'menu_data' && (
                 <MenuEditor
-                  value={content[structuredKey] ?? '{}'}
-                  onChange={(val) => setField(structuredKey, val)}
+                  value={content[sk] ?? '{}'}
+                  onChange={(val) => setField(sk, val)}
                 />
               )}
-              {structuredKey === 'portfolio_data' && (
+              {sk === 'portfolio_data' && (
                 <PortfolioEditor
-                  value={content[structuredKey] ?? '[]'}
-                  onChange={(val) => setField(structuredKey, val)}
+                  value={content[sk] ?? '[]'}
+                  onChange={(val) => setField(sk, val)}
                 />
               )}
-              {structuredKey === 'brochure_data' && (
+              {sk === 'brochure_data' && (
                 <BrochureEditor
-                  value={content[structuredKey] ?? '[]'}
-                  onChange={(val) => setField(structuredKey, val)}
+                  value={content[sk] ?? '[]'}
+                  onChange={(val) => setField(sk, val)}
+                />
+              )}
+              {sk === 'social_data' && (
+                <SocialEditor
+                  value={content[sk] ?? '{"style":"brand","handles":[]}'}
+                  onChange={(val) => setField(sk, val)}
                 />
               )}
             </div>
           </div>
-        )}
+        ))}
 
         {/* ── Save ── */}
         <button

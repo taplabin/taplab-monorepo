@@ -159,6 +159,7 @@ export async function portalRoute(app: FastifyInstance) {
         ownerUid: uid,
         content: content.trim().slice(0, 2000),
         createdAt: Timestamp.now(),
+        read: false,
       });
       return reply.status(201).send({ id: ref.id });
     } catch (err) {

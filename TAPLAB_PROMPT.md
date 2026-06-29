@@ -26,6 +26,11 @@ When this guide is pasted without a slug, business name, or page type already pr
      ```
    Use descriptive key names ending in `_image` (or `_video` for video). These will become content keys in `content.ts` and `<img>` tags in `App.tsx`.
 
+6. **Does this business have social media handles or links to display?**
+   - If **no** — skip this question. Do not include `social_data` in `content.ts`.
+   - If **yes** — list each platform and its URL (e.g. Instagram, WhatsApp, Website, LinkedIn). These become the `handles` array inside `social_data`.
+   Also ask: should icons appear in **monochrome** (all icons match the page accent colour) or **brand colours** (Instagram pink, WhatsApp green, etc.)? Default to `'mono'` if not specified.
+
 Once all questions are answered and content is provided, generate `App.tsx` and `content.ts` only. Do not output any other files.
 
 This document tells you everything you need to output a TapLab-ready page from any business. Read it fully before generating any code.
@@ -204,7 +209,7 @@ The portal editor only surfaces **structured data keys** (`menu_data`, `portfoli
 
 | Key type | Editable by customer? | How to change |
 |---|---|---|
-| `menu_data` / `portfolio_data` / `brochure_data` | ✅ Yes — visual editor in portal | Customer edits in portal and saves |
+| `menu_data` / `portfolio_data` / `brochure_data` / `social_data` | ✅ Yes — visual editor in portal | Customer edits in portal and saves |
 | Flat keys (`brand_name`, `phone`, `address`, etc.) | ❌ No | Update `content.ts` → redeploy |
 | Image / video keys (`hero_image`, etc.) | ❌ No | Upload new file to R2 → update URL in `content.ts` → redeploy |
 
@@ -219,18 +224,17 @@ Use these standard key names whenever the field applies — do not invent variat
 | Tagline or slogan | `tagline` |
 | Cuisine or category type | `cuisine_type` |
 | Phone number | `phone` |
-| WhatsApp number | `whatsapp` |
 | Email address | `email` |
 | Physical address | `address` |
 | Opening hours (as a single string) | `hours` |
-| Instagram URL | `instagram_url` |
-| Website URL | `website_url` |
 | Footer copyright line | `footer_copy` |
 | Any notice or disclaimer | `notice` |
 | Hero / banner image | `hero_image` |
 | Logo image | `logo_image` |
 | Any other image | `{descriptor}_image` (e.g. `banner_image`, `team_image`) |
 | Any video | `{descriptor}_video` (e.g. `promo_video`) |
+
+**Do not add `instagram_url` or `website_url` as flat keys** — these are now handled by `social_data` (see structured keys below). If a business has any social presence, use `social_data`.
 
 Add extra flat keys as needed for page-specific strings. Keep names lowercase and snake_case. Every flat key must be a plain string value — never a number, boolean, array, or object.
 
@@ -303,6 +307,31 @@ brochure_data: JSON.stringify(brochureData)
 
 Every item must have exactly: `heading`, `body`, `icon` — no extra fields.
 
+**All page types → social handles → key must be `social_data`**
+
+Use when the business has social profiles, WhatsApp, a website, or delivery app links to display as clickable icons. Omit the key entirely if the business has no handles.
+
+```ts
+const socialData = {
+  style: 'mono' as const,  // 'mono' = all icons use page accent colour | 'brand' = each icon uses its platform colour
+  handles: [
+    { platform: 'instagram', url: 'https://instagram.com/handle' },
+    { platform: 'whatsapp',  url: 'https://wa.me/91XXXXXXXXXX' },
+    { platform: 'website',   url: 'https://example.com' },
+  ],
+};
+
+social_data: JSON.stringify(socialData)
+```
+
+Supported `platform` values: `instagram`, `facebook`, `whatsapp`, `youtube`, `twitter`, `linkedin`, `zomato`, `swiggy`, `google_maps`, `website`.
+
+Rules:
+- Default `style` to `'mono'` unless the client explicitly requests brand colours.
+- Only include this key if the business actually has handles. Do not include it with an empty `handles` array — just omit the key.
+- The social section must render conditionally: `{socialData.handles.length > 0 && ...}`.
+- Icons are inline SVGs rendered as 40×40 circular buttons. Mono style: `#EFF4F1` background, page-accent icon. Brand style: platform colour background, white icon.
+
 In `App.tsx`, parse it back with `useMemo` using the correct key name for the page type.
 
 ### Image and video keys
@@ -360,6 +389,9 @@ Rules:
 - [ ] `defaultContent` has all keys that `App.tsx` references
 - [ ] Structured list data uses the correct type-specific key: `menu_data` / `portfolio_data` / `brochure_data` — never `page_data`
 - [ ] The JSON shape inside that key matches exactly the structure defined in this guide — no extra or missing fields
+- [ ] If the business has social handles, `social_data` is present with the correct `style` and `handles` array; if not, the key is omitted entirely
+- [ ] Social icons render conditionally: `{socialData.handles.length > 0 && ...}`
+- [ ] No `instagram_url` or `website_url` flat keys — social links go in `social_data`
 - [ ] `App.tsx` exports `default function App({ slug }: { slug: string })`
 - [ ] No `"use client"` directive (this is not Next.js)
 - [ ] No imports from `next/*`, `next/navigation`, etc.

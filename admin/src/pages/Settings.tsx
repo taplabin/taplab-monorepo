@@ -45,20 +45,31 @@ function StreakConfigTab() {
         <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-1">
           <span>From deal #</span><span>Bonus amount (₹)</span>
         </div>
-        {tiers.map((tier, i) => (
-          <div key={i} className="grid grid-cols-2 gap-3">
-            <input type="number" value={tier.fromDeal} onChange={(e) => { const n = [...tiers]; n[i] = { ...n[i], fromDeal: parseInt(e.target.value) || 0 }; setTiers(n); }} className={inputClass} min="1" />
-            <div className="flex gap-2">
-              <input type="number" value={tier.bonusAmount} onChange={(e) => { const n = [...tiers]; n[i] = { ...n[i], bonusAmount: parseInt(e.target.value) || 0 }; setTiers(n); }} className={inputClass} min="0" />
-              <button type="button" onClick={() => setTiers(tiers.filter((_, j) => j !== i))} className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+        {!data ? (
+          [1, 2, 3].map((i) => (
+            <div key={i} className="grid grid-cols-2 gap-3 animate-pulse">
+              <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+              <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg" />
             </div>
-          </div>
-        ))}
-        <button type="button" onClick={() => setTiers([...tiers, { fromDeal: 0, bonusAmount: 0 }])} className="text-sm text-[#2087e6] dark:text-blue-400 hover:underline">+ Add tier</button>
+          ))
+        ) : (
+          <>
+            {tiers.map((tier, i) => (
+              <div key={i} className="grid grid-cols-2 gap-3">
+                <input type="number" value={tier.fromDeal} onChange={(e) => { const n = [...tiers]; n[i] = { ...n[i], fromDeal: parseInt(e.target.value) || 0 }; setTiers(n); }} className={inputClass} min="1" />
+                <div className="flex gap-2">
+                  <input type="number" value={tier.bonusAmount} onChange={(e) => { const n = [...tiers]; n[i] = { ...n[i], bonusAmount: parseInt(e.target.value) || 0 }; setTiers(n); }} className={inputClass} min="0" />
+                  <button type="button" onClick={() => setTiers(tiers.filter((_, j) => j !== i))} className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={() => setTiers([...tiers, { fromDeal: 0, bonusAmount: 0 }])} className="text-sm text-[#2087e6] dark:text-blue-400 hover:underline">+ Add tier</button>
+          </>
+        )}
       </div>
-      <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
+      <button onClick={handleSave} disabled={saving || !data} className="px-4 py-2 bg-[#2087e6] hover:bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
         {saving ? 'Saving…' : 'Save Config'}
       </button>
     </div>

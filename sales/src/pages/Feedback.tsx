@@ -48,7 +48,6 @@ export default function Feedback() {
   const [form, setForm] = useState({ content: '', tag: 'Suggestion' as Tag });
   const [submitting, setSubmitting] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [votingId, setVotingId] = useState<string | null>(null);
   const [myVotes, setMyVotes] = useState<Record<string, 1 | -1 | null>>({});
 
   const { data, mutate } = useSWR('/api/broker/feedback', async (url) => {
@@ -87,21 +86,36 @@ export default function Feedback() {
   };
 
   const handleVote = async (id: string, vote: 1 | -1) => {
-    setVotingId(id);
     const prev = myVotes[id] ?? null;
-    setMyVotes(v => ({ ...v, [id]: prev === vote ? null : vote }));
+    const newVote = prev === vote ? null : vote;
+
+    // Optimistically update vote button and counts immediately
+    setMyVotes(v => ({ ...v, [id]: newVote }));
+    mutate(
+      data?.map((item: any) => {
+        if (item.id !== id) return item;
+        let { upvotes, downvotes } = item;
+        if (prev === 1) upvotes--;
+        if (prev === -1) downvotes--;
+        if (newVote === 1) upvotes++;
+        if (newVote === -1) downvotes++;
+        return { ...item, upvotes, downvotes };
+      }),
+      false // don't revalidate yet
+    );
+
     try {
       const res = await brokerFetch(`/api/broker/feedback/${id}/vote`, {
         method: 'POST',
         body: JSON.stringify({ vote }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      mutate();
+      mutate(); // background sync to confirm server state
     } catch (err: any) {
+      // Revert on failure
       setMyVotes(v => ({ ...v, [id]: prev }));
+      mutate(data, false);
       toast(err.message || 'Failed to vote', 'error');
-    } finally {
-      setVotingId(null);
     }
   };
 
@@ -251,7 +265,6 @@ export default function Feedback() {
                     <div className={`flex items-center gap-3 mt-2 ${isAnswered ? 'opacity-40 pointer-events-none' : ''}`}>
                       <button
                         onClick={() => handleVote(item.id, 1)}
-                        disabled={votingId === item.id}
                         className={`flex items-center gap-1 text-xs transition-colors ${myVote === 1 ? 'text-[#2087e6]' : 'text-gray-400 dark:text-gray-500 hover:text-[#2087e6]'}`}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -261,7 +274,6 @@ export default function Feedback() {
                       </button>
                       <button
                         onClick={() => handleVote(item.id, -1)}
-                        disabled={votingId === item.id}
                         className={`flex items-center gap-1 text-xs transition-colors ${myVote === -1 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500 hover:text-red-500'}`}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">

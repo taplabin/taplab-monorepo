@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from 'firebase/auth';
+import { mutate } from 'swr';
 import { auth } from './lib/firebase';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/Toast';
@@ -45,6 +46,7 @@ export default function App() {
         const token = await user.getIdToken();
         const res = await fetch('/api/broker/me', { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
+        mutate('/api/broker/me', data, false); // pre-seed SWR cache so profile page loads instantly
         setBankVerified(data.bankVerified ?? false);
       } catch {
         setBankVerified(false);

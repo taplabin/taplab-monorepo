@@ -11,7 +11,6 @@ import BusinessList from './pages/BusinessList';
 import AddBusiness from './pages/AddBusiness';
 import BusinessDetail from './pages/BusinessDetail';
 import Alerts from './pages/Alerts';
-import Storage from './pages/Storage';
 import Brokers from './pages/Brokers';
 import BrokerDetail from './pages/BrokerDetail';
 import Leads from './pages/Leads';
@@ -70,7 +69,6 @@ export default function App() {
             <Route path="/businesses/new"    element={<AddBusiness />} />
             <Route path="/business/:slug"    element={<BusinessDetail />} />
             <Route path="/alerts"            element={<Alerts />} />
-            <Route path="/storage"           element={<Storage />} />
             <Route path="/brokers"           element={<Brokers />} />
             <Route path="/brokers/new"       element={<AddBroker />} />
             <Route path="/broker/:id"        element={<BrokerDetail />} />
