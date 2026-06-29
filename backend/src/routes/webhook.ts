@@ -1,7 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import crypto from 'crypto';
 import { db } from '../firestore.js';
+import { JobDocument, BuildDocument } from '../types.js';
 import { handleCommissionPayout, handleStreakBonus, handleReferralFlag } from '../payouts.js';
+import { promoteToProduction } from './admin/jobs.js';
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
@@ -85,6 +87,31 @@ async function handleWebhookEvent(
       const freshDoc = await docRef.get();
       if (freshDoc.exists) {
         const freshData = freshDoc.data()!;
+
+        // Promote staging build to production on first payment (job must be approved)
+        const jobRef = db.collection('jobs').doc(docRef.id);
+        const jobSnap = await jobRef.get();
+        if (jobSnap.exists) {
+          const job = jobSnap.data() as JobDocument;
+          if (job.status === 'approved' && job.approvedBuildId) {
+            const buildSnap = await jobRef.collection('builds').doc(job.approvedBuildId).get();
+            if (buildSnap.exists) {
+              try {
+                await promoteToProduction(
+                  docRef.id,
+                  buildSnap.data() as BuildDocument,
+                  docRef,
+                  jobRef,
+                  app.log
+                );
+              } catch (err) {
+                app.log.error({ err, slug: docRef.id }, 'Staging→production promotion failed; setting publish_pending');
+                await jobRef.update({ status: 'publish_pending', updatedAt: new Date() });
+              }
+            }
+          }
+        }
+
         await handleCommissionPayout(docRef.id, freshData, app.log);
         const afterCommission = (await docRef.get()).data()!;
         await handleStreakBonus(docRef.id, afterCommission, app.log);

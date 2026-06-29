@@ -14,10 +14,14 @@ import { adminStorageRoute } from './routes/admin/storage.js';
 import { adminLeadsRoute } from './routes/admin/leads.js';
 import { adminBrokerReferralsRoute } from './routes/admin/brokerReferrals.js';
 import { adminConfigRoute } from './routes/admin/config.js';
+import { adminJobsRoute } from './routes/admin/jobs.js';
 import { brokerRoute } from './routes/broker/index.js';
 import { brokerProfileRoute } from './routes/broker/profile.js';
+import { devJobsRoute } from './routes/dev/jobs.js';
+import { previewRoute } from './routes/preview.js';
 import { verifyAdmin } from './middleware/verifyAdmin.js';
 import { verifyBroker } from './middleware/verifyBroker.js';
+import { verifyDev } from './middleware/verifyDev.js';
 
 dotenv.config();
 
@@ -74,6 +78,7 @@ await app.register(pageRoute);
 await app.register(webhookRoute);
 await app.register(portalRoute);
 await app.register(analyticsRoute);
+await app.register(previewRoute);
 
 // Broker profile routes — mixed auth (public GETs + protected PATCH/POST via per-route preHandler)
 await app.register(brokerProfileRoute, { prefix: '/broker' });
@@ -88,12 +93,18 @@ await app.register(async (adminApp) => {
   await adminApp.register(adminLeadsRoute);
   await adminApp.register(adminBrokerReferralsRoute);
   await adminApp.register(adminConfigRoute);
+  await adminApp.register(adminJobsRoute);
 }, { prefix: '/admin' });
 
 await app.register(async (brokerApp) => {
   brokerApp.addHook('preHandler', verifyBroker);
   await brokerApp.register(brokerRoute);
 }, { prefix: '/broker' });
+
+await app.register(async (devApp) => {
+  devApp.addHook('preHandler', verifyDev);
+  await devApp.register(devJobsRoute);
+}, { prefix: '/dev' });
 
 const port = Number(process.env.PORT) || 3000;
 const host = '0.0.0.0';

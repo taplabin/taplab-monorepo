@@ -20,6 +20,8 @@ import CustomerFeedback from './pages/CustomerFeedback';
 import BrokerReferrals from './pages/BrokerReferrals';
 import Settings from './pages/Settings';
 import AddBroker from './pages/AddBroker';
+import Jobs from './pages/Jobs';
+import AdminJobDetail from './pages/AdminJobDetail';
 
 function LoadingSpinner() {
   return (
@@ -77,6 +79,8 @@ export default function App() {
             <Route path="/settings"          element={<Settings />} />
             <Route path="/streak-config"     element={<Navigate to="/settings" replace />} />
             <Route path="/storage"           element={<Navigate to="/settings" replace />} />
+            <Route path="/jobs"              element={<Jobs />} />
+            <Route path="/jobs/:slug"        element={<AdminJobDetail />} />
             <Route path="/broker-feedback"   element={<BrokerFeedback />} />
             <Route path="/customer-feedback" element={<CustomerFeedback />} />
             <Route path="/broker-referrals"  element={<BrokerReferrals />} />

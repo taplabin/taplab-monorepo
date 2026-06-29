@@ -36,6 +36,7 @@ export interface BusinessDocument {
   referralBonusPayoutId: string | null;
   referralBonusSentAt: Timestamp | null;
   leadId: string | null;
+  approvedBuildToken?: string | null;
   ownerEmail: string | null;
   ownerUid: string | null;
   content?: Record<string, string>;
@@ -131,4 +132,38 @@ export interface WebhookEvent {
   businessSlug: string | null;
   processedAt: Timestamp;
   rawPayload: object;
+}
+
+export interface JobDocument {
+  businessSlug: string;
+  businessName: string;
+  pageType: 'menu' | 'portfolio' | 'brochure' | 'other' | null;
+  leadId: string;
+  status: 'queued' | 'claimed' | 'in_review' | 'approved' | 'publish_pending' | 'live';
+  devUid: string | null;
+  devName: string | null;
+  claimedAt: Timestamp | null;
+  inReviewAt: Timestamp | null;
+  approvedAt: Timestamp | null;
+  liveAt: Timestamp | null;
+  approvedBuildId: string | null;
+  materials: string[];
+  materialsNotes: string | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface BuildDocument {
+  buildNumber: number;
+  stagingToken: string;
+  stagingUrl: string;
+  r2StagingKey: string;
+  r2StagingFilename: string;
+  componentTagName: string;
+  claudeModel: string;
+  promptVersion: string;
+  templateVersion: string;
+  devName: string;
+  devUid: string;
+  createdAt: Timestamp;
 }

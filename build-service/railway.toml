@@ -1,0 +1,7 @@
+[build]
+buildCommand = "npm install && npm install --prefix warm-template && npm run build"
+
+[deploy]
+startCommand = "node dist/index.js"
+sleepApplication = true
+restartPolicyType = "ON_FAILURE"

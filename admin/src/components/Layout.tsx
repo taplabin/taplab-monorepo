@@ -5,6 +5,7 @@ import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
 import { useAlertCount } from '../hooks/useAlertCount';
 import { useLeadsCount } from '../hooks/useLeadsCount';
+import { useJobsCount } from '../hooks/useJobsCount';
 import { useReferralsCount } from '../hooks/useReferralsCount';
 import { useBrokerFeedbackCount } from '../hooks/useBrokerFeedbackCount';
 import { useCustomerFeedbackCount } from '../hooks/useCustomerFeedbackCount';
@@ -24,11 +25,12 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const alertCount = useAlertCount();
   const leadsCount = useLeadsCount();
+  const jobsCount = useJobsCount();
   const referralsCount = useReferralsCount();
   const brokerFeedbackCount = useBrokerFeedbackCount();
   const customerFeedbackCount = useCustomerFeedbackCount();
 
-  const businessPaths = ['/businesses', '/leads', '/customer-feedback'];
+  const businessPaths = ['/businesses', '/leads', '/jobs', '/customer-feedback'];
   const salesPaths = ['/brokers', '/broker-referrals', '/broker-feedback'];
   const isInBusinessGroup = businessPaths.some(p => location.pathname.startsWith(p));
   const isInSalesGroup = salesPaths.some(p => location.pathname.startsWith(p));
@@ -85,6 +87,7 @@ export default function Layout({ children }: LayoutProps) {
                 <NavLink to="/businesses" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Businesses</span></NavLink>
                 <NavLink to="/businesses/new" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Add Business</span></NavLink>
                 <NavLink to="/leads" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Leads</span><Badge count={leadsCount} /></NavLink>
+                <NavLink to="/jobs" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Jobs</span><Badge count={jobsCount} /></NavLink>
                 <NavLink to="/customer-feedback" onClick={() => setMobileOpen(false)} className={({ isActive }) => `${groupItemClass} ${isActive ? activeClass : inactiveClass}`}><span className="flex-1">Customer Feedback</span><Badge count={customerFeedbackCount} /></NavLink>
               </div>
             )}

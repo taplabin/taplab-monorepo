@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../../firestore.js';
-import { LeadDocument } from '../../types.js';
+import { LeadDocument, JobDocument } from '../../types.js';
 import { createBusinessFromData } from './business.js';
 
 export async function adminLeadsRoute(app: FastifyInstance) {
@@ -74,6 +74,27 @@ export async function adminLeadsRoute(app: FastifyInstance) {
       });
 
       await db.collection('leads').doc(id).update({ status: 'approved', updatedAt: new Date() });
+
+      // Create the job document so the Dev Panel can pick this up
+      const jobData: JobDocument = {
+        businessSlug: lead.businessSlug,
+        businessName: lead.businessName,
+        pageType: (lead as any).pageType ?? null,
+        leadId: id,
+        status: 'queued',
+        devUid: null,
+        devName: null,
+        claimedAt: null,
+        inReviewAt: null,
+        approvedAt: null,
+        liveAt: null,
+        approvedBuildId: null,
+        materials: [],
+        materialsNotes: null,
+        createdAt: new Date() as any,
+        updatedAt: new Date() as any,
+      };
+      await db.collection('jobs').doc(lead.businessSlug).set(jobData);
 
       return reply.send({ slug: result.slug, paymentLink: result.paymentLinkUrl, inviteLink: result.inviteLink });
     } catch (err: any) {
