@@ -31,8 +31,6 @@ function buildSrcdoc(appTsx: string, defaultContent: Record<string, unknown>): s
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>* { box-sizing: border-box; } body { margin: 0; }</style>
 </head>
@@ -40,12 +38,14 @@ function buildSrcdoc(appTsx: string, defaultContent: Record<string, unknown>): s
   <div id="root"></div>
   <script>
   (function() {
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+    // Pull React from the parent frame — no CDN needed, no ad-blocker risk
+    const React = parent.__tapReact__;
+    const ReactDOM = parent.__tapReactDOM__;
+
+    if (!React || !ReactDOM) {
       document.getElementById('root').innerHTML =
         '<div style="padding:20px;font-family:monospace;color:#dc2626;background:#fef2f2;border-radius:8px;margin:16px">' +
-        '<b>React failed to load from CDN.</b><br><br>' +
-        'Your browser is blocking unpkg.com (likely an ad blocker).<br>' +
-        'Disable it for this page, then refresh and run preview again.' +
+        '<b>Could not access React from parent frame.</b><br>Refresh the dev panel and try again.' +
         '</div>';
       return;
     }
@@ -93,7 +93,8 @@ function buildSrcdoc(appTsx: string, defaultContent: Record<string, unknown>): s
       return;
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(
+    const createRoot = ReactDOM.createRoot || (ReactDOM.default && ReactDOM.default.createRoot);
+    createRoot(document.getElementById('root')).render(
       React.createElement(AppComponent, { slug: 'preview' })
     );
   })();
@@ -136,7 +137,7 @@ export default function SandboxPreview({ appTsx, contentTs }: SandboxPreviewProp
       {srcdoc && (
         <iframe
           srcDoc={srcdoc}
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin"
           className="w-full h-[600px] border border-gray-200 rounded-xl bg-white"
           title="Sandbox preview"
         />
