@@ -21,8 +21,8 @@ export async function devJobsRoute(app: FastifyInstance) {
     const devUid = (req as any).devUid as string;
     try {
       const [queuedSnap, claimedSnap] = await Promise.all([
-        db.collection('jobs').where('status', '==', 'queued').orderBy('createdAt', 'asc').get(),
-        db.collection('jobs').where('devUid', '==', devUid).orderBy('createdAt', 'asc').get(),
+        db.collection('jobs').where('status', '==', 'queued').get(),
+        db.collection('jobs').where('devUid', '==', devUid).get(),
       ]);
 
       const queued = queuedSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
