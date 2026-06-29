@@ -2,10 +2,14 @@ import { useCallback, useState } from 'react';
 import { transform } from 'sucrase';
 
 function extractDefaultContent(contentTs: string): Record<string, unknown> {
-  const match = contentTs.match(/export\s+const\s+defaultContent[^=]*=\s*(\{[\s\S]*?\})\s*;/);
-  if (!match) return {};
   try {
-    return new Function(`return (${match[1]})`)() as Record<string, unknown>;
+    // Transpile the full content.ts so menuData and JSON.stringify are in scope
+    const { code } = transform(contentTs, { transforms: ['typescript', 'imports'] });
+    const exports: Record<string, unknown> = {};
+    const mod = { exports };
+    // eslint-disable-next-line no-new-func
+    new Function('exports', 'module', 'require', code)(exports, mod, () => ({}));
+    return (exports.defaultContent ?? mod.exports.defaultContent ?? {}) as Record<string, unknown>;
   } catch {
     return {};
   }
