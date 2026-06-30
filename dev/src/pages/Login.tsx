@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,11 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-xl font-bold text-gray-900 dark:text-white">TapLab Dev Panel</p>
+          <img
+            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            alt="TapLab"
+            className="h-12 w-auto mx-auto"
+          />
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your dev account</p>
         </div>
         <form
