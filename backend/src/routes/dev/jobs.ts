@@ -7,7 +7,7 @@ import { JobDocument, BuildDocument } from '../../types.js';
 
 function extractDefaultContent(contentTs: string): Record<string, string> {
   try {
-    // sucrase strips all TypeScript syntax (imports, types, satisfies, as-casts, etc.)
+    // sucrase strips all TypeScript syntax (imports, types, satisfies, as-casts, etc.
     // and compiles export statements to CommonJS — same approach as the frontend ValidationPanel
     const { code } = transform(contentTs, { transforms: ['typescript', 'imports'] });
     const exports: Record<string, unknown> = {};
