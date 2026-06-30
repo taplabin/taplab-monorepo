@@ -22,43 +22,43 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-xl font-bold text-gray-900">TapLab Dev Panel</p>
-          <p className="text-sm text-gray-500 mt-1">Sign in with your dev account</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">TapLab Dev Panel</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your dev account</p>
         </div>
         <form
           onSubmit={handleLogin}
-          className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4 shadow-sm"
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-4 shadow-sm"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-shadow"
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#2087e6] transition-shadow"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-shadow"
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#2087e6] transition-shadow"
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+            className="w-full bg-[#2087e6] hover:bg-[#13204d] text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

@@ -54,12 +54,12 @@ export default function ImageUploadHelper({ slug }: ImageUploadHelperProps) {
 
   return (
     <div>
-      <p className="text-sm font-medium text-gray-700 mb-2">Upload image to R2</p>
+      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload image to R2</p>
       <div className="flex items-center gap-3">
         <button
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="text-sm px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="text-sm px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
         >
           {uploading ? 'Uploading…' : 'Choose file'}
         </button>
@@ -76,19 +76,19 @@ export default function ImageUploadHelper({ slug }: ImageUploadHelperProps) {
         />
         {uploadedUrl && (
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <code className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded truncate flex-1">
+            <code className="text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded truncate flex-1">
               {uploadedUrl}
             </code>
             <button
               onClick={copyUrl}
-              className="text-xs px-2 py-1 bg-violet-100 text-violet-700 rounded font-medium hover:bg-violet-200 transition-colors shrink-0"
+              className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400 rounded font-medium hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors shrink-0"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</p>}
     </div>
   );
 }

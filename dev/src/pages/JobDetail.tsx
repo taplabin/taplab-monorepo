@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import MaterialsGallery from '../components/MaterialsGallery';
-import CodeTextArea from '../components/CodeTextArea';
+import CodeEditor from '../components/CodeEditor';
 import ImageUploadHelper from '../components/ImageUploadHelper';
 import ValidationPanel, { validate, ValidationResult } from '../components/ValidationPanel';
 import SandboxPreview from '../components/SandboxPreview';
@@ -29,12 +29,12 @@ interface Build {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  queued:          { label: 'Queued',          color: 'bg-gray-100 text-gray-600' },
-  claimed:         { label: 'Claimed',         color: 'bg-blue-100 text-blue-700' },
-  in_review:       { label: 'In review',       color: 'bg-yellow-100 text-yellow-700' },
-  approved:        { label: 'Approved',        color: 'bg-green-100 text-green-700' },
-  publish_pending: { label: 'Publish pending', color: 'bg-orange-100 text-orange-700' },
-  live:            { label: 'Live',            color: 'bg-emerald-100 text-emerald-700' },
+  queued:          { label: 'Queued',          color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
+  claimed:         { label: 'Claimed',         color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
+  in_review:       { label: 'In review',       color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
+  approved:        { label: 'Approved',        color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' },
+  publish_pending: { label: 'Publish pending', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
+  live:            { label: 'Live',            color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
 };
 
 export default function JobDetail() {
@@ -121,138 +121,141 @@ export default function JobDetail() {
 
   return (
     <Layout>
-      {/* Back link */}
-      <button
-        onClick={() => navigate('/')}
-        className="text-sm text-gray-500 hover:text-gray-900 mb-6 flex items-center gap-1 transition-colors"
-      >
-        ← Back to queue
-      </button>
+      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-5 h-5 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
-        </div>
-      ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
-      ) : job ? (
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{job.businessName}</h1>
-              <p className="text-sm text-gray-500 mt-0.5">{job.pageType ?? 'Unknown type'}</p>
-            </div>
-            {statusMeta && (
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusMeta.color}`}>
-                {statusMeta.label}
-              </span>
-            )}
+        {/* Back */}
+        <button
+          onClick={() => navigate('/')}
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 transition-colors"
+        >
+          ← Back to queue
+        </button>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-5 h-5 rounded-full border-2 border-[#2087e6] border-t-transparent animate-spin" />
           </div>
+        ) : error ? (
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        ) : job ? (
+          <>
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{job.businessName}</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{job.pageType ?? 'Unknown type'}</p>
+              </div>
+              {statusMeta && (
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusMeta.color}`}>
+                  {statusMeta.label}
+                </span>
+              )}
+            </div>
 
-          {/* Materials */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">Materials</h2>
-            <MaterialsGallery materials={job.materials} notes={job.materialsNotes} />
-          </section>
+            {/* Materials */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Materials</h2>
+              <MaterialsGallery materials={job.materials} notes={job.materialsNotes} />
+            </div>
 
-          {/* Image upload */}
-          <section>
-            <ImageUploadHelper slug={slug!} />
-          </section>
+            {/* Image upload */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <ImageUploadHelper slug={slug!} />
+            </div>
 
-          {/* Code paste */}
-          <section className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-700">Paste generated code</h2>
-            <CodeTextArea
-              label="App.tsx"
-              value={appTsx}
-              onChange={(v) => { setAppTsx(v); setValidationResult(null); setShowSandbox(false); }}
-              placeholder="Paste the full App.tsx content here…"
-            />
-            <CodeTextArea
-              label="content.ts"
-              value={contentTs}
-              onChange={(v) => { setContentTs(v); setValidationResult(null); setShowSandbox(false); }}
-              placeholder="Paste the full content.ts content here…"
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Claude model used</label>
-              <input
-                type="text"
-                value={claudeModel}
-                onChange={(e) => setClaudeModel(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400 w-64"
+            {/* Code editors */}
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Code</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Paste the generated files below, then validate and push to staging.</p>
+              </div>
+              <CodeEditor
+                label="App.tsx"
+                value={appTsx}
+                onChange={(v) => { setAppTsx(v); setValidationResult(null); setShowSandbox(false); }}
               />
-            </div>
-          </section>
-
-          {/* Actions */}
-          <section>
-            <div className="flex items-center gap-3 flex-wrap">
-              <button
-                onClick={() => { setShowSandbox(true); setValidationResult(null); }}
-                disabled={!appTsx.trim() || !contentTs.trim()}
-                className="text-sm px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Preview in sandbox
-              </button>
-              <button
-                onClick={handleValidate}
-                disabled={!appTsx.trim() || !contentTs.trim()}
-                className="text-sm px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Validate
-              </button>
-              <button
-                onClick={handlePushToStaging}
-                disabled={!validationPassed || pushing}
-                className="text-sm px-4 py-2 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                {pushing ? 'Building…' : 'Push to staging'}
-              </button>
+              <CodeEditor
+                label="content.ts"
+                value={contentTs}
+                onChange={(v) => { setContentTs(v); setValidationResult(null); setShowSandbox(false); }}
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Claude model used</label>
+                <input
+                  type="text"
+                  value={claudeModel}
+                  onChange={(e) => setClaudeModel(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2087e6] w-64"
+                />
+              </div>
             </div>
 
-            {!validationPassed && validationResult && (
-              <p className="text-xs text-gray-500 mt-2">Fix validation errors to enable staging push.</p>
-            )}
-            {pushError && (
-              <p className="text-sm text-red-600 mt-2">{pushError}</p>
-            )}
-            {lastStagingUrl && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                <p className="text-sm text-green-800 font-medium">Build pushed!</p>
-                <a
-                  href={lastStagingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-green-700 underline"
+            {/* Actions */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={() => { setShowSandbox(true); setValidationResult(null); }}
+                  disabled={!appTsx.trim() || !contentTs.trim()}
+                  className="text-sm px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
                 >
-                  {lastStagingUrl}
-                </a>
+                  Preview in sandbox
+                </button>
+                <button
+                  onClick={handleValidate}
+                  disabled={!appTsx.trim() || !contentTs.trim()}
+                  className="text-sm px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                >
+                  Validate
+                </button>
+                <button
+                  onClick={handlePushToStaging}
+                  disabled={!validationPassed || pushing}
+                  className="text-sm px-4 py-2 bg-[#2087e6] hover:bg-[#13204d] text-white rounded-lg font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {pushing ? 'Building…' : 'Push to staging'}
+                </button>
+              </div>
+
+              {!validationPassed && validationResult && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">Fix validation errors to enable staging push.</p>
+              )}
+              {pushError && (
+                <p className="text-sm text-red-600 dark:text-red-400">{pushError}</p>
+              )}
+              {lastStagingUrl && (
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                  <p className="text-sm text-green-800 dark:text-green-400 font-medium">Build pushed!</p>
+                  <a
+                    href={lastStagingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-700 dark:text-green-500 underline"
+                  >
+                    {lastStagingUrl}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Validation result */}
+            <ValidationPanel result={validationResult} />
+
+            {/* Sandbox */}
+            {showSandbox && appTsx.trim() && contentTs.trim() && (
+              <SandboxPreview appTsx={appTsx} contentTs={contentTs} />
+            )}
+
+            {/* Build history */}
+            {builds.length > 0 && (
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Build history</h2>
+                <BuildHistory builds={builds} approvedBuildId={job.approvedBuildId} />
               </div>
             )}
-          </section>
+          </>
+        ) : null}
 
-          {/* Validation result */}
-          <ValidationPanel result={validationResult} />
-
-          {/* Sandbox */}
-          {showSandbox && appTsx.trim() && contentTs.trim() && (
-            <section>
-              <SandboxPreview appTsx={appTsx} contentTs={contentTs} />
-            </section>
-          )}
-
-          {/* Build history */}
-          {builds.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Build history</h2>
-              <BuildHistory builds={builds} approvedBuildId={job.approvedBuildId} />
-            </section>
-          )}
-        </div>
-      ) : null}
+      </div>
     </Layout>
   );
 }

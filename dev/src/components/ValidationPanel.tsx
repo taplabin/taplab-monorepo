@@ -108,19 +108,19 @@ export default function ValidationPanel({ result }: ValidationPanelProps) {
 
   if (result.passed) {
     return (
-      <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800 font-medium">
+      <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-sm text-green-800 dark:text-green-400 font-medium">
         ✓ All checks passed
       </div>
     );
   }
 
   return (
-    <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-1">
+    <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl space-y-1">
       {result.errors.map((e, i) => (
-        <p key={i} className="text-sm text-red-700">✗ {e}</p>
+        <p key={i} className="text-sm text-red-700 dark:text-red-400">✗ {e}</p>
       ))}
       {result.warnings.map((w, i) => (
-        <p key={i} className="text-sm text-amber-700">⚠ {w}</p>
+        <p key={i} className="text-sm text-amber-700 dark:text-amber-400">⚠ {w}</p>
       ))}
     </div>
   );

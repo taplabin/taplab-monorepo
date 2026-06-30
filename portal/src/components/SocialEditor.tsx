@@ -85,27 +85,29 @@ export default function SocialEditor({ value, onChange }: { value: string; onCha
     <div className="space-y-4">
 
       {/* Style toggle */}
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Icon style</span>
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-          {(['mono', 'brand'] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStyle(s)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                data.style === s
-                  ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-              }`}
-            >
-              {s === 'mono' ? 'Monochrome' : 'Brand Colors'}
-            </button>
-          ))}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Icon style</span>
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            {(['mono', 'brand'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStyle(s)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  data.style === s
+                    ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                {s === 'mono' ? 'Monochrome' : 'Brand Colors'}
+              </button>
+            ))}
+          </div>
         </div>
-        <span className="text-xs text-gray-400 dark:text-gray-500">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           {data.style === 'mono' ? 'All icons match the page colour' : 'Each icon uses its platform colour'}
-        </span>
+        </p>
       </div>
 
       {/* Handles list */}

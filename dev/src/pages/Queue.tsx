@@ -23,10 +23,10 @@ function timeAgo(seconds: number) {
 
 function PageTypeBadge({ type }: { type: string | null }) {
   const colors: Record<string, string> = {
-    menu: 'bg-orange-100 text-orange-700',
-    portfolio: 'bg-blue-100 text-blue-700',
-    brochure: 'bg-green-100 text-green-700',
-    other: 'bg-gray-100 text-gray-600',
+    menu:      'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
+    portfolio: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+    brochure:  'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    other:     'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   };
   const label = type ?? 'unknown';
   return (
@@ -46,17 +46,17 @@ function JobRow({ job, isMine, onClaim, claiming }: {
   const ts = job.claimedAt?._seconds ?? job.createdAt?._seconds ?? 0;
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
       <div className="flex items-center gap-4">
         <div>
-          <p className="text-sm font-medium text-gray-900">{job.businessName}</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">{job.businessName}</p>
           <div className="flex items-center gap-2 mt-1">
             <PageTypeBadge type={job.pageType} />
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               {job.materials.length} material{job.materials.length !== 1 ? 's' : ''}
             </span>
             {ts > 0 && (
-              <span className="text-xs text-gray-400">{timeAgo(ts)}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{timeAgo(ts)}</span>
             )}
           </div>
         </div>
@@ -64,7 +64,7 @@ function JobRow({ job, isMine, onClaim, claiming }: {
       {isMine ? (
         <button
           onClick={() => navigate(`/job/${job.id}`)}
-          className="text-sm px-3 py-1.5 bg-violet-50 text-violet-700 rounded-lg font-medium hover:bg-violet-100 transition-colors"
+          className="text-sm px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400 rounded-lg font-medium hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
         >
           Continue →
         </button>
@@ -72,7 +72,7 @@ function JobRow({ job, isMine, onClaim, claiming }: {
         <button
           onClick={() => onClaim(job.id)}
           disabled={claiming}
-          className="text-sm px-3 py-1.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-700 disabled:opacity-50 transition-colors"
+          className="text-sm px-3 py-1.5 bg-gray-900 dark:bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-700 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors"
         >
           {claiming ? 'Claiming…' : 'Claim'}
         </button>
@@ -125,53 +125,55 @@ export default function Queue() {
 
   return (
     <Layout>
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Jobs</h1>
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Jobs</h1>
 
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400 mb-4">{error}</p>}
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-5 h-5 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
-        </div>
-      ) : (
-        <>
-          {mine.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">My jobs</h2>
-              <div className="space-y-2">
-                {mine.map((job) => (
-                  <JobRow
-                    key={job.id}
-                    job={job}
-                    isMine
-                    onClaim={handleClaim}
-                    claiming={claimingId === job.id}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section>
-            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Open queue</h2>
-            {queued.length === 0 ? (
-              <p className="text-sm text-gray-400 py-8 text-center">No open jobs right now.</p>
-            ) : (
-              <div className="space-y-2">
-                {queued.map((job) => (
-                  <JobRow
-                    key={job.id}
-                    job={job}
-                    isMine={false}
-                    onClaim={handleClaim}
-                    claiming={claimingId === job.id}
-                  />
-                ))}
-              </div>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-5 h-5 rounded-full border-2 border-[#2087e6] border-t-transparent animate-spin" />
+          </div>
+        ) : (
+          <>
+            {mine.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">My jobs</h2>
+                <div className="space-y-2">
+                  {mine.map((job) => (
+                    <JobRow
+                      key={job.id}
+                      job={job}
+                      isMine
+                      onClaim={handleClaim}
+                      claiming={claimingId === job.id}
+                    />
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
-        </>
-      )}
+
+            <section>
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Open queue</h2>
+              {queued.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500 py-8 text-center">No open jobs right now.</p>
+              ) : (
+                <div className="space-y-2">
+                  {queued.map((job) => (
+                    <JobRow
+                      key={job.id}
+                      job={job}
+                      isMine={false}
+                      onClaim={handleClaim}
+                      claiming={claimingId === job.id}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+      </div>
     </Layout>
   );
 }

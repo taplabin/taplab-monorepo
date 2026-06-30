@@ -10,8 +10,8 @@ import DesktopOnly from './components/DesktopOnly';
 
 function Spinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-5 h-5 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="w-5 h-5 rounded-full border-2 border-[#2087e6] border-t-transparent animate-spin" />
     </div>
   );
 }

@@ -104,7 +104,7 @@ export default function Editor() {
 
         {/* ── Structured data editors ── */}
         {structuredKeys.map((sk) => (
-          <div key={sk} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div key={sk} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
                 {STRUCTURED_LABEL[sk] ?? toLabel(sk)}
