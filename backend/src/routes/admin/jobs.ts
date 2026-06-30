@@ -194,6 +194,15 @@ export async function promoteToProduction(
 
   const contentKeys = build.contentKeys ?? [];
 
+  // Preserve only non-empty customer-saved values — empty strings from a bad
+  // previous promotion would override defaultContent in the page bundle
+  const businessSnap = await businessRef.get();
+  const existingContent: Record<string, string> = (businessSnap.data() as any)?.content ?? {};
+  const cleanContent: Record<string, string> = {};
+  for (const key of contentKeys) {
+    if (existingContent[key]?.trim()) cleanContent[key] = existingContent[key];
+  }
+
   await businessRef.update({
     pageJsUrl: prodUrl,
     componentTagName: build.componentTagName,
@@ -202,6 +211,7 @@ export async function promoteToProduction(
     lastDeployedAt: new Date(),
     approvedBuildToken: null,
     contentKeys,
+    content: cleanContent,
   });
 
   await jobRef.update({ status: 'live', liveAt: new Date(), updatedAt: new Date() });
