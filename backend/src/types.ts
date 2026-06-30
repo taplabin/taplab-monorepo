@@ -41,6 +41,7 @@ export interface BusinessDocument {
   ownerUid: string | null;
   content?: Record<string, string>;
   contentKeys?: string[];
+  promotedDefaultContent?: Record<string, string>;
   notes?: string;
   createdAt: Timestamp;
   contentUpdatedAt?: Timestamp;

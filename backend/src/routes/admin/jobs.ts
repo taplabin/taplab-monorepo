@@ -195,14 +195,19 @@ export async function promoteToProduction(
   const contentKeys = build.contentKeys ?? [];
   const buildDefaultContent: Record<string, string> = build.defaultContent ?? {};
 
-  // Merge: customer-saved non-empty values win, fall back to defaultContent from content.ts
   const businessSnap = await businessRef.get();
-  const existingContent: Record<string, string> = (businessSnap.data() as any)?.content ?? {};
+  const bizData = (businessSnap.data() as any) ?? {};
+  const existingContent: Record<string, string> = bizData.content ?? {};
+  // What we deployed last time — lets us detect genuine customer edits vs untouched defaults
+  const previousDefault: Record<string, string> = bizData.promotedDefaultContent ?? {};
+
   const cleanContent: Record<string, string> = {};
   for (const key of contentKeys) {
-    cleanContent[key] = existingContent[key]?.trim()
-      ? existingContent[key]
-      : (buildDefaultContent[key] ?? '');
+    const existing = existingContent[key] ?? '';
+    const prevDefault = previousDefault[key] ?? '';
+    // Only preserve if customer actually changed it from what we last deployed
+    const customerEdited = existing.trim() !== '' && existing !== prevDefault;
+    cleanContent[key] = customerEdited ? existing : (buildDefaultContent[key] ?? '');
   }
 
   await businessRef.update({
@@ -214,6 +219,7 @@ export async function promoteToProduction(
     approvedBuildToken: null,
     contentKeys,
     content: cleanContent,
+    promotedDefaultContent: buildDefaultContent,
   });
 
   await jobRef.update({ status: 'live', liveAt: new Date(), updatedAt: new Date() });
