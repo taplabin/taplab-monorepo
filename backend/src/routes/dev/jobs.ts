@@ -1,19 +1,20 @@
 import { FastifyInstance } from 'fastify';
 import crypto from 'crypto';
-import vm from 'vm';
+import { transform } from 'sucrase';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { db } from '../../firestore.js';
 import { JobDocument, BuildDocument } from '../../types.js';
 
 function extractDefaultContent(contentTs: string): Record<string, string> {
   try {
-    const js = contentTs
-      .replace(/:\s*Record<[^>]+>/g, '')  // strip TS type annotation
-      .replace(/export\s+/g, '')           // strip export keyword
-      .replace(/\bconst\b/g, 'var');       // const is block-scoped in vm; var attaches to context
-    const ctx = vm.createContext({});
-    vm.runInContext(js, ctx);
-    const result = ctx.defaultContent;
+    // sucrase strips all TypeScript syntax (imports, types, satisfies, as-casts, etc.)
+    // and compiles export statements to CommonJS — same approach as the frontend ValidationPanel
+    const { code } = transform(contentTs, { transforms: ['typescript', 'imports'] });
+    const exports: Record<string, unknown> = {};
+    const mod = { exports };
+    // eslint-disable-next-line no-new-func
+    new Function('exports', 'module', 'require', code)(exports, mod, () => ({}));
+    const result = exports.defaultContent ?? (mod.exports as any).defaultContent;
     if (result && typeof result === 'object' && !Array.isArray(result)) {
       return result as Record<string, string>;
     }
