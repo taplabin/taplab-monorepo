@@ -138,10 +138,11 @@ export async function devJobsRoute(app: FastifyInstance) {
     const { slug } = req.params;
     const devUid = (req as any).devUid as string;
     const devName = (req as any).devName as string;
-    const { appTsx, contentTs, claudeModel } = req.body as {
+    const { appTsx, contentTs, claudeModel, contentKeys } = req.body as {
       appTsx: string;
       contentTs: string;
       claudeModel: string;
+      contentKeys: string[];
     };
 
     if (!appTsx?.trim() || !contentTs?.trim()) {
@@ -209,6 +210,7 @@ export async function devJobsRoute(app: FastifyInstance) {
         templateVersion,
         devName,
         devUid,
+        contentKeys: Array.isArray(contentKeys) ? contentKeys : [],
         createdAt: new Date() as any,
       };
 

@@ -165,5 +165,6 @@ export interface BuildDocument {
   templateVersion: string;
   devName: string;
   devUid: string;
+  contentKeys: string[];
   createdAt: Timestamp;
 }

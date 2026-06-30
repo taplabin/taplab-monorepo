@@ -192,6 +192,15 @@ export async function promoteToProduction(
 
   const prodUrl = `${process.env.CDN_BASE_URL}/${prodKey}`;
 
+  const contentKeys = build.contentKeys ?? [];
+  // Initialise content with empty strings for any keys not already set
+  const businessSnap = await businessRef.get();
+  const existingContent: Record<string, string> = (businessSnap.data() as any)?.content ?? {};
+  const initialContent: Record<string, string> = {};
+  for (const key of contentKeys) {
+    initialContent[key] = existingContent[key] ?? '';
+  }
+
   await businessRef.update({
     pageJsUrl: prodUrl,
     componentTagName: build.componentTagName,
@@ -199,6 +208,8 @@ export async function promoteToProduction(
     pageStatus: 'deployed',
     lastDeployedAt: new Date(),
     approvedBuildToken: null,
+    contentKeys,
+    content: initialContent,
   });
 
   await jobRef.update({ status: 'live', liveAt: new Date(), updatedAt: new Date() });

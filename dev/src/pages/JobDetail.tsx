@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import MaterialsGallery from '../components/MaterialsGallery';
 import CodeEditor from '../components/CodeEditor';
 import ImageUploadHelper from '../components/ImageUploadHelper';
-import ValidationPanel, { validate, ValidationResult } from '../components/ValidationPanel';
+import ValidationPanel, { validate, extractDefaultContent, ValidationResult } from '../components/ValidationPanel';
 import SandboxPreview from '../components/SandboxPreview';
 import BuildHistory from '../components/BuildHistory';
 import { devFetch } from '../lib/api';
@@ -97,9 +97,11 @@ export default function JobDetail() {
     setPushing(true);
     setPushError('');
     try {
+      const defaultContent = extractDefaultContent(contentTs);
+      const contentKeys = defaultContent ? Object.keys(defaultContent) : [];
       const res = await devFetch(`/dev/jobs/${slug}/push-staging`, {
         method: 'POST',
-        body: JSON.stringify({ appTsx, contentTs, claudeModel }),
+        body: JSON.stringify({ appTsx, contentTs, claudeModel, contentKeys }),
       });
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));

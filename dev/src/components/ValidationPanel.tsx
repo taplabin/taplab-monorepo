@@ -6,7 +6,7 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-function extractDefaultContent(contentTs: string): Record<string, string> | null {
+export function extractDefaultContent(contentTs: string): Record<string, string> | null {
   try {
     const { code } = transform(contentTs, { transforms: ['typescript', 'imports'] });
     const exports: Record<string, unknown> = {};
