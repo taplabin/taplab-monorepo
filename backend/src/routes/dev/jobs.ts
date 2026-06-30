@@ -8,8 +8,9 @@ import { JobDocument, BuildDocument } from '../../types.js';
 function extractDefaultContent(contentTs: string): Record<string, string> {
   try {
     const js = contentTs
-      .replace(/:\s*Record<[^>]+>/g, '')
-      .replace(/export\s+/g, '');
+      .replace(/:\s*Record<[^>]+>/g, '')  // strip TS type annotation
+      .replace(/export\s+/g, '')           // strip export keyword
+      .replace(/\bconst\b/g, 'var');       // const is block-scoped in vm; var attaches to context
     const ctx = vm.createContext({});
     vm.runInContext(js, ctx);
     const result = ctx.defaultContent;
