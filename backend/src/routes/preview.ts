@@ -16,15 +16,17 @@ function getStagingS3(): S3Client | null {
   });
 }
 
-// Finds a build document by stagingToken (collection-group query)
+// Finds a build document by stagingToken using a direct lookup doc — no index required
 async function findBuildByToken(token: string): Promise<BuildDocument | null> {
-  const snap = await db.collectionGroup('builds')
-    .where('stagingToken', '==', token)
-    .limit(1)
-    .get();
+  const tokenDoc = await db.collection('stagingTokens').doc(token).get();
+  if (!tokenDoc.exists) return null;
 
-  if (snap.empty) return null;
-  return snap.docs[0].data() as BuildDocument;
+  const { slug, buildNumber } = tokenDoc.data() as { slug: string; buildNumber: number };
+  const buildDoc = await db.collection('jobs').doc(slug)
+    .collection('builds').doc(String(buildNumber)).get();
+
+  if (!buildDoc.exists) return null;
+  return buildDoc.data() as BuildDocument;
 }
 
 export async function previewRoute(app: FastifyInstance) {
@@ -37,7 +39,13 @@ export async function previewRoute(app: FastifyInstance) {
 
       reply.header('Cache-Control', 'no-store');
 
-      const build = await findBuildByToken(token);
+      let build: BuildDocument | null;
+      try {
+        build = await findBuildByToken(token);
+      } catch (err: any) {
+        app.log.error({ err, token }, 'Failed to find build by token');
+        return reply.status(500).send({ error: 'Preview lookup failed', details: err?.message });
+      }
       if (!build) return reply.status(404).send({ error: 'Preview not found' });
 
       const apiBase = process.env.API_BASE_URL ?? 'https://api.taplab.in';

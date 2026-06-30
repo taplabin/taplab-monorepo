@@ -103,7 +103,7 @@ export default function JobDetail() {
       });
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));
-        setPushError(e.error ?? 'Build failed');
+        setPushError(e.details ? `${e.error ?? 'Build failed'}: ${e.details}` : (e.error ?? 'Build failed'));
         return;
       }
       const data = await res.json();

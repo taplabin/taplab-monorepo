@@ -168,7 +168,7 @@ export async function devJobsRoute(app: FastifyInstance) {
       const promptVersion = process.env.PROMPT_VERSION ?? 'unknown';
 
       // Call build service
-      const buildServiceUrl = process.env.BUILD_SERVICE_URL;
+      const buildServiceUrl = process.env.BUILD_SERVICE_URL?.replace(/\/+$/, '');
       const buildServiceSecret = process.env.BUILD_SERVICE_SECRET;
 
       if (!buildServiceUrl || !buildServiceSecret) {
@@ -215,6 +215,9 @@ export async function devJobsRoute(app: FastifyInstance) {
       await db.collection('jobs').doc(slug)
         .collection('builds').doc(String(buildNumber)).set(buildData);
 
+      // Token lookup doc — lets preview route find the build without a collection group index
+      await db.collection('stagingTokens').doc(stagingToken).set({ slug, buildNumber });
+
       await db.collection('jobs').doc(slug).update({
         status: 'in_review',
         inReviewAt: new Date(),
@@ -222,9 +225,13 @@ export async function devJobsRoute(app: FastifyInstance) {
       });
 
       return reply.send({ stagingUrl, buildNumber });
-    } catch (err) {
+    } catch (err: any) {
       app.log.error(err);
-      return reply.status(500).send({ error: 'Failed to push to staging' });
+      return reply.status(500).send({
+        error: 'Failed to push to staging',
+        details: err?.message ?? String(err),
+        code: err?.code,
+      });
     }
   });
 
