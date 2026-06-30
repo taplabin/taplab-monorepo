@@ -65,6 +65,9 @@ export default function AdminJobDetail() {
   const [approvingBuild, setApprovingBuild] = useState(false);
   const [approveResult, setApproveResult] = useState<{ paymentLink: string; inviteLink: string | null } | null>(null);
   const [approveError, setApproveError] = useState('');
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState('');
+  const [retryOk, setRetryOk] = useState(false);
 
   const { data: job, mutate, isLoading } = useSWR<Job>(
     slug ? `/api/admin/jobs/${slug}` : null,
@@ -100,6 +103,28 @@ export default function AdminJobDetail() {
       mutate();
     } finally {
       setAddingMaterials(false);
+    }
+  }
+
+  async function handleRetryPromotion() {
+    if (!slug) return;
+    setRetrying(true);
+    setRetryError('');
+    setRetryOk(false);
+    try {
+      const res = await adminFetch(`/api/admin/jobs/${slug}/retry-promotion`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setRetryError(json.error ?? 'Retry failed');
+        return;
+      }
+      setRetryOk(true);
+      mutate();
+    } finally {
+      setRetrying(false);
     }
   }
 
@@ -314,6 +339,22 @@ export default function AdminJobDetail() {
                   )}
                 </div>
               )}
+            </div>
+          )}
+          {/* Retry promotion */}
+          {job.status === 'publish_pending' && (
+            <div className="p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-xl space-y-3">
+              <p className="text-sm font-semibold text-orange-900 dark:text-orange-300">Promotion failed — retry</p>
+              <p className="text-xs text-orange-700 dark:text-orange-400">The staging→production copy failed on payment. Fix the issue then retry.</p>
+              <button
+                onClick={handleRetryPromotion}
+                disabled={retrying}
+                className="text-sm px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg disabled:opacity-50 transition-colors font-medium"
+              >
+                {retrying ? 'Promoting…' : 'Retry promotion'}
+              </button>
+              {retryError && <p className="text-sm text-red-600 dark:text-red-400">{retryError}</p>}
+              {retryOk && <p className="text-sm text-green-700 dark:text-green-400">✓ Promoted to production successfully</p>}
             </div>
           )}
         </section>
