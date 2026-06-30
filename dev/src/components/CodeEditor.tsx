@@ -8,25 +8,36 @@ interface CodeEditorProps {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  fullHeight?: boolean;
+  onCursorChange?: (line: number, col: number) => void;
 }
 
-const editorTheme = EditorView.theme({
+const monoFont = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
+
+const normalTheme = EditorView.theme({
   '&': { fontSize: '13px' },
-  '.cm-scroller': {
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
-    minHeight: '400px',
-  },
+  '.cm-scroller': { fontFamily: monoFont, minHeight: '400px' },
   '.cm-content': { padding: '12px 0' },
   '.cm-line': { padding: '0 16px' },
   '.cm-gutters': { paddingLeft: '8px', paddingRight: '4px' },
 });
 
-export default function CodeEditor({ label, value, onChange }: CodeEditorProps) {
+const fullHeightTheme = EditorView.theme({
+  '&': { fontSize: '13px', height: '100%' },
+  '.cm-scroller': { fontFamily: monoFont, overflow: 'auto', height: '100%' },
+  '.cm-content': { padding: '12px 0' },
+  '.cm-line': { padding: '0 16px' },
+  '.cm-gutters': { paddingLeft: '8px', paddingRight: '4px' },
+});
+
+export default function CodeEditor({ label, value, onChange, fullHeight, onCursorChange }: CodeEditorProps) {
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onCursorRef = useRef(onCursorChange);
+  onCursorRef.current = onCursorChange;
 
   const [copied, setCopied] = useState(false);
 
@@ -41,10 +52,15 @@ export default function CodeEditor({ label, value, onChange }: CodeEditorProps) 
         basicSetup,
         javascript({ typescript: true, jsx: true }),
         ...(theme === 'dark' ? [oneDark] : []),
-        editorTheme,
+        fullHeight ? fullHeightTheme : normalTheme,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
+          }
+          if (onCursorRef.current && (update.selectionSet || update.docChanged)) {
+            const head = update.state.selection.main.head;
+            const line = update.state.doc.lineAt(head);
+            onCursorRef.current(line.number, head - line.from + 1);
           }
         }),
       ],
@@ -59,9 +75,8 @@ export default function CodeEditor({ label, value, onChange }: CodeEditorProps) 
       view.destroy();
       viewRef.current = null;
     };
-  }, [theme]);
+  }, [theme, fullHeight]);
 
-  // Sync external value changes (e.g. initial load)
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
@@ -78,10 +93,17 @@ export default function CodeEditor({ label, value, onChange }: CodeEditorProps) 
     setTimeout(() => setCopied(false), 2000);
   }
 
+  if (fullHeight) {
+    return (
+      <div
+        ref={containerRef}
+        className="h-full [&_.cm-editor]:h-full [&_.cm-editor]:outline-none [&_.cm-editor]:border-none [&_.cm-focused]:outline-none"
+      />
+    );
+  }
+
   return (
     <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
-
-      {/* File tab — always dark, VS Code style */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-[#252526] border-b border-gray-700">
         <div className="flex items-center gap-2">
           <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -97,13 +119,10 @@ export default function CodeEditor({ label, value, onChange }: CodeEditorProps) 
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-
-      {/* CodeMirror mount */}
       <div
         ref={containerRef}
         className="[&_.cm-editor]:outline-none [&_.cm-editor]:border-none [&_.cm-focused]:outline-none"
       />
-
     </div>
   );
 }

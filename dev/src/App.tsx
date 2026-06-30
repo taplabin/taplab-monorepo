@@ -5,7 +5,11 @@ import { signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import Login from './pages/Login';
 import Queue from './pages/Queue';
-import JobDetail from './pages/JobDetail';
+import Editor from './pages/Editor';
+import Preview from './pages/Preview';
+import Deploy from './pages/Deploy';
+import Builds from './pages/Builds';
+import JobLayout from './components/JobLayout';
 import DesktopOnly from './components/DesktopOnly';
 
 function Spinner() {
@@ -41,7 +45,13 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Queue />} />
-          <Route path="/job/:slug" element={<JobDetail />} />
+          <Route path="/job/:slug" element={<JobLayout />}>
+            <Route index element={<Navigate to="editor" replace />} />
+            <Route path="editor" element={<Editor />} />
+            <Route path="preview" element={<Preview />} />
+            <Route path="deploy" element={<Deploy />} />
+            <Route path="builds" element={<Builds />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
