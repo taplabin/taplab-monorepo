@@ -22,7 +22,6 @@ export default function DesktopOnly({ children }: { children: React.ReactNode })
             alt="TapLab"
             className="h-10 w-auto mx-auto mb-6"
           />
-          <div className="text-3xl mb-3">💻</div>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Open on a laptop or desktop</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">The Dev Panel isn't designed for small screens.</p>
         </div>
