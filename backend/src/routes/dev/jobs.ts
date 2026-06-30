@@ -4,6 +4,12 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { db } from '../../firestore.js';
 import { JobDocument, BuildDocument } from '../../types.js';
 
+function extractContentKeys(contentTs: string): string[] {
+  const objMatch = contentTs.match(/defaultContent[^=]*=\s*\{([^}]+)\}/s);
+  if (!objMatch) return [];
+  return [...objMatch[1].matchAll(/^\s+(\w+)\s*:/gm)].map((m) => m[1]);
+}
+
 function getMediaS3(): S3Client {
   return new S3Client({
     region: 'auto',
@@ -138,11 +144,10 @@ export async function devJobsRoute(app: FastifyInstance) {
     const { slug } = req.params;
     const devUid = (req as any).devUid as string;
     const devName = (req as any).devName as string;
-    const { appTsx, contentTs, claudeModel, contentKeys } = req.body as {
+    const { appTsx, contentTs, claudeModel } = req.body as {
       appTsx: string;
       contentTs: string;
       claudeModel: string;
-      contentKeys: string[];
     };
 
     if (!appTsx?.trim() || !contentTs?.trim()) {
@@ -210,7 +215,7 @@ export async function devJobsRoute(app: FastifyInstance) {
         templateVersion,
         devName,
         devUid,
-        contentKeys: Array.isArray(contentKeys) ? contentKeys : [],
+        contentKeys: extractContentKeys(contentTs),
         createdAt: new Date() as any,
       };
 
