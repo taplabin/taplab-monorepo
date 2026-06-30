@@ -5,9 +5,18 @@ import { db } from '../../firestore.js';
 import { JobDocument, BuildDocument } from '../../types.js';
 
 function extractContentKeys(contentTs: string): string[] {
-  const objMatch = contentTs.match(/defaultContent[^=]*=\s*\{([^}]+)\}/s);
-  if (!objMatch) return [];
-  return [...objMatch[1].matchAll(/^\s+(\w+)\s*:/gm)].map((m) => m[1]);
+  // Find the line where defaultContent starts, then collect all indented key: lines until the closing }
+  const lines = contentTs.split(/\r?\n/);
+  const startIdx = lines.findIndex((l) => /defaultContent/.test(l) && l.includes('{'));
+  if (startIdx === -1) return [];
+  const keys: string[] = [];
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\s*\}/.test(line)) break;
+    const m = line.match(/^\s+(\w+)\s*:/);
+    if (m) keys.push(m[1]);
+  }
+  return keys;
 }
 
 function getMediaS3(): S3Client {
