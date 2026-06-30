@@ -32,7 +32,7 @@ export default function Login() {
             alt="TapLab"
             className="h-12 w-auto mx-auto"
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your dev account</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your devv account</p>
         </div>
         <form
           onSubmit={handleLogin}
