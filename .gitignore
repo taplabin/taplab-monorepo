@@ -83,3 +83,7 @@ pages/*/
 !pages/template/**
 pages/template/node_modules/
 pages/template/dist/
+
+# Build service warm-template runtime artifacts
+build-service/warm-template/node_modules/
+build-service/warm-template/dist/

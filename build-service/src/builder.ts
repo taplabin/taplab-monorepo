@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const WARM_TEMPLATE_DIR = path.resolve(__dirname, '../../warm-template');
+const WARM_TEMPLATE_DIR = path.resolve(__dirname, '../warm-template');
 
 function getStagingS3(): S3Client {
   return new S3Client({
