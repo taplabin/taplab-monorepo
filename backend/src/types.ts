@@ -166,5 +166,6 @@ export interface BuildDocument {
   devName: string;
   devUid: string;
   contentKeys: string[];
+  defaultContent: Record<string, string>;
   createdAt: Timestamp;
 }

@@ -1,11 +1,26 @@
 import { FastifyInstance } from 'fastify';
 import crypto from 'crypto';
+import vm from 'vm';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { db } from '../../firestore.js';
 import { JobDocument, BuildDocument } from '../../types.js';
 
+function extractDefaultContent(contentTs: string): Record<string, string> {
+  try {
+    const js = contentTs
+      .replace(/:\s*Record<[^>]+>/g, '')
+      .replace(/export\s+/g, '');
+    const ctx = vm.createContext({});
+    vm.runInContext(js, ctx);
+    const result = ctx.defaultContent;
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+      return result as Record<string, string>;
+    }
+  } catch {}
+  return {};
+}
+
 function extractContentKeys(contentTs: string): string[] {
-  // Find the line where defaultContent starts, then collect all indented key: lines until the closing }
   const lines = contentTs.split(/\r?\n/);
   const startIdx = lines.findIndex((l) => /defaultContent/.test(l) && l.includes('{'));
   if (startIdx === -1) return [];
@@ -225,6 +240,7 @@ export async function devJobsRoute(app: FastifyInstance) {
         devName,
         devUid,
         contentKeys: extractContentKeys(contentTs),
+        defaultContent: extractDefaultContent(contentTs),
         createdAt: new Date() as any,
       };
 

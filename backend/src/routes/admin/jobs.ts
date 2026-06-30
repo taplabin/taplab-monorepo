@@ -193,14 +193,16 @@ export async function promoteToProduction(
   const prodUrl = `${process.env.CDN_BASE_URL}/${prodKey}`;
 
   const contentKeys = build.contentKeys ?? [];
+  const buildDefaultContent: Record<string, string> = build.defaultContent ?? {};
 
-  // Preserve only non-empty customer-saved values — empty strings from a bad
-  // previous promotion would override defaultContent in the page bundle
+  // Merge: customer-saved non-empty values win, fall back to defaultContent from content.ts
   const businessSnap = await businessRef.get();
   const existingContent: Record<string, string> = (businessSnap.data() as any)?.content ?? {};
   const cleanContent: Record<string, string> = {};
   for (const key of contentKeys) {
-    if (existingContent[key]?.trim()) cleanContent[key] = existingContent[key];
+    cleanContent[key] = existingContent[key]?.trim()
+      ? existingContent[key]
+      : (buildDefaultContent[key] ?? '');
   }
 
   await businessRef.update({
