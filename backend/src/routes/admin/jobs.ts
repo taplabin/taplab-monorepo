@@ -177,11 +177,15 @@ export async function promoteToProduction(
     Key: build.r2StagingKey,
   }));
 
+  // Buffer the stream — S3 SDK requires known content length for PutObject
+  const fileBytes = await stagingObj.Body!.transformToByteArray();
+
   const prodKey = build.r2StagingFilename;
   await prodS3.send(new PutObjectCommand({
     Bucket: process.env.R2_BUCKET!,
     Key: prodKey,
-    Body: stagingObj.Body as any,
+    Body: fileBytes,
+    ContentLength: fileBytes.byteLength,
     ContentType: 'application/javascript',
     CacheControl: 'public, max-age=31536000, immutable',
   }));
