@@ -2,6 +2,8 @@ import { NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
+import taplabLight from '../assets/taplab.png';
+import taplabDark from '../assets/taplabdark.png';
 
 const activeClass = 'bg-blue-50 dark:bg-blue-500/10 text-[#2087e6] dark:text-blue-400';
 const inactiveClass = 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200';
@@ -19,7 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="px-5 pt-3.5 pb-5 border-b border-gray-100 dark:border-gray-800">
           <NavLink to="/">
             <img
-              src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+              src={theme === 'dark' ? taplabDark : taplabLight}
               alt="TapLab"
               className="h-10 w-auto"
             />

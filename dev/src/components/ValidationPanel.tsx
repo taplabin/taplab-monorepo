@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { transform } from 'sucrase';
 
 export interface ValidationResult {
   passed: boolean;
@@ -7,10 +7,17 @@ export interface ValidationResult {
 }
 
 function extractDefaultContent(contentTs: string): Record<string, string> | null {
-  const match = contentTs.match(/export\s+const\s+defaultContent[^=]*=\s*(\{[\s\S]*?\})\s*;/);
-  if (!match) return null;
   try {
-    return new Function(`return (${match[1]})`)() as Record<string, string>;
+    const { code } = transform(contentTs, { transforms: ['typescript', 'imports'] });
+    const exports: Record<string, unknown> = {};
+    const mod = { exports };
+    // eslint-disable-next-line no-new-func
+    new Function('exports', 'module', 'require', code)(exports, mod, () => ({}));
+    const result = exports.defaultContent ?? mod.exports.defaultContent;
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+      return result as Record<string, string>;
+    }
+    return null;
   } catch {
     return null;
   }

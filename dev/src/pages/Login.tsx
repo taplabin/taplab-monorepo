@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
+import taplabLight from '../assets/taplab.png';
+import taplabDark from '../assets/taplabdark.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,11 +30,11 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img
-            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            src={theme === 'dark' ? taplabDark : taplabLight}
             alt="TapLab"
             className="h-12 w-auto mx-auto"
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your devv account</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in with your dev account</p>
         </div>
         <form
           onSubmit={handleLogin}

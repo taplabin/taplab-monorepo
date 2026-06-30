@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import taplabLight from '../assets/taplab.png';
+import taplabDark from '../assets/taplabdark.png';
 
 export default function DesktopOnly({ children }: { children: React.ReactNode }) {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
@@ -16,7 +18,7 @@ export default function DesktopOnly({ children }: { children: React.ReactNode })
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-8">
         <div className="text-center max-w-sm">
           <img
-            src={theme === 'dark' ? '/taplabdark.png' : '/taplab.png'}
+            src={theme === 'dark' ? taplabDark : taplabLight}
             alt="TapLab"
             className="h-10 w-auto mx-auto mb-6"
           />
