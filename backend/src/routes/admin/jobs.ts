@@ -198,15 +198,17 @@ export async function promoteToProduction(
   const businessSnap = await businessRef.get();
   const bizData = (businessSnap.data() as any) ?? {};
   const existingContent: Record<string, string> = bizData.content ?? {};
-  // What we deployed last time — lets us detect genuine customer edits vs untouched defaults
+  // What we deployed last time — only exists after the first promotion using this system
   const previousDefault: Record<string, string> = bizData.promotedDefaultContent ?? {};
+  const hasPromotionHistory = !!bizData.promotedDefaultContent;
 
   const cleanContent: Record<string, string> = {};
   for (const key of contentKeys) {
     const existing = existingContent[key] ?? '';
     const prevDefault = previousDefault[key] ?? '';
-    // Only preserve if customer actually changed it from what we last deployed
-    const customerEdited = existing.trim() !== '' && existing !== prevDefault;
+    // Without promotion history we can't tell customer edits from old defaults — use new defaults
+    // With history: only preserve if the customer actually changed the value since last deploy
+    const customerEdited = hasPromotionHistory && existing.trim() !== '' && existing !== prevDefault;
     cleanContent[key] = customerEdited ? existing : (buildDefaultContent[key] ?? '');
   }
 
