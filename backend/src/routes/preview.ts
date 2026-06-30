@@ -17,7 +17,7 @@ function getStagingS3(): S3Client | null {
 }
 
 // Finds a build document by stagingToken using a direct lookup doc — no index required
-async function findBuildByToken(token: string): Promise<BuildDocument | null> {
+async function findBuildByToken(token: string): Promise<{ build: BuildDocument; slug: string } | null> {
   const tokenDoc = await db.collection('stagingTokens').doc(token).get();
   if (!tokenDoc.exists) return null;
 
@@ -26,7 +26,7 @@ async function findBuildByToken(token: string): Promise<BuildDocument | null> {
     .collection('builds').doc(String(buildNumber)).get();
 
   if (!buildDoc.exists) return null;
-  return buildDoc.data() as BuildDocument;
+  return { build: buildDoc.data() as BuildDocument, slug };
 }
 
 export async function previewRoute(app: FastifyInstance) {
@@ -39,20 +39,23 @@ export async function previewRoute(app: FastifyInstance) {
 
       reply.header('Cache-Control', 'no-store');
 
-      let build: BuildDocument | null;
+      let result: { build: BuildDocument; slug: string } | null;
       try {
-        build = await findBuildByToken(token);
+        result = await findBuildByToken(token);
       } catch (err: any) {
         app.log.error({ err, token }, 'Failed to find build by token');
         return reply.status(500).send({ error: 'Preview lookup failed', details: err?.message });
       }
-      if (!build) return reply.status(404).send({ error: 'Preview not found' });
+      if (!result) return reply.status(404).send({ error: 'Preview not found' });
 
+      const { build, slug } = result;
       const apiBase = process.env.API_BASE_URL ?? 'https://api.taplab.in';
 
       return reply.send({
         jsUrl: `${apiBase}/preview-js/${token}`,
         componentTagName: build.componentTagName,
+        slug,
+        defaultContent: build.defaultContent ?? {},
       });
     }
   );
@@ -64,8 +67,9 @@ export async function previewRoute(app: FastifyInstance) {
     async (req, reply) => {
       const { token } = req.params;
 
-      const build = await findBuildByToken(token);
-      if (!build) return reply.status(404).send('Not found');
+      const result = await findBuildByToken(token);
+      if (!result) return reply.status(404).send('Not found');
+      const { build } = result;
 
       const s3 = getStagingS3();
       if (!s3) return reply.status(503).send('Staging storage not configured');

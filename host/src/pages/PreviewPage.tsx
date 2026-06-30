@@ -23,7 +23,7 @@ export default function PreviewPage() {
     async function loadPreview() {
       setPageState({ status: 'loading' });
 
-      let data: { jsUrl?: string; componentTagName?: string };
+      let data: { jsUrl?: string; componentTagName?: string; slug?: string; defaultContent?: Record<string, string> };
       try {
         const res = await fetch(`/api/preview/${token}`);
         if (res.status === 404) {
@@ -37,10 +37,28 @@ export default function PreviewPage() {
         return;
       }
 
-      const { jsUrl, componentTagName } = data;
+      const { jsUrl, componentTagName, slug, defaultContent } = data;
       if (!jsUrl || !componentTagName) {
         if (!cancelled) setPageState({ status: 'error', message: 'Invalid preview configuration.' });
         return;
+      }
+
+      // Intercept the bundle's content API fetch so it gets the build's defaultContent
+      // instead of whatever stale values are stored in Firestore for this business.
+      if (slug && defaultContent) {
+        const _fetch = window.fetch.bind(window);
+        (window as any).fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+          const url = typeof input === 'string' ? input : input.toString();
+          if (url.includes(`/page/${slug}/content`)) {
+            return Promise.resolve(
+              new Response(JSON.stringify(defaultContent), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+              })
+            );
+          }
+          return _fetch(input, init);
+        };
       }
 
       if (!loadedTokens.has(token!)) {
