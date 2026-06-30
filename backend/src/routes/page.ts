@@ -17,7 +17,12 @@ export async function pageRoute(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Not found' });
     }
 
-    const content = (doc.data() as BusinessDocument).content ?? {};
+    const raw = (doc.data() as BusinessDocument).content ?? {};
+    // Strip empty values — the bundle merges { ...defaultContent, ...this },
+    // so empty strings would override defaultContent and blank the page
+    const content = Object.fromEntries(
+      Object.entries(raw).filter(([, v]) => v !== '' && v != null)
+    );
 
     return reply.send(content);
   });
